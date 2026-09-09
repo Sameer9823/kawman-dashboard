@@ -4,6 +4,7 @@ import { requireApiSession } from '@/lib/session'
 import { deleteFromCloudinary, resourceTypeForMime } from '@/lib/cloudinary'
 import type { FileItem, FolderItem, FileCategoryItem, SharedFileItem, FileVisibility, FilePermissionLevel } from '@/types/files'
 import type { Prisma } from '@/generated/prisma'
+import type { Session } from '@/lib/auth'
 
 function initials(name: string): string {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -183,9 +184,69 @@ export async function getLatestActionMap(
 
 type FileRow = Awaited<ReturnType<typeof fetchFileRows>>[number]
 
-async function fetchFileRows(organizationId: string, where: Record<string, unknown> = {}) {
+/**
+ * Which files a user can see — independent of, and layered on top of,
+ * the folder-level access already enforced by canAccessFolder() above.
+ * A folder being open to the whole org does NOT mean every file inside
+ * it should be: File.visibility has existed in the schema
+ * (PRIVATE/TEAM/DEPARTMENT/ORGANIZATION/SHARED) and is settable via
+ * updateFileVisibility(), but until now nothing enforced it when
+ * listing files — a PRIVATE file was visible to the entire org the
+ * moment it landed in a shared (grant-less) folder.
+ *
+ * `files.manage` bypasses this, matching the existing folder-access
+ * convention. Otherwise a file is visible if:
+ *   - the caller uploaded it, OR
+ *   - it's marked ORGANIZATION, OR
+ *   - it's marked TEAM and the caller shares the uploader's team, OR
+ *   - it's marked DEPARTMENT and the caller shares the uploader's
+ *     department, OR
+ *   - the caller has an active (non-expired) FileShare on it — this is
+ *     also how a SHARED-visibility file becomes reachable: only via an
+ *     explicit share, never by default.
+ */
+function fileVisibilityWhere(user: Session['user']): Prisma.FileWhereInput {
+  if (user.permissions.includes('files.manage')) return {}
+
+  const or: Prisma.FileWhereInput[] = [
+    { uploadedById: user.id },
+    { visibility: 'ORGANIZATION' },
+    {
+      shares: {
+        some: {
+          sharedWithId: user.id,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
+      },
+    },
+  ]
+  if (user.team?.id) {
+    or.push({ visibility: 'TEAM', uploadedBy: { teamId: user.team.id } })
+  }
+  if (user.department?.id) {
+    or.push({ visibility: 'DEPARTMENT', uploadedBy: { departmentId: user.department.id } })
+  }
+
+  return { OR: or }
+}
+
+/**
+ * `extraWhere` (e.g. { folderId }) is combined via AND rather than a
+ * plain spread, because fileVisibilityWhere() above returns an OR
+ * clause — spreading two objects that both use the "OR" key would let
+ * the second silently overwrite the first (see the same note in
+ * services/meeting.service.ts#scopeWhere).
+ */
+async function fetchFileRows(
+  organizationId: string,
+  user: Session['user'],
+  extraWhere: Prisma.FileWhereInput = {}
+) {
   return prisma.file.findMany({
-    where: { organizationId, ...where },
+    where: {
+      organizationId,
+      AND: [fileVisibilityWhere(user), extraWhere],
+    },
     include: { folder: { select: { name: true } }, uploadedBy: { select: { name: true } } },
     orderBy: { createdAt: 'desc' },
   })
@@ -239,7 +300,7 @@ export async function getFolderContents(folderId: string | null): Promise<{ fold
       include: { createdBy: { select: { name: true } }, _count: { select: { files: true } } },
       orderBy: { name: 'asc' },
     }),
-    fetchFileRows(organizationId, { folderId }),
+    fetchFileRows(organizationId, session.user, { folderId }),
   ])
 
   // Sub-folders in a listing get the same check individually — a folder
@@ -530,21 +591,21 @@ export async function restoreFileVersion(fileId: string, versionId: string): Pro
 
 export async function getRecentFiles(): Promise<FileItem[]> {
   const session = await requireApiSession()
-  const rows = await fetchFileRows(session.user.organizationId)
+  const rows = await fetchFileRows(session.user.organizationId, session.user)
   const files = await mapFiles(rows.slice(0, 60), session.user.id)
   return files.filter((f) => !f.isTrashed).slice(0, 40)
 }
 
 export async function getStarredFiles(): Promise<FileItem[]> {
   const session = await requireApiSession()
-  const rows = await fetchFileRows(session.user.organizationId)
+  const rows = await fetchFileRows(session.user.organizationId, session.user)
   const files = await mapFiles(rows, session.user.id)
   return files.filter((f) => f.isStarred && !f.isTrashed)
 }
 
 export async function getTrashedFiles(): Promise<FileItem[]> {
   const session = await requireApiSession()
-  const rows = await fetchFileRows(session.user.organizationId)
+  const rows = await fetchFileRows(session.user.organizationId, session.user)
   const files = await mapFiles(rows, session.user.id)
   return files.filter((f) => f.isTrashed)
 }

@@ -357,8 +357,18 @@ export async function createMeetingWithVideoAction(
       dealId: dealId || null,
       notes: notes || null,
       createdById: session.user.id,
+      // participantIdsArray holds User IDs. Meeting.participants is the
+      // MeetingParticipant junction table (its own `id`, distinct from
+      // userId) — there's no existing junction row to `connect` yet, so
+      // this must `create` new MeetingParticipant rows, same as
+      // createMeetingAction above does for the non-video flow.
       participants: participantIdsArray.length
-        ? { connect: participantIdsArray.map((id) => ({ id })) }
+        ? {
+            create: participantIdsArray.map((userId) => ({
+              userId,
+              role: userId === session.user.id ? 'ORGANIZER' : 'PARTICIPANT',
+            })),
+          }
         : undefined,
     },
   })

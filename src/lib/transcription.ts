@@ -33,6 +33,32 @@ class AssemblyAITranscriptionService implements TranscriptionService {
     }
   }
 
+  // Uploads a small audio buffer directly to AssemblyAI's own storage and
+  // returns an upload_url to submit for transcription. Used so we can send
+  // the extracted (small) audio track instead of making AssemblyAI download
+  // the full original video from Cloudinary — that download+processing of
+  // the full video file was the main reason a 40-minute recording was
+  // taking so long.
+  async uploadAudio(buffer: Buffer): Promise<string> {
+    if (!this.apiKey) {
+      throw new Error('AssemblyAI API key not configured. Set ASSEMBLYAI_API_KEY environment variable.')
+    }
+
+    const uploadResponse = await fetch(`${this.baseUrl}/upload`, {
+      method: 'POST',
+      headers: { 'Authorization': this.apiKey },
+      body: new Uint8Array(buffer),
+    })
+
+    if (!uploadResponse.ok) {
+      const error = await uploadResponse.text()
+      throw new Error(`AssemblyAI upload failed: ${error}`)
+    }
+
+    const { upload_url } = await uploadResponse.json()
+    return upload_url
+  }
+
   async transcribe(audioUrl: string): Promise<TranscriptionResult> {
     if (!this.apiKey) {
       throw new Error('AssemblyAI API key not configured. Set ASSEMBLYAI_API_KEY environment variable.')
@@ -46,12 +72,15 @@ class AssemblyAITranscriptionService implements TranscriptionService {
       },
       body: JSON.stringify({
         audio_url: audioUrl,
-        speaker_labels: true,
-        auto_chapters: true,
-        entity_detection: true,
-        sentiment_analysis: true,
+        // auto_chapters / entity_detection / sentiment_analysis were
+        // enabled but never used — TranscriptionResult only reads back
+        // text/confidence/words/language below, so those three passes
+        // were pure added processing time for output we threw away.
+        // speaker_labels dropped too for the same reason (would need to
+        // read `utterances` to actually use it, which we don't).
       }),
     })
+
 
     if (!submitResponse.ok) {
       const error = await submitResponse.text()
@@ -272,7 +301,20 @@ export async function extractAudioFromVideo(videoUrl: string): Promise<Buffer> {
 export async function transcribeVideo(videoUrl: string): Promise<string | null> {
   try {
     const service = getTranscriptionService()
-    const result = await service.transcribe(videoUrl)
+
+    // Send a small extracted audio track instead of the full video file
+    // wherever possible. This is what was making long (e.g. 40-minute)
+    // recordings slow: the raw video was being downloaded and processed
+    // in full by the transcription provider. extractAudioFromVideo()
+    // already produces a mono, 16kHz, 128kbps mp3 — a fraction of the
+    // size of the source video.
+    let sourceUrl = videoUrl
+    if (service instanceof AssemblyAITranscriptionService) {
+      const audioBuffer = await extractAudioFromVideo(videoUrl)
+      sourceUrl = await service.uploadAudio(audioBuffer)
+    }
+
+    const result = await service.transcribe(sourceUrl)
     return result.text
   } catch (error) {
     console.error('Video transcription failed:', error)

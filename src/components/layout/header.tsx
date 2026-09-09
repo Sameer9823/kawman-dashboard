@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
+import { useShallow } from 'zustand/react/shallow'
 import { useUIStore } from '@/stores/ui'
 import { useSession, signOut } from '@/lib/auth-client'
 import { getInitials, formatRelativeTime } from '@/lib/utils'
@@ -52,7 +53,16 @@ interface NotificationDTO {
 
 export function Header() {
   const router = useRouter()
-  const { sidebarCollapsed, toggleMobileDrawer, toggleCommandPalette } = useUIStore()
+  // Selector (via useShallow) instead of a bare useUIStore() call — this
+  // component now only re-renders when one of these three fields changes,
+  // not on every unrelated UI-store update (theme, notifications, etc).
+  const { sidebarCollapsed, toggleMobileDrawer, toggleCommandPalette } = useUIStore(
+    useShallow((s) => ({
+      sidebarCollapsed: s.sidebarCollapsed,
+      toggleMobileDrawer: s.toggleMobileDrawer,
+      toggleCommandPalette: s.toggleCommandPalette,
+    }))
+  )
   const { data: session } = useSession()
   const user = session?.user
 

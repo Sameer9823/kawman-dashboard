@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
+import { useShallow } from 'zustand/react/shallow'
 import { Search, User, Building2, Contact as ContactIcon, Handshake, CalendarClock, FileText, Loader2 } from 'lucide-react'
 import { useUIStore } from '@/stores/ui'
 import type { SearchResult, SearchResultType } from '@/services/search.service'
@@ -42,7 +43,15 @@ async function fetchResults(query: string): Promise<SearchResult[]> {
  */
 export function CommandPalette() {
   const router = useRouter()
-  const { commandPaletteOpen, setCommandPaletteOpen } = useUIStore()
+  // Selector (via useShallow) instead of a bare useUIStore() call — this
+  // component now only re-renders when commandPaletteOpen actually
+  // changes, not on every unrelated UI-store update (theme, sidebar, etc).
+  const { commandPaletteOpen, setCommandPaletteOpen } = useUIStore(
+    useShallow((s) => ({
+      commandPaletteOpen: s.commandPaletteOpen,
+      setCommandPaletteOpen: s.setCommandPaletteOpen,
+    }))
+  )
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)

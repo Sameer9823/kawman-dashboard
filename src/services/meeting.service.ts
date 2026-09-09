@@ -6,6 +6,40 @@ import { uploadToCloudinary } from '@/lib/cloudinary'
 import { transcribeVideo, extractAudioFromVideo } from '@/lib/transcription'
 import type { MeetingListItem, MeetingDetail, MeetingType, MeetingStatus } from '@/types/meetings'
 import type { Prisma } from '@/generated/prisma'
+import { getRecordScope } from '@/lib/record-scope'
+import type { Session } from '@/lib/auth'
+
+/**
+ * See lib/record-scope.ts — the base "meetings.view" permission only
+ * gates page access, not which rows come back. Meetings have no
+ * ownerId (unlike Lead/Company/Contact/Deal), so visibility for a
+ * non-admin is "I created it" OR "I'm a participant in it" — a
+ * participant obviously needs to see a meeting they were invited to
+ * even if a manager/colleague created it.
+ *
+ * Returns an OR clause for OWN/DEPARTMENT scope, so callers that also
+ * build their own OR (search) must combine via `AND: [...]` rather
+ * than spreading both into the same object — spreading would let the
+ * second OR silently overwrite the first.
+ */
+function scopeWhere(user: Session['user']): Prisma.MeetingWhereInput {
+  const scope = getRecordScope(user)
+  if (scope === 'ALL') return {}
+  if (scope === 'DEPARTMENT' && user.department?.id) {
+    return {
+      OR: [
+        { createdBy: { departmentId: user.department.id } },
+        { participants: { some: { userId: user.id } } },
+      ],
+    }
+  }
+  return {
+    OR: [
+      { createdById: user.id },
+      { participants: { some: { userId: user.id } } },
+    ],
+  }
+}
 
 function asStringArray(v: unknown): string[] {
   if (Array.isArray(v)) return v.filter((x): x is string => typeof x === 'string')
@@ -22,7 +56,7 @@ export async function getMeetings(): Promise<MeetingListItem[]> {
 
   // Fetch meetings with basic relations
   const rows = await prisma.meeting.findMany({
-    where: { organizationId: orgId },
+    where: { organizationId: orgId, ...scopeWhere(session.user) },
     include: {
       company: { select: { name: true } },
       createdBy: { select: { name: true } },
@@ -137,13 +171,18 @@ export async function getMeetingsPage(q: MeetingQuery): Promise<MeetingPage> {
 
   const where: Prisma.MeetingWhereInput = {
     organizationId: orgId,
-    ...(q.search && {
-      OR: [
-        { title: { contains: q.search, mode: 'insensitive' } },
-        { notes: { contains: q.search, mode: 'insensitive' } },
-        { company: { name: { contains: q.search, mode: 'insensitive' } } },
-      ],
-    }),
+    AND: [
+      scopeWhere(session.user),
+      ...(q.search
+        ? [{
+            OR: [
+              { title: { contains: q.search, mode: 'insensitive' as const } },
+              { notes: { contains: q.search, mode: 'insensitive' as const } },
+              { company: { name: { contains: q.search, mode: 'insensitive' as const } } },
+            ],
+          }]
+        : []),
+    ],
     ...(q.status && { status: q.status }),
   }
 
@@ -209,7 +248,7 @@ export async function getMeetingById(id: string): Promise<MeetingDetail | null> 
 
   // Fetch meeting with basic relations
   const row = await prisma.meeting.findFirst({
-    where: { id, organizationId: orgId },
+    where: { id, organizationId: orgId, ...scopeWhere(session.user) },
     include: {
       company: { select: { name: true } },
       contact: { select: { name: true } },

@@ -140,6 +140,20 @@ export const config = {
     /*
      * Match all paths except:
      * - api/auth (handled by better-auth itself)
+     * - api/meetings/[id]/upload-recording, and /meetings/new — both
+     *   receive large (up to 500MB) multipart video uploads: the API
+     *   route via fetch(), and /meetings/new via a Server Action
+     *   (createMeetingWithVideoAction) invoked directly from the upload
+     *   form, which POSTs the multipart body to the page URL itself, not
+     *   the API route. Next.js has a known race condition
+     *   (github.com/lucasadrianof/nextjs-middleware-bug) where
+     *   requestData.body.finalize() isn't awaited when middleware sits in
+     *   front of a route/action reading a large multipart body, causing
+     *   an intermittent "Unexpected end of form" error. Both paths still
+     *   enforce auth server-side (auth.api.getSession() in route.ts;
+     *   requireApiSession() in page.tsx and in assertPermission() inside
+     *   createMeetingWithVideoAction), so skipping the edge cookie
+     *   pre-check here is safe.
      * - _next/static, _next/image (Next internals)
      * - favicon.ico, manifest.json, sw.js, and common static asset
      *   extensions — the PWA manifest/service-worker/icons must be
@@ -149,6 +163,6 @@ export const config = {
      *   of the actual file, which breaks service worker registration
      *   outright (browsers reject a non-JS MIME type for it).
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico|manifest.json|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api/auth|api/meetings/.*/upload-recording|meetings/new|_next/static|_next/image|favicon.ico|manifest.json|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

@@ -2,6 +2,20 @@ import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import type { Contact } from '@/types/crm'
+import { getRecordScope } from '@/lib/record-scope'
+import type { Session } from '@/lib/auth'
+import type { Prisma } from '@/generated/prisma'
+
+/** See lib/record-scope.ts — the base "contacts.view" permission only
+ * gates page access, not which rows come back. This adds that filter. */
+function scopeWhere(user: Session['user']): Prisma.ContactWhereInput {
+  const scope = getRecordScope(user)
+  if (scope === 'ALL') return {}
+  if (scope === 'DEPARTMENT' && user.department?.id) {
+    return { owner: { departmentId: user.department.id } }
+  }
+  return { ownerId: user.id }
+}
 
 function toInitials(name: string): string {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -9,9 +23,9 @@ function toInitials(name: string): string {
 
 type ContactRow = Awaited<ReturnType<typeof fetchContacts>>[number]
 
-async function fetchContacts(organizationId: string) {
+async function fetchContacts(organizationId: string, scopeFilter: Prisma.ContactWhereInput) {
   return prisma.contact.findMany({
-    where: { organizationId },
+    where: { organizationId, ...scopeFilter },
     include: { owner: { select: { name: true } }, company: { select: { name: true } } },
     orderBy: { createdAt: 'desc' },
   })
@@ -34,7 +48,7 @@ function mapContact(row: ContactRow): Contact {
 
 export async function getContacts(): Promise<Contact[]> {
   const session = await requireApiSession()
-  const rows = await fetchContacts(session.user.organizationId)
+  const rows = await fetchContacts(session.user.organizationId, scopeWhere(session.user))
   return rows.map(mapContact)
 }
 
@@ -76,8 +90,9 @@ export async function getContactsPage(query: ContactQuery = {}): Promise<Contact
   const sortDir = query.sortDir ?? 'desc'
   const search = query.search?.trim()
 
-  const where = {
+  const where: Prisma.ContactWhereInput = {
     organizationId: session.user.organizationId,
+    ...scopeWhere(session.user),
     ...(query.status ? { status: query.status } : {}),
     ...(search
       ? {
@@ -126,11 +141,11 @@ export interface ContactDetail extends Contact {
   mobile: string
 }
 
-/** Full record for the contact detail page, org-scoped. Returns null if not found or not in this org. */
+/** Full record for the contact detail page, org- and scope-restricted. Returns null if not found, not in this org, or outside the caller's visibility scope. */
 export async function getContactById(id: string): Promise<ContactDetail | null> {
   const session = await requireApiSession()
   const row = await prisma.contact.findFirst({
-    where: { id, organizationId: session.user.organizationId },
+    where: { id, organizationId: session.user.organizationId, ...scopeWhere(session.user) },
     include: { owner: { select: { name: true } }, company: { select: { name: true } } },
   })
   if (!row) return null

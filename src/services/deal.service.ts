@@ -2,6 +2,20 @@ import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import type { Deal, DealStage } from '@/types/crm'
+import { getRecordScope } from '@/lib/record-scope'
+import type { Session } from '@/lib/auth'
+import type { Prisma } from '@/generated/prisma'
+
+/** See lib/record-scope.ts — the base "deals.view" permission only
+ * gates page access, not which rows come back. This adds that filter. */
+function scopeWhere(user: Session['user']): Prisma.DealWhereInput {
+  const scope = getRecordScope(user)
+  if (scope === 'ALL') return {}
+  if (scope === 'DEPARTMENT' && user.department?.id) {
+    return { owner: { departmentId: user.department.id } }
+  }
+  return { ownerId: user.id }
+}
 
 function toInitials(name: string): string {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -9,10 +23,11 @@ function toInitials(name: string): string {
 
 type DealRow = Awaited<ReturnType<typeof fetchDeals>>[number]
 
-async function fetchDeals(organizationId: string, search?: string) {
+async function fetchDeals(organizationId: string, scopeFilter: Prisma.DealWhereInput, search?: string) {
   return prisma.deal.findMany({
     where: {
       organizationId,
+      ...scopeFilter,
       ...(search
         ? {
             OR: [
@@ -62,7 +77,7 @@ function mapDeal(row: DealRow): Deal {
  */
 export async function getDeals(search?: string): Promise<Deal[]> {
   const session = await requireApiSession()
-  const rows = await fetchDeals(session.user.organizationId, search)
+  const rows = await fetchDeals(session.user.organizationId, scopeWhere(session.user), search)
   return rows.map(mapDeal)
 }
 
@@ -73,11 +88,11 @@ export interface DealDetail extends Deal {
   notes: string
 }
 
-/** Full record for the deal detail page, org-scoped. Returns null if not found or not in this org. */
+/** Full record for the deal detail page, org- and scope-restricted. Returns null if not found, not in this org, or outside the caller's visibility scope. */
 export async function getDealById(id: string): Promise<DealDetail | null> {
   const session = await requireApiSession()
   const row = await prisma.deal.findFirst({
-    where: { id, organizationId: session.user.organizationId },
+    where: { id, organizationId: session.user.organizationId, ...scopeWhere(session.user) },
     include: {
       owner: { select: { name: true } },
       company: { select: { name: true } },

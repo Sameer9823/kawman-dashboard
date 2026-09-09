@@ -2,6 +2,20 @@ import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import type { Company } from '@/types/crm'
+import { getRecordScope } from '@/lib/record-scope'
+import type { Session } from '@/lib/auth'
+import type { Prisma } from '@/generated/prisma'
+
+/** See lib/record-scope.ts — the base "companies.view" permission only
+ * gates page access, not which rows come back. This adds that filter. */
+function scopeWhere(user: Session['user']): Prisma.CompanyWhereInput {
+  const scope = getRecordScope(user)
+  if (scope === 'ALL') return {}
+  if (scope === 'DEPARTMENT' && user.department?.id) {
+    return { owner: { departmentId: user.department.id } }
+  }
+  return { ownerId: user.id }
+}
 
 function toInitials(name: string): string {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -9,9 +23,9 @@ function toInitials(name: string): string {
 
 type CompanyRow = Awaited<ReturnType<typeof fetchCompanies>>[number]
 
-async function fetchCompanies(organizationId: string) {
+async function fetchCompanies(organizationId: string, scopeFilter: Prisma.CompanyWhereInput) {
   return prisma.company.findMany({
-    where: { organizationId },
+    where: { organizationId, ...scopeFilter },
     include: { owner: { select: { name: true } } },
     orderBy: { createdAt: 'desc' },
   })
@@ -38,7 +52,7 @@ function mapCompany(row: CompanyRow): Company {
 
 export async function getCompanies(): Promise<Company[]> {
   const session = await requireApiSession()
-  const rows = await fetchCompanies(session.user.organizationId)
+  const rows = await fetchCompanies(session.user.organizationId, scopeWhere(session.user))
   return rows.map(mapCompany)
 }
 
@@ -82,8 +96,9 @@ export async function getCompaniesPage(query: CompanyQuery = {}): Promise<Compan
   const sortDir = query.sortDir ?? 'desc'
   const search = query.search?.trim()
 
-  const where = {
+  const where: Prisma.CompanyWhereInput = {
     organizationId: session.user.organizationId,
+    ...scopeWhere(session.user),
     ...(query.status ? { status: query.status } : {}),
     ...(search
       ? {
@@ -130,11 +145,11 @@ export interface CompanyDetail extends Company {
   ownerId: string
 }
 
-/** Full record for the company detail page, org-scoped. Returns null if not found or not in this org. */
+/** Full record for the company detail page, org- and scope-restricted. Returns null if not found, not in this org, or outside the caller's visibility scope. */
 export async function getCompanyById(id: string): Promise<CompanyDetail | null> {
   const session = await requireApiSession()
   const row = await prisma.company.findFirst({
-    where: { id, organizationId: session.user.organizationId },
+    where: { id, organizationId: session.user.organizationId, ...scopeWhere(session.user) },
     include: { owner: { select: { name: true } } },
   })
   if (!row) return null

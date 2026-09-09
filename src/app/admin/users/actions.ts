@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { hashPassword } from 'better-auth/crypto'
+import { createLocalAccountIssuer } from '@better-auth/core/db'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { logAudit } from '@/lib/audit-log'
@@ -83,7 +84,21 @@ export async function createUserAction(_prev: UserFormState, formData: FormData)
     },
   })
   await prisma.account.create({
-    data: { userId: newUser.id, accountId: newUser.id, providerId: 'credential', password: passwordHash },
+    data: {
+      userId: newUser.id,
+      accountId: newUser.id,
+      providerId: 'credential',
+      // better-auth's sign-in handler only matches a credential account
+      // when BOTH providerId === 'credential' AND issuer === this exact
+      // value (see node_modules/better-auth/dist/api/routes/sign-in.mjs).
+      // The normal self-signup path sets this automatically via
+      // internalAdapter.createAccount(); this manual admin-created path
+      // was skipping it, so `issuer` stayed null and login always fell
+      // through to "Invalid email or password" no matter how correct the
+      // temp password was.
+      issuer: createLocalAccountIssuer('credential'),
+      password: passwordHash,
+    },
   })
   await prisma.userRole.create({ data: { userId: newUser.id, roleId: role.id } })
 

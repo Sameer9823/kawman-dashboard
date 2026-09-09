@@ -4,6 +4,24 @@ import { requireApiSession } from '@/lib/session'
 import type { Lead, LeadStatus } from '@/types/crm'
 import { calculateLeadScore, type LeadScoreResult } from '@/lib/lead-scoring'
 import type { Prisma } from '@/generated/prisma'
+import { getRecordScope } from '@/lib/record-scope'
+import type { Session } from '@/lib/auth'
+
+/**
+ * Adds the visibility scope on top of the organizationId filter every
+ * query already has. Without this, any role with the base "leads.view"
+ * permission (SALES_EXECUTIVE, MARKETING, VIEWER, ...) would see every
+ * lead in the org — the base permission only gates page/action access,
+ * not which rows come back. See lib/record-scope.ts.
+ */
+function scopeWhere(user: Session['user']): Prisma.LeadWhereInput {
+  const scope = getRecordScope(user)
+  if (scope === 'ALL') return {}
+  if (scope === 'DEPARTMENT' && user.department?.id) {
+    return { owner: { departmentId: user.department.id } }
+  }
+  return { ownerId: user.id }
+}
 
 function toInitials(name: string): string {
   return name
@@ -16,9 +34,9 @@ function toInitials(name: string): string {
 
 type LeadWithOwner = Awaited<ReturnType<typeof fetchLeads>>[number]
 
-async function fetchLeads(organizationId: string) {
+async function fetchLeads(organizationId: string, scopeFilter: Prisma.LeadWhereInput) {
   return prisma.lead.findMany({
-    where: { organizationId },
+    where: { organizationId, ...scopeFilter },
     include: { owner: { select: { name: true } }, companyRef: { select: { name: true } } },
     orderBy: { createdAt: 'desc' },
   })
@@ -45,7 +63,7 @@ function mapLead(row: LeadWithOwner): Lead {
 /** Scoped strictly to the current session's organization — never trust a caller-supplied org id. */
 export async function getLeads(): Promise<Lead[]> {
   const session = await requireApiSession()
-  const rows = await fetchLeads(session.user.organizationId)
+  const rows = await fetchLeads(session.user.organizationId, scopeWhere(session.user))
   return rows.map(mapLead)
 }
 
@@ -92,8 +110,9 @@ export async function getLeadsPage(query: LeadQuery = {}): Promise<LeadPage> {
   const sortDir = query.sortDir ?? 'desc'
   const search = query.search?.trim()
 
-  const where = {
+  const where: Prisma.LeadWhereInput = {
     organizationId: session.user.organizationId,
+    ...scopeWhere(session.user),
     ...(query.status ? { status: query.status } : {}),
     ...(search
       ? {
@@ -130,7 +149,7 @@ export async function getLeadsPage(query: LeadQuery = {}): Promise<LeadPage> {
 export async function getLeadById(id: string): Promise<Lead | null> {
   const session = await requireApiSession()
   const row = await prisma.lead.findFirst({
-    where: { id, organizationId: session.user.organizationId },
+    where: { id, organizationId: session.user.organizationId, ...scopeWhere(session.user) },
     include: { owner: { select: { name: true } }, companyRef: { select: { name: true } } },
   })
   return row ? mapLead(row) : null

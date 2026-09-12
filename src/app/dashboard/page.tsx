@@ -1,4 +1,6 @@
 import { MainLayout } from '@/components/layout'
+import { Suspense } from 'react'
+import { ForbiddenBanner } from '@/components/dashboard/forbidden-banner'
 import { KpiCard } from '@/components/dashboard/kpi-card'
 import { PipelineCard } from '@/components/dashboard/pipeline-card'
 import { AIInsightCard } from '@/components/dashboard/ai-insight-card'
@@ -23,6 +25,9 @@ export default async function DashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-6 animate-in">
+        <Suspense fallback={null}>
+          <ForbiddenBanner />
+        </Suspense>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-white flex items-center gap-2">

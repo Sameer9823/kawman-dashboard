@@ -99,18 +99,50 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const windowStart = daysAgo(SPARKLINE_DAYS - 1)
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
 
+  // Neon pooled endpoint has limited connections — firing 20 parallel queries
+  // against a 10-connection pool causes ETIMEDOUTs that surface as
+  // PrismaClientKnownRequestError {code: ETIMEDOUT} and AggregateError
+  // "object null is not iterable" (see client.js:15). Batch in groups and
+  // degrade gracefully so one slow query never crashes the whole dashboard.
+  function safe<T>(p: Promise<T>, fallback: unknown): Promise<T> {
+    return p.catch((err) => {
+      console.error('[dashboard] query failed, using fallback:', (err as Error)?.message?.slice(0, 200))
+      return fallback as T
+    })
+  }
+
   const [
     totalLeadsCount,
     activeDealsCount,
     todaysVisitsCount,
     followUpsDueCount,
     wonDealsThisMonth,
+  ] = await Promise.all([
+    safe(prisma.lead.count({ where: { organizationId } }), 0),
+    safe(prisma.deal.count({ where: { organizationId, stage: { notIn: ['WON', 'LOST'] } } }), 0),
+    safe(prisma.fieldVisit.count({ where: { organizationId, scheduledAt: { gte: today, lt: tomorrow } } }), 0),
+    safe(prisma.followUp.count({ where: { organizationId, status: { in: ['PENDING', 'OVERDUE'] }, dueDate: { lt: tomorrow } } }), 0),
+    safe(prisma.deal.aggregate({ where: { organizationId, stage: 'WON', closedAt: { gte: monthStart } }, _sum: { value: true } }), { _sum: { value: null } } as unknown as Awaited<ReturnType<typeof prisma.deal.aggregate>>),
+  ])
+
+  const [
     leadDates,
     dealDates,
     visitDates,
     followUpDates,
     dealsByStage,
     leadsBySourceUnused,
+  ] = await Promise.all([
+    safe(prisma.lead.findMany({ where: { organizationId, createdAt: { gte: windowStart } }, select: { createdAt: true } }), [] as { createdAt: Date }[]),
+    safe(prisma.deal.findMany({ where: { organizationId, createdAt: { gte: windowStart } }, select: { createdAt: true } }), [] as { createdAt: Date }[]),
+    safe(prisma.fieldVisit.findMany({ where: { organizationId, scheduledAt: { gte: windowStart } }, select: { scheduledAt: true } }), [] as { scheduledAt: Date }[]),
+    safe(prisma.followUp.findMany({ where: { organizationId, createdAt: { gte: windowStart } }, select: { createdAt: true } }), [] as { createdAt: Date }[]),
+    safe(prisma.deal.groupBy({ by: ['stage'], where: { organizationId }, _count: { _all: true }, _sum: { value: true } }), [] as unknown as Awaited<ReturnType<typeof prisma.deal.groupBy>>),
+    safe(prisma.lead.groupBy({ by: ['source'], where: { organizationId }, _count: { _all: true } }), [] as unknown as Awaited<ReturnType<typeof prisma.lead.groupBy>>),
+  ])
+  void leadsBySourceUnused
+
+  const [
     checkedInToday,
     inMeetingNow,
     geoVerifiedToday,
@@ -121,56 +153,34 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     recentActivities,
     fileSizeAgg,
   ] = await Promise.all([
-    prisma.lead.count({ where: { organizationId } }),
-    prisma.deal.count({ where: { organizationId, stage: { notIn: ['WON', 'LOST'] } } }),
-    prisma.fieldVisit.count({ where: { organizationId, scheduledAt: { gte: today, lt: tomorrow } } }),
-    prisma.followUp.count({ where: { organizationId, status: { in: ['PENDING', 'OVERDUE'] }, dueDate: { lt: tomorrow } } }),
-    prisma.deal.aggregate({
-      where: { organizationId, stage: 'WON', closedAt: { gte: monthStart } },
-      _sum: { value: true },
-    }),
-    prisma.lead.findMany({ where: { organizationId, createdAt: { gte: windowStart } }, select: { createdAt: true } }),
-    prisma.deal.findMany({ where: { organizationId, createdAt: { gte: windowStart } }, select: { createdAt: true } }),
-    prisma.fieldVisit.findMany({ where: { organizationId, scheduledAt: { gte: windowStart } }, select: { scheduledAt: true } }),
-    prisma.followUp.findMany({ where: { organizationId, createdAt: { gte: windowStart } }, select: { createdAt: true } }),
-    prisma.deal.groupBy({ by: ['stage'], where: { organizationId }, _count: { _all: true }, _sum: { value: true } }),
-    prisma.lead.groupBy({ by: ['source'], where: { organizationId }, _count: { _all: true } }),
-    prisma.checkIn.count({ where: { visit: { organizationId }, createdAt: { gte: today, lt: tomorrow } } }),
-    prisma.fieldVisit.count({ where: { organizationId, status: 'IN_MEETING' } }),
-    prisma.checkIn.count({ where: { visit: { organizationId }, createdAt: { gte: today, lt: tomorrow }, verificationStatus: 'VERIFIED' } }),
-    prisma.meetingSummary.count({ where: { meeting: { organizationId }, createdAt: { gte: today, lt: tomorrow } } }),
-    prisma.fieldVisit.findMany({
-      where: { organizationId, scheduledAt: { gte: today, lt: tomorrow }, status: { notIn: ['CANCELLED'] } },
-      select: {
-        id: true,
-        status: true,
-        latitude: true,
-        longitude: true,
-        assignee: { select: { name: true } },
-      },
-      take: 20,
-    }),
-    prisma.lead.groupBy({ by: ['source'], where: { organizationId }, _count: { _all: true } }),
-    prisma.followUp.findMany({
-      where: { organizationId, status: 'PENDING' },
-      orderBy: { dueDate: 'asc' },
-      take: 4,
-      include: {
-        owner: { select: { name: true } },
-        company: { select: { name: true } },
-        lead: { select: { company: true } },
-        deal: { include: { company: { select: { name: true } } } },
-      },
-    }),
-    prisma.activity.findMany({
-      where: { organizationId },
-      orderBy: { createdAt: 'desc' },
-      take: 6,
-      include: { actor: { select: { name: true } }, lead: true, company: true, deal: true },
-    }),
-    prisma.file.aggregate({ where: { organizationId }, _sum: { fileSize: true } }),
+    safe(prisma.checkIn.count({ where: { visit: { organizationId }, createdAt: { gte: today, lt: tomorrow } } }), 0),
+    safe(prisma.fieldVisit.count({ where: { organizationId, status: 'IN_MEETING' } }), 0),
+    safe(prisma.checkIn.count({ where: { visit: { organizationId }, createdAt: { gte: today, lt: tomorrow }, verificationStatus: 'VERIFIED' } }), 0),
+    safe(prisma.meetingSummary.count({ where: { meeting: { organizationId }, createdAt: { gte: today, lt: tomorrow } } }), 0),
+    safe(
+      prisma.fieldVisit.findMany({
+        where: { organizationId, scheduledAt: { gte: today, lt: tomorrow }, status: { notIn: ['CANCELLED'] } },
+        select: { id: true, status: true, latitude: true, longitude: true, assignee: { select: { name: true } } },
+        take: 20,
+      }),
+      [] as unknown as Awaited<ReturnType<typeof prisma.fieldVisit.findMany>>,
+    ),
+    safe(prisma.lead.groupBy({ by: ['source'], where: { organizationId }, _count: { _all: true } }), [] as unknown as Awaited<ReturnType<typeof prisma.lead.groupBy>>),
+    safe(
+      prisma.followUp.findMany({
+        where: { organizationId, status: 'PENDING' },
+        orderBy: { dueDate: 'asc' },
+        take: 4,
+        include: { owner: { select: { name: true } }, company: { select: { name: true } }, lead: { select: { company: true } }, deal: { include: { company: { select: { name: true } } } } },
+      }),
+      [] as unknown as Awaited<ReturnType<typeof prisma.followUp.findMany>>,
+    ),
+    safe(
+      prisma.activity.findMany({ where: { organizationId }, orderBy: { createdAt: 'desc' }, take: 6, include: { actor: { select: { name: true } }, lead: true, company: true, deal: true } }),
+      [] as unknown as Awaited<ReturnType<typeof prisma.activity.findMany>>,
+    ),
+    safe(prisma.file.aggregate({ where: { organizationId }, _sum: { fileSize: true } }), { _sum: { fileSize: null } } as unknown as Awaited<ReturnType<typeof prisma.file.aggregate>>),
   ])
-  void leadsBySourceUnused
 
   const leadTrend = bucketCounts(leadDates.map((r) => r.createdAt))
   const dealTrend = bucketCounts(dealDates.map((r) => r.createdAt))
@@ -178,10 +188,12 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const followUpTrend = bucketCounts(followUpDates.map((r) => r.createdAt))
 
   // Won-value trend needs the raw rows (already summed above for the KPI number).
-  const wonDealRows = await prisma.deal.findMany({
-    where: { organizationId, stage: 'WON', closedAt: { gte: windowStart } },
-    select: { closedAt: true, value: true },
-  })
+  const wonDealRows = await prisma.deal
+    .findMany({ where: { organizationId, stage: 'WON', closedAt: { gte: windowStart } }, select: { closedAt: true, value: true } })
+    .catch((err) => {
+      console.error('[dashboard] wonTrend query failed:', (err as Error)?.message?.slice(0, 200))
+      return [] as { closedAt: Date | null; value: unknown }[]
+    })
   const wonTrend = bucketSums(
     wonDealRows.filter((r) => r.closedAt).map((r) => ({ date: r.closedAt as Date, amount: Number(r.value) }))
   )
@@ -221,17 +233,11 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   // see services/ai.service.ts for that upgrade path).
   const [highPriorityLeadsCount, stuckDeals, topOpenDeal, meetingsCompletedToday, followUpsDueTodayCount] =
     await Promise.all([
-      prisma.lead.count({ where: { organizationId, score: { gte: 80 }, status: { notIn: ['WON', 'LOST'] } } }),
-      prisma.deal.count({
-        where: { organizationId, stage: 'NEGOTIATION', updatedAt: { lt: daysAgo(15) } },
-      }),
-      prisma.deal.findFirst({
-        where: { organizationId, stage: { notIn: ['WON', 'LOST'] } },
-        orderBy: { value: 'desc' },
-        include: { company: { select: { name: true } } },
-      }),
-      prisma.meeting.count({ where: { organizationId, status: 'COMPLETED', updatedAt: { gte: today, lt: tomorrow } } }),
-      prisma.followUp.count({ where: { organizationId, status: 'PENDING', dueDate: { gte: today, lt: tomorrow } } }),
+      prisma.lead.count({ where: { organizationId, score: { gte: 80 }, status: { notIn: ['WON', 'LOST'] } } }).catch(() => 0),
+      prisma.deal.count({ where: { organizationId, stage: 'NEGOTIATION', updatedAt: { lt: daysAgo(15) } } }).catch(() => 0),
+      prisma.deal.findFirst({ where: { organizationId, stage: { notIn: ['WON', 'LOST'] } }, orderBy: { value: 'desc' }, include: { company: { select: { name: true } } } }).catch(() => null),
+      prisma.meeting.count({ where: { organizationId, status: 'COMPLETED', updatedAt: { gte: today, lt: tomorrow } } }).catch(() => 0),
+      prisma.followUp.count({ where: { organizationId, status: 'PENDING', dueDate: { gte: today, lt: tomorrow } } }).catch(() => 0),
     ])
 
   return {

@@ -1,5 +1,4 @@
 
-<<<<<<< HEAD
 Next.js 16.3.3 (App Router) + TypeScript + Tailwind v4 + Prisma 7 + Neon Postgres + better-auth. Full enterprise workspace: CRM, field sales, document management, meetings, AI intelligence, and team management.
 
 ## Status

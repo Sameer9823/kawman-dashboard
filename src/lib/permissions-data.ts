@@ -83,7 +83,6 @@ export const ROLE_PERMISSIONS: Record<string, PermissionKey[]> = {
     'audit_logs.view',
   ],
   MANAGER: [
-    'dashboard.view',
     'users.view',
     'files.view', 'files.upload', 'files.download', 'files.share',
     'leads.view', 'leads.create', 'leads.update', 'leads.export',
@@ -98,7 +97,6 @@ export const ROLE_PERMISSIONS: Record<string, PermissionKey[]> = {
     'settings.view',
   ],
   SALES_MANAGER: [
-    'dashboard.view',
     'files.view', 'files.upload', 'files.download', 'files.share',
     'leads.view', 'leads.create', 'leads.update', 'leads.export',
     'companies.view', 'companies.create', 'companies.update',
@@ -111,7 +109,6 @@ export const ROLE_PERMISSIONS: Record<string, PermissionKey[]> = {
     'ai.use',
   ],
   SALES_EXECUTIVE: [
-    'dashboard.view',
     'files.view', 'files.upload', 'files.download',
     'leads.view', 'leads.create', 'leads.update',
     'companies.view', 'companies.create', 'companies.update',
@@ -124,7 +121,6 @@ export const ROLE_PERMISSIONS: Record<string, PermissionKey[]> = {
     'ai.use',
   ],
   MARKETING: [
-    'dashboard.view',
     'files.view', 'files.upload', 'files.download',
     'leads.view', 'leads.create', 'leads.update',
     'companies.view', 'companies.create', 'companies.update',
@@ -133,7 +129,6 @@ export const ROLE_PERMISSIONS: Record<string, PermissionKey[]> = {
     'ai.use',
   ],
   HR: [
-    'dashboard.view',
     'users.view',
     'team.view', 'team.view_all',
     'reports.view_all',
@@ -141,12 +136,10 @@ export const ROLE_PERMISSIONS: Record<string, PermissionKey[]> = {
     'settings.view',
   ],
   FINANCE: [
-    'dashboard.view',
     'files.view', 'files.download',
     'reports.view', 'reports.export',
   ],
   VIEWER: [
-    'dashboard.view',
     'team.view',
     'files.view', 'files.download',
     'leads.view',

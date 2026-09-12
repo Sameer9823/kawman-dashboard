@@ -66,7 +66,8 @@ interface NavGroup {
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    items: [{ name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard }],
+    requiresAnyPermission: ['dashboard.view'],
+    items: [{ name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, permission: 'dashboard.view' }],
   },
   {
     label: 'Document Management',
@@ -93,7 +94,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'CRM & Sales',
     badge: 'New',
     items: [
-      { name: 'CRM Dashboard', href: '/crm', icon: LayoutDashboard },
+      { name: 'CRM Dashboard', href: '/crm', icon: LayoutDashboard, permission: 'dashboard.view' },
       { name: 'Leads', href: '/leads', icon: Target },
       { name: 'Companies', href: '/companies', icon: Building2 },
       { name: 'Contacts', href: '/contacts', icon: User },
@@ -183,11 +184,16 @@ function NavLink({ item, collapsed }: { item: NavLeaf; collapsed: boolean }) {
 
 export function Sidebar() {
   const { sidebarCollapsed, toggleSidebar } = useUIStore()
-  const { hasAnyPermission } = usePermissions()
+  const { hasPermission, hasAnyPermission } = usePermissions()
 
   const visibleGroups = NAV_GROUPS.filter(
     (group) => !group.requiresAnyPermission || hasAnyPermission(group.requiresAnyPermission)
   )
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.permission || hasPermission(item.permission)),
+    }))
+    .filter((group) => group.items.length > 0)
 
   return (
     <aside

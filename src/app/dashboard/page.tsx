@@ -1,6 +1,7 @@
 import { MainLayout } from '@/components/layout'
 import { Suspense } from 'react'
 import { ForbiddenBanner } from '@/components/dashboard/forbidden-banner'
+import { DashboardGate } from '@/components/dashboard/dashboard-gate'
 import { KpiCard } from '@/components/dashboard/kpi-card'
 import { PipelineCard } from '@/components/dashboard/pipeline-card'
 import { AIInsightCard } from '@/components/dashboard/ai-insight-card'
@@ -14,12 +15,28 @@ import { Button } from '@/components/ui/button'
 import { ClipboardCheck } from 'lucide-react'
 import { NewActionDropdown } from '@/components/dashboard/new-action-dropdown'
 import { getDashboardMetrics } from '@/services/dashboard.service'
+import { getSession } from '@/lib/session'
 
 export const metadata = {
   title: 'Dashboard | Kawman ExAct',
 }
 
 export default async function DashboardPage() {
+  const session = await getSession()
+  const hasDashboardAccess = ((session?.user.permissions as string[] | undefined) ?? []).includes('dashboard.view')
+  if (!hasDashboardAccess) {
+    return (
+      <MainLayout>
+        <div className="space-y-6 animate-in">
+          <Suspense fallback={null}>
+            <ForbiddenBanner />
+          </Suspense>
+          <DashboardGate />
+        </div>
+      </MainLayout>
+    )
+  }
+
   const metrics = await getDashboardMetrics()
 
   return (

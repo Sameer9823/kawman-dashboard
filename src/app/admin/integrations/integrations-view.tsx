@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/utils'
 import type { IntegrationItem } from '@/services/integration.service'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { createIntegrationAction, toggleIntegrationAction, deleteIntegrationAction, type IntegrationFormState } from './actions'
 
 type IntegrationType = { type: string; label: string; description: string }
@@ -50,6 +51,7 @@ export function IntegrationsView({
 
 function IntegrationRow({ integration }: { integration: IntegrationItem }) {
   const [pending, startTransition] = useTransition()
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   return (
     <div className="flex items-center gap-3 p-4">
@@ -75,16 +77,23 @@ function IntegrationRow({ integration }: { integration: IntegrationItem }) {
         {integration.isActive ? 'Pause' : 'Activate'}
       </button>
       <button
-        onClick={() => {
-          if (!window.confirm(`Remove "${integration.name}"?`)) return
-          startTransition(() => deleteIntegrationAction(integration.id))
-        }}
+        onClick={() => setConfirmOpen(true)}
         disabled={pending}
         className="h-7 w-7 shrink-0 rounded-lg flex items-center justify-center text-white/30 hover:text-red-400 transition-colors"
         title="Remove"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </button>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={`Remove "${integration.name}"?`}
+        description="This will disconnect the integration."
+        confirmLabel="Remove"
+        variant="destructive"
+        loading={pending}
+        onConfirm={() => startTransition(() => deleteIntegrationAction(integration.id))}
+      />
     </div>
   )
 }

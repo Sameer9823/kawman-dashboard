@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { X, Loader2, History, Download, RotateCcw, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatBytes, formatDateTime } from '@/lib/utils'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { listFileVersionsAction, restoreFileVersionAction } from '@/app/files/actions'
 import type { FileVersionItem } from '@/services/file.service'
 
@@ -53,8 +54,9 @@ export function VersionHistoryDialog({
     }
   }
 
+  const [confirmVersionId, setConfirmVersionId] = useState<string | null>(null)
+
   function handleRestore(versionId: string) {
-    if (!window.confirm('Restore this version? The current content will be saved as a new version so you can undo.')) return
     startTransition(async () => {
       const result = await restoreFileVersionAction(fileId, versionId)
       if (result.error) setError(result.error)
@@ -123,7 +125,7 @@ export function VersionHistoryDialog({
                   </a>
                   {!v.isCurrent && (
                     <button
-                      onClick={() => handleRestore(v.id)}
+                      onClick={() => setConfirmVersionId(v.id)}
                       disabled={pending}
                       className="h-7 w-7 rounded-md flex items-center justify-center text-white/40 hover:text-purple-400 hover:bg-white/10 transition-colors"
                       title="Restore this version"
@@ -139,6 +141,15 @@ export function VersionHistoryDialog({
 
         {error && <p className="text-xs text-red-400 mt-3">{error}</p>}
       </div>
+      <ConfirmDialog
+        open={!!confirmVersionId}
+        onOpenChange={(o) => !o && setConfirmVersionId(null)}
+        title="Restore this version?"
+        description="The current content will be saved as a new version so you can undo."
+        confirmLabel="Restore"
+        onConfirm={() => confirmVersionId && handleRestore(confirmVersionId)}
+        loading={pending}
+      />
     </div>
   )
 }

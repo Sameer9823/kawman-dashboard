@@ -13,6 +13,7 @@ import type { Lead, LeadStatus } from '@/types/crm'
 import type { LeadPage, LeadSortKey } from '@/services/lead.service'
 import type { UserOption } from '@/services/user.service'
 import { bulkDeleteLeadsAction, bulkUpdateLeadStatusAction, bulkReassignLeadsAction } from '@/app/leads/actions'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { SavedViewsMenu } from '@/components/crm/saved-views-menu'
 
 const STATUS_VARIANT: Record<LeadStatus, BadgeVariant> = {
@@ -292,6 +293,7 @@ function BulkActionBar({
 }) {
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   function run(action: () => Promise<{ error?: string; updated?: number }>) {
     setError(null)
@@ -352,10 +354,7 @@ function BulkActionBar({
         size="sm"
         disabled={pending}
         className="gap-1.5"
-        onClick={() => {
-          if (!window.confirm(`Delete ${selectedIds.length} lead(s)? This cannot be undone.`)) return
-          run(() => bulkDeleteLeadsAction(selectedIds))
-        }}
+        onClick={() => setConfirmOpen(true)}
       >
         <Trash2 className="h-3.5 w-3.5" />
         Delete
@@ -371,6 +370,16 @@ function BulkActionBar({
       >
         <X className="h-3.5 w-3.5" /> Clear
       </button>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={`Delete ${selectedIds.length} lead(s)?`}
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={pending}
+        onConfirm={() => run(() => bulkDeleteLeadsAction(selectedIds))}
+      />
     </div>
   )
 }

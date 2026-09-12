@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Plus, Check, X, AlertTriangle } from 'lucide-react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge, type BadgeVariant } from '@/components/ui/badge'
@@ -78,6 +79,7 @@ export function FollowUpsView({
 
 function FollowUpRowItem({ followUp }: { followUp: FollowUpRow }) {
   const [pending, startTransition] = useTransition()
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   return (
     <div className="flex items-start gap-3 p-4">
@@ -128,16 +130,23 @@ function FollowUpRowItem({ followUp }: { followUp: FollowUpRow }) {
       </div>
 
       <button
-        onClick={() => {
-          if (!window.confirm('Delete this follow-up?')) return
-          startTransition(() => deleteFollowUpAction(followUp.id))
-        }}
+        onClick={() => setConfirmOpen(true)}
         disabled={pending}
         className="h-7 w-7 shrink-0 rounded-lg flex items-center justify-center text-white/30 hover:text-red-400 transition-colors"
         title="Delete"
       >
         <X className="h-3.5 w-3.5" />
       </button>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Delete this follow-up?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={pending}
+        onConfirm={() => startTransition(() => deleteFollowUpAction(followUp.id))}
+      />
     </div>
   )
 }

@@ -71,6 +71,7 @@ export function CompaniesTable({ result }: { result: CompanyPage }) {
     updateParams({ page: String(page) })
   }
 
+  const hasActiveFilters = Boolean(searchParams.get('q')?.trim() || (searchParams.get('status') && searchParams.get('status') !== 'ALL'))
   const { companies, total, page, pageCount } = result
   const rangeStart = total === 0 ? 0 : (page - 1) * result.pageSize + 1
   const rangeEnd = Math.min(page * result.pageSize, total)
@@ -101,7 +102,7 @@ export function CompaniesTable({ result }: { result: CompanyPage }) {
         </span>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-white/40 text-xs uppercase tracking-wide border-b border-white/[0.06]">
@@ -153,13 +154,61 @@ export function CompaniesTable({ result }: { result: CompanyPage }) {
             ))}
             {companies.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-white/40">
-                  No companies match your filters.
+                <td colSpan={8} className="px-4 py-10 text-center">
+                  {hasActiveFilters ? (
+                    <span className="text-white/40">No companies match your filters.</span>
+                  ) : (
+                    <span className="flex flex-col items-center gap-3">
+                      <span className="text-white/40">No companies yet.</span>
+                      <Link
+                        href="/companies/new"
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-500 transition-colors"
+                      >
+                        Create your first company
+                      </Link>
+                    </span>
+                  )}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile card view */}
+      <div className="md:hidden divide-y divide-white/[0.04]">
+        {companies.map((company) => (
+          <div key={company.id} className="p-4 space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <Link href={`/companies/${company.id}`} className="text-sm font-medium text-white hover:text-purple-300 truncate">
+                {company.name}
+              </Link>
+              <Badge variant={company.status === 'ACTIVE' ? 'success' : 'neutral'}>{company.status === 'ACTIVE' ? 'Active' : 'Inactive'}</Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+              <span className="text-white/35">Industry</span><span className="text-white/70 text-right truncate">{company.industry || '—'}</span>
+              <span className="text-white/35">Location</span><span className="text-white/60 text-right truncate">{company.city ? `${company.city}, ${company.state}` : '—'}</span>
+              <span className="text-white/35">Employees</span><span className="text-white/70 text-right">{company.employees ?? '—'}</span>
+              <span className="text-white/35">Revenue</span><span className="text-white font-medium text-right">{formatCurrency(company.revenue)}</span>
+              <span className="text-white/35">Owner</span><span className="text-white/70 text-right truncate">{company.owner}</span>
+            </div>
+            <div className="flex justify-end pt-1">
+              <DeleteRowButton action={deleteCompanyAction.bind(null, company.id)} confirmLabel={`Delete ${company.name}? This also removes its contacts and deals.`} />
+            </div>
+          </div>
+        ))}
+        {companies.length === 0 && (
+          <div className="px-4 py-10 text-center">
+            {hasActiveFilters ? (
+              <span className="text-sm text-white/40">No companies match your filters.</span>
+            ) : (
+              <span className="flex flex-col items-center gap-3">
+                <span className="text-sm text-white/40">No companies yet.</span>
+                <Link href="/companies/new" className="inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-500 transition-colors">Create your first company</Link>
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {pageCount > 1 && (

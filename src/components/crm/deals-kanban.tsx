@@ -54,6 +54,7 @@ export function DealsKanban({ deals: initialDeals }: { deals: Deal[] }) {
   // through would defeat. Search still narrows what's fetched from the
   // DB server-side (see services/deal.service.ts#getDeals), it just
   // doesn't page the result.
+  const hasActiveFilters = Boolean(searchParams.get('q')?.trim())
   const [query, setQuery] = useState(searchParams.get('q') ?? '')
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [, startSearchTransition] = useTransition()
@@ -119,6 +120,18 @@ export function DealsKanban({ deals: initialDeals }: { deals: Deal[] }) {
           className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] pl-9 pr-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
         />
       </div>
+      {deals.length === 0 && (
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-10 text-center">
+          {hasActiveFilters ? (
+            <span className="text-sm text-white/40">No deals match your search.</span>
+          ) : (
+            <span className="flex flex-col items-center gap-3">
+              <span className="text-sm text-white/40">No deals yet.</span>
+              <Link href="/deals/new" className="inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-500 transition-colors">Create your first deal</Link>
+            </span>
+          )}
+        </div>
+      )}
       <div className="flex gap-4 overflow-x-auto pb-2">
       {STAGES.map((stage) => {
         const stageDeals = byStage.get(stage.id) ?? []

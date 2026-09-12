@@ -2,23 +2,15 @@ import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import type { Company } from '@/types/crm'
-import { getRecordScope } from '@/lib/record-scope'
 import type { Session } from '@/lib/auth'
 import type { Prisma } from '@/generated/prisma'
+import { ownerScopeWhere } from '@/lib/record-scope-helpers'
+import { toInitials } from '@/lib/utils'
 
 /** See lib/record-scope.ts — the base "companies.view" permission only
  * gates page access, not which rows come back. This adds that filter. */
 function scopeWhere(user: Session['user']): Prisma.CompanyWhereInput {
-  const scope = getRecordScope(user)
-  if (scope === 'ALL') return {}
-  if (scope === 'DEPARTMENT' && user.department?.id) {
-    return { owner: { departmentId: user.department.id } }
-  }
-  return { ownerId: user.id }
-}
-
-function toInitials(name: string): string {
-  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+  return ownerScopeWhere<Prisma.CompanyWhereInput>(user)
 }
 
 type CompanyRow = Awaited<ReturnType<typeof fetchCompanies>>[number]

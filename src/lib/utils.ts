@@ -63,6 +63,8 @@ export function getInitials(name: string): string {
     .slice(0, 2)
 }
 
+export const toInitials = getInitials
+
 export function truncate(str: string, length: number): string {
   if (str.length <= length) return str
   return str.slice(0, length) + '...'

@@ -32780,7 +32780,7 @@ export namespace Prisma {
     mobile: string | null
     status: string
     organizationId: string
-    companyId: string
+    companyId: string | null
     ownerId: string
     createdAt: Date
     updatedAt: Date
@@ -32819,7 +32819,7 @@ export namespace Prisma {
     updatedAt?: boolean
     lastActivityAt?: boolean
     activities?: boolean | Contact$activitiesArgs<ExtArgs>
-    company?: boolean | CompanyDefaultArgs<ExtArgs>
+    company?: boolean | Contact$companyArgs<ExtArgs>
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     owner?: boolean | UserDefaultArgs<ExtArgs>
     deals?: boolean | Contact$dealsArgs<ExtArgs>
@@ -32843,7 +32843,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     lastActivityAt?: boolean
-    company?: boolean | CompanyDefaultArgs<ExtArgs>
+    company?: boolean | Contact$companyArgs<ExtArgs>
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     owner?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["contact"]>
@@ -32862,7 +32862,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     lastActivityAt?: boolean
-    company?: boolean | CompanyDefaultArgs<ExtArgs>
+    company?: boolean | Contact$companyArgs<ExtArgs>
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     owner?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["contact"]>
@@ -32886,7 +32886,7 @@ export namespace Prisma {
   export type ContactOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "designation" | "email" | "phone" | "mobile" | "status" | "organizationId" | "companyId" | "ownerId" | "createdAt" | "updatedAt" | "lastActivityAt", ExtArgs["result"]["contact"]>
   export type ContactInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     activities?: boolean | Contact$activitiesArgs<ExtArgs>
-    company?: boolean | CompanyDefaultArgs<ExtArgs>
+    company?: boolean | Contact$companyArgs<ExtArgs>
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     owner?: boolean | UserDefaultArgs<ExtArgs>
     deals?: boolean | Contact$dealsArgs<ExtArgs>
@@ -32896,12 +32896,12 @@ export namespace Prisma {
     _count?: boolean | ContactCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ContactIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    company?: boolean | CompanyDefaultArgs<ExtArgs>
+    company?: boolean | Contact$companyArgs<ExtArgs>
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     owner?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type ContactIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    company?: boolean | CompanyDefaultArgs<ExtArgs>
+    company?: boolean | Contact$companyArgs<ExtArgs>
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     owner?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -32910,7 +32910,7 @@ export namespace Prisma {
     name: "Contact"
     objects: {
       activities: Prisma.$ActivityPayload<ExtArgs>[]
-      company: Prisma.$CompanyPayload<ExtArgs>
+      company: Prisma.$CompanyPayload<ExtArgs> | null
       organization: Prisma.$OrganizationPayload<ExtArgs>
       owner: Prisma.$UserPayload<ExtArgs>
       deals: Prisma.$DealPayload<ExtArgs>[]
@@ -32927,7 +32927,7 @@ export namespace Prisma {
       mobile: string | null
       status: string
       organizationId: string
-      companyId: string
+      companyId: string | null
       ownerId: string
       createdAt: Date
       updatedAt: Date
@@ -33327,7 +33327,7 @@ export namespace Prisma {
   export interface Prisma__ContactClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     activities<T extends Contact$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, Contact$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    company<T extends CompanyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CompanyDefaultArgs<ExtArgs>>): Prisma__CompanyClient<$Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    company<T extends Contact$companyArgs<ExtArgs> = {}>(args?: Subset<T, Contact$companyArgs<ExtArgs>>): Prisma__CompanyClient<$Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     organization<T extends OrganizationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizationDefaultArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     owner<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     deals<T extends Contact$dealsArgs<ExtArgs> = {}>(args?: Subset<T, Contact$dealsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DealPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -33801,6 +33801,25 @@ export namespace Prisma {
   }
 
   /**
+   * Contact.company
+   */
+  export type Contact$companyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Company
+     */
+    select?: CompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Company
+     */
+    omit?: CompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CompanyInclude<ExtArgs> | null
+    where?: CompanyWhereInput
+  }
+
+  /**
    * Contact.deals
    */
   export type Contact$dealsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -34161,7 +34180,7 @@ export namespace Prisma {
     notes: string | null
     organizationId: string
     ownerId: string
-    companyId: string
+    companyId: string | null
     contactId: string | null
     leadId: string | null
     createdAt: Date
@@ -34206,7 +34225,7 @@ export namespace Prisma {
     updatedAt?: boolean
     closedAt?: boolean
     activities?: boolean | Deal$activitiesArgs<ExtArgs>
-    company?: boolean | CompanyDefaultArgs<ExtArgs>
+    company?: boolean | Deal$companyArgs<ExtArgs>
     contact?: boolean | Deal$contactArgs<ExtArgs>
     lead?: boolean | Deal$leadArgs<ExtArgs>
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
@@ -34234,7 +34253,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     closedAt?: boolean
-    company?: boolean | CompanyDefaultArgs<ExtArgs>
+    company?: boolean | Deal$companyArgs<ExtArgs>
     contact?: boolean | Deal$contactArgs<ExtArgs>
     lead?: boolean | Deal$leadArgs<ExtArgs>
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
@@ -34258,7 +34277,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     closedAt?: boolean
-    company?: boolean | CompanyDefaultArgs<ExtArgs>
+    company?: boolean | Deal$companyArgs<ExtArgs>
     contact?: boolean | Deal$contactArgs<ExtArgs>
     lead?: boolean | Deal$leadArgs<ExtArgs>
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
@@ -34287,7 +34306,7 @@ export namespace Prisma {
   export type DealOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "value" | "probability" | "stage" | "expectedClose" | "priority" | "notes" | "organizationId" | "ownerId" | "companyId" | "contactId" | "leadId" | "createdAt" | "updatedAt" | "closedAt", ExtArgs["result"]["deal"]>
   export type DealInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     activities?: boolean | Deal$activitiesArgs<ExtArgs>
-    company?: boolean | CompanyDefaultArgs<ExtArgs>
+    company?: boolean | Deal$companyArgs<ExtArgs>
     contact?: boolean | Deal$contactArgs<ExtArgs>
     lead?: boolean | Deal$leadArgs<ExtArgs>
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
@@ -34298,14 +34317,14 @@ export namespace Prisma {
     _count?: boolean | DealCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DealIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    company?: boolean | CompanyDefaultArgs<ExtArgs>
+    company?: boolean | Deal$companyArgs<ExtArgs>
     contact?: boolean | Deal$contactArgs<ExtArgs>
     lead?: boolean | Deal$leadArgs<ExtArgs>
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     owner?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type DealIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    company?: boolean | CompanyDefaultArgs<ExtArgs>
+    company?: boolean | Deal$companyArgs<ExtArgs>
     contact?: boolean | Deal$contactArgs<ExtArgs>
     lead?: boolean | Deal$leadArgs<ExtArgs>
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
@@ -34316,7 +34335,7 @@ export namespace Prisma {
     name: "Deal"
     objects: {
       activities: Prisma.$ActivityPayload<ExtArgs>[]
-      company: Prisma.$CompanyPayload<ExtArgs>
+      company: Prisma.$CompanyPayload<ExtArgs> | null
       contact: Prisma.$ContactPayload<ExtArgs> | null
       lead: Prisma.$LeadPayload<ExtArgs> | null
       organization: Prisma.$OrganizationPayload<ExtArgs>
@@ -34336,7 +34355,7 @@ export namespace Prisma {
       notes: string | null
       organizationId: string
       ownerId: string
-      companyId: string
+      companyId: string | null
       contactId: string | null
       leadId: string | null
       createdAt: Date
@@ -34737,7 +34756,7 @@ export namespace Prisma {
   export interface Prisma__DealClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     activities<T extends Deal$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, Deal$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    company<T extends CompanyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CompanyDefaultArgs<ExtArgs>>): Prisma__CompanyClient<$Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    company<T extends Deal$companyArgs<ExtArgs> = {}>(args?: Subset<T, Deal$companyArgs<ExtArgs>>): Prisma__CompanyClient<$Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     contact<T extends Deal$contactArgs<ExtArgs> = {}>(args?: Subset<T, Deal$contactArgs<ExtArgs>>): Prisma__ContactClient<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     lead<T extends Deal$leadArgs<ExtArgs> = {}>(args?: Subset<T, Deal$leadArgs<ExtArgs>>): Prisma__LeadClient<$Result.GetResult<Prisma.$LeadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     organization<T extends OrganizationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizationDefaultArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
@@ -35212,6 +35231,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ActivityScalarFieldEnum | ActivityScalarFieldEnum[]
+  }
+
+  /**
+   * Deal.company
+   */
+  export type Deal$companyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Company
+     */
+    select?: CompanySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Company
+     */
+    omit?: CompanyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CompanyInclude<ExtArgs> | null
+    where?: CompanyWhereInput
   }
 
   /**
@@ -61940,13 +61978,13 @@ export namespace Prisma {
     mobile?: StringNullableFilter<"Contact"> | string | null
     status?: StringFilter<"Contact"> | string
     organizationId?: StringFilter<"Contact"> | string
-    companyId?: StringFilter<"Contact"> | string
+    companyId?: StringNullableFilter<"Contact"> | string | null
     ownerId?: StringFilter<"Contact"> | string
     createdAt?: DateTimeFilter<"Contact"> | Date | string
     updatedAt?: DateTimeFilter<"Contact"> | Date | string
     lastActivityAt?: DateTimeNullableFilter<"Contact"> | Date | string | null
     activities?: ActivityListRelationFilter
-    company?: XOR<CompanyScalarRelationFilter, CompanyWhereInput>
+    company?: XOR<CompanyNullableScalarRelationFilter, CompanyWhereInput> | null
     organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
     owner?: XOR<UserScalarRelationFilter, UserWhereInput>
     deals?: DealListRelationFilter
@@ -61964,7 +62002,7 @@ export namespace Prisma {
     mobile?: SortOrderInput | SortOrder
     status?: SortOrder
     organizationId?: SortOrder
-    companyId?: SortOrder
+    companyId?: SortOrderInput | SortOrder
     ownerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -61991,13 +62029,13 @@ export namespace Prisma {
     mobile?: StringNullableFilter<"Contact"> | string | null
     status?: StringFilter<"Contact"> | string
     organizationId?: StringFilter<"Contact"> | string
-    companyId?: StringFilter<"Contact"> | string
+    companyId?: StringNullableFilter<"Contact"> | string | null
     ownerId?: StringFilter<"Contact"> | string
     createdAt?: DateTimeFilter<"Contact"> | Date | string
     updatedAt?: DateTimeFilter<"Contact"> | Date | string
     lastActivityAt?: DateTimeNullableFilter<"Contact"> | Date | string | null
     activities?: ActivityListRelationFilter
-    company?: XOR<CompanyScalarRelationFilter, CompanyWhereInput>
+    company?: XOR<CompanyNullableScalarRelationFilter, CompanyWhereInput> | null
     organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
     owner?: XOR<UserScalarRelationFilter, UserWhereInput>
     deals?: DealListRelationFilter
@@ -62015,7 +62053,7 @@ export namespace Prisma {
     mobile?: SortOrderInput | SortOrder
     status?: SortOrder
     organizationId?: SortOrder
-    companyId?: SortOrder
+    companyId?: SortOrderInput | SortOrder
     ownerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -62037,7 +62075,7 @@ export namespace Prisma {
     mobile?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     status?: StringWithAggregatesFilter<"Contact"> | string
     organizationId?: StringWithAggregatesFilter<"Contact"> | string
-    companyId?: StringWithAggregatesFilter<"Contact"> | string
+    companyId?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     ownerId?: StringWithAggregatesFilter<"Contact"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Contact"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Contact"> | Date | string
@@ -62058,14 +62096,14 @@ export namespace Prisma {
     notes?: StringNullableFilter<"Deal"> | string | null
     organizationId?: StringFilter<"Deal"> | string
     ownerId?: StringFilter<"Deal"> | string
-    companyId?: StringFilter<"Deal"> | string
+    companyId?: StringNullableFilter<"Deal"> | string | null
     contactId?: StringNullableFilter<"Deal"> | string | null
     leadId?: StringNullableFilter<"Deal"> | string | null
     createdAt?: DateTimeFilter<"Deal"> | Date | string
     updatedAt?: DateTimeFilter<"Deal"> | Date | string
     closedAt?: DateTimeNullableFilter<"Deal"> | Date | string | null
     activities?: ActivityListRelationFilter
-    company?: XOR<CompanyScalarRelationFilter, CompanyWhereInput>
+    company?: XOR<CompanyNullableScalarRelationFilter, CompanyWhereInput> | null
     contact?: XOR<ContactNullableScalarRelationFilter, ContactWhereInput> | null
     lead?: XOR<LeadNullableScalarRelationFilter, LeadWhereInput> | null
     organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
@@ -62086,7 +62124,7 @@ export namespace Prisma {
     notes?: SortOrderInput | SortOrder
     organizationId?: SortOrder
     ownerId?: SortOrder
-    companyId?: SortOrder
+    companyId?: SortOrderInput | SortOrder
     contactId?: SortOrderInput | SortOrder
     leadId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -62117,14 +62155,14 @@ export namespace Prisma {
     notes?: StringNullableFilter<"Deal"> | string | null
     organizationId?: StringFilter<"Deal"> | string
     ownerId?: StringFilter<"Deal"> | string
-    companyId?: StringFilter<"Deal"> | string
+    companyId?: StringNullableFilter<"Deal"> | string | null
     contactId?: StringNullableFilter<"Deal"> | string | null
     leadId?: StringNullableFilter<"Deal"> | string | null
     createdAt?: DateTimeFilter<"Deal"> | Date | string
     updatedAt?: DateTimeFilter<"Deal"> | Date | string
     closedAt?: DateTimeNullableFilter<"Deal"> | Date | string | null
     activities?: ActivityListRelationFilter
-    company?: XOR<CompanyScalarRelationFilter, CompanyWhereInput>
+    company?: XOR<CompanyNullableScalarRelationFilter, CompanyWhereInput> | null
     contact?: XOR<ContactNullableScalarRelationFilter, ContactWhereInput> | null
     lead?: XOR<LeadNullableScalarRelationFilter, LeadWhereInput> | null
     organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
@@ -62145,7 +62183,7 @@ export namespace Prisma {
     notes?: SortOrderInput | SortOrder
     organizationId?: SortOrder
     ownerId?: SortOrder
-    companyId?: SortOrder
+    companyId?: SortOrderInput | SortOrder
     contactId?: SortOrderInput | SortOrder
     leadId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -62172,7 +62210,7 @@ export namespace Prisma {
     notes?: StringNullableWithAggregatesFilter<"Deal"> | string | null
     organizationId?: StringWithAggregatesFilter<"Deal"> | string
     ownerId?: StringWithAggregatesFilter<"Deal"> | string
-    companyId?: StringWithAggregatesFilter<"Deal"> | string
+    companyId?: StringNullableWithAggregatesFilter<"Deal"> | string | null
     contactId?: StringNullableWithAggregatesFilter<"Deal"> | string | null
     leadId?: StringNullableWithAggregatesFilter<"Deal"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Deal"> | Date | string
@@ -66078,7 +66116,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutContactInput
-    company: CompanyCreateNestedOneWithoutContactsInput
+    company?: CompanyCreateNestedOneWithoutContactsInput
     organization: OrganizationCreateNestedOneWithoutContactsInput
     owner: UserCreateNestedOneWithoutOwnedContactsInput
     deals?: DealCreateNestedManyWithoutContactInput
@@ -66096,7 +66134,7 @@ export namespace Prisma {
     mobile?: string | null
     status?: string
     organizationId: string
-    companyId: string
+    companyId?: string | null
     ownerId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -66120,7 +66158,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutContactNestedInput
-    company?: CompanyUpdateOneRequiredWithoutContactsNestedInput
+    company?: CompanyUpdateOneWithoutContactsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutContactsNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedContactsNestedInput
     deals?: DealUpdateManyWithoutContactNestedInput
@@ -66138,7 +66176,7 @@ export namespace Prisma {
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66159,7 +66197,7 @@ export namespace Prisma {
     mobile?: string | null
     status?: string
     organizationId: string
-    companyId: string
+    companyId?: string | null
     ownerId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -66188,7 +66226,7 @@ export namespace Prisma {
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66208,7 +66246,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     closedAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutDealInput
-    company: CompanyCreateNestedOneWithoutDealsInput
+    company?: CompanyCreateNestedOneWithoutDealsInput
     contact?: ContactCreateNestedOneWithoutDealsInput
     lead?: LeadCreateNestedOneWithoutDealsInput
     organization: OrganizationCreateNestedOneWithoutDealsInput
@@ -66229,7 +66267,7 @@ export namespace Prisma {
     notes?: string | null
     organizationId: string
     ownerId: string
-    companyId: string
+    companyId?: string | null
     contactId?: string | null
     leadId?: string | null
     createdAt?: Date | string
@@ -66254,7 +66292,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutDealNestedInput
-    company?: CompanyUpdateOneRequiredWithoutDealsNestedInput
+    company?: CompanyUpdateOneWithoutDealsNestedInput
     contact?: ContactUpdateOneWithoutDealsNestedInput
     lead?: LeadUpdateOneWithoutDealsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutDealsNestedInput
@@ -66275,7 +66313,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66298,7 +66336,7 @@ export namespace Prisma {
     notes?: string | null
     organizationId: string
     ownerId: string
-    companyId: string
+    companyId?: string | null
     contactId?: string | null
     leadId?: string | null
     createdAt?: Date | string
@@ -66331,7 +66369,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -69868,11 +69906,6 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type CompanyScalarRelationFilter = {
-    is?: CompanyWhereInput
-    isNot?: CompanyWhereInput
   }
 
   export type ContactCountOrderByAggregateInput = {
@@ -75348,10 +75381,12 @@ export namespace Prisma {
     deleteMany?: ActivityScalarWhereInput | ActivityScalarWhereInput[]
   }
 
-  export type CompanyUpdateOneRequiredWithoutContactsNestedInput = {
+  export type CompanyUpdateOneWithoutContactsNestedInput = {
     create?: XOR<CompanyCreateWithoutContactsInput, CompanyUncheckedCreateWithoutContactsInput>
     connectOrCreate?: CompanyCreateOrConnectWithoutContactsInput
     upsert?: CompanyUpsertWithoutContactsInput
+    disconnect?: CompanyWhereInput | boolean
+    delete?: CompanyWhereInput | boolean
     connect?: CompanyWhereUniqueInput
     update?: XOR<XOR<CompanyUpdateToOneWithWhereWithoutContactsInput, CompanyUpdateWithoutContactsInput>, CompanyUncheckedUpdateWithoutContactsInput>
   }
@@ -75610,10 +75645,12 @@ export namespace Prisma {
     deleteMany?: ActivityScalarWhereInput | ActivityScalarWhereInput[]
   }
 
-  export type CompanyUpdateOneRequiredWithoutDealsNestedInput = {
+  export type CompanyUpdateOneWithoutDealsNestedInput = {
     create?: XOR<CompanyCreateWithoutDealsInput, CompanyUncheckedCreateWithoutDealsInput>
     connectOrCreate?: CompanyCreateOrConnectWithoutDealsInput
     upsert?: CompanyUpsertWithoutDealsInput
+    disconnect?: CompanyWhereInput | boolean
+    delete?: CompanyWhereInput | boolean
     connect?: CompanyWhereUniqueInput
     update?: XOR<XOR<CompanyUpdateToOneWithWhereWithoutDealsInput, CompanyUpdateWithoutDealsInput>, CompanyUncheckedUpdateWithoutDealsInput>
   }
@@ -77678,7 +77715,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutContactInput
-    company: CompanyCreateNestedOneWithoutContactsInput
+    company?: CompanyCreateNestedOneWithoutContactsInput
     owner: UserCreateNestedOneWithoutOwnedContactsInput
     deals?: DealCreateNestedManyWithoutContactInput
     visits?: FieldVisitCreateNestedManyWithoutContactInput
@@ -77694,7 +77731,7 @@ export namespace Prisma {
     phone?: string | null
     mobile?: string | null
     status?: string
-    companyId: string
+    companyId?: string | null
     ownerId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -77729,7 +77766,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     closedAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutDealInput
-    company: CompanyCreateNestedOneWithoutDealsInput
+    company?: CompanyCreateNestedOneWithoutDealsInput
     contact?: ContactCreateNestedOneWithoutDealsInput
     lead?: LeadCreateNestedOneWithoutDealsInput
     owner: UserCreateNestedOneWithoutOwnedDealsInput
@@ -77748,7 +77785,7 @@ export namespace Prisma {
     priority?: string
     notes?: string | null
     ownerId: string
-    companyId: string
+    companyId?: string | null
     contactId?: string | null
     leadId?: string | null
     createdAt?: Date | string
@@ -78674,7 +78711,7 @@ export namespace Prisma {
     mobile?: StringNullableFilter<"Contact"> | string | null
     status?: StringFilter<"Contact"> | string
     organizationId?: StringFilter<"Contact"> | string
-    companyId?: StringFilter<"Contact"> | string
+    companyId?: StringNullableFilter<"Contact"> | string | null
     ownerId?: StringFilter<"Contact"> | string
     createdAt?: DateTimeFilter<"Contact"> | Date | string
     updatedAt?: DateTimeFilter<"Contact"> | Date | string
@@ -78711,7 +78748,7 @@ export namespace Prisma {
     notes?: StringNullableFilter<"Deal"> | string | null
     organizationId?: StringFilter<"Deal"> | string
     ownerId?: StringFilter<"Deal"> | string
-    companyId?: StringFilter<"Deal"> | string
+    companyId?: StringNullableFilter<"Deal"> | string | null
     contactId?: StringNullableFilter<"Deal"> | string | null
     leadId?: StringNullableFilter<"Deal"> | string | null
     createdAt?: DateTimeFilter<"Deal"> | Date | string
@@ -79514,7 +79551,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutContactInput
-    company: CompanyCreateNestedOneWithoutContactsInput
+    company?: CompanyCreateNestedOneWithoutContactsInput
     organization: OrganizationCreateNestedOneWithoutContactsInput
     deals?: DealCreateNestedManyWithoutContactInput
     visits?: FieldVisitCreateNestedManyWithoutContactInput
@@ -79531,7 +79568,7 @@ export namespace Prisma {
     mobile?: string | null
     status?: string
     organizationId: string
-    companyId: string
+    companyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -79565,7 +79602,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     closedAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutDealInput
-    company: CompanyCreateNestedOneWithoutDealsInput
+    company?: CompanyCreateNestedOneWithoutDealsInput
     contact?: ContactCreateNestedOneWithoutDealsInput
     lead?: LeadCreateNestedOneWithoutDealsInput
     organization: OrganizationCreateNestedOneWithoutDealsInput
@@ -79584,7 +79621,7 @@ export namespace Prisma {
     priority?: string
     notes?: string | null
     organizationId: string
-    companyId: string
+    companyId?: string | null
     contactId?: string | null
     leadId?: string | null
     createdAt?: Date | string
@@ -87849,7 +87886,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     closedAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutDealInput
-    company: CompanyCreateNestedOneWithoutDealsInput
+    company?: CompanyCreateNestedOneWithoutDealsInput
     contact?: ContactCreateNestedOneWithoutDealsInput
     organization: OrganizationCreateNestedOneWithoutDealsInput
     owner: UserCreateNestedOneWithoutOwnedDealsInput
@@ -87869,7 +87906,7 @@ export namespace Prisma {
     notes?: string | null
     organizationId: string
     ownerId: string
-    companyId: string
+    companyId?: string | null
     contactId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -88003,7 +88040,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutContactInput
-    company: CompanyCreateNestedOneWithoutContactsInput
+    company?: CompanyCreateNestedOneWithoutContactsInput
     organization: OrganizationCreateNestedOneWithoutContactsInput
     owner: UserCreateNestedOneWithoutOwnedContactsInput
     deals?: DealCreateNestedManyWithoutContactInput
@@ -88020,7 +88057,7 @@ export namespace Prisma {
     mobile?: string | null
     status?: string
     organizationId: string
-    companyId: string
+    companyId?: string | null
     ownerId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -88364,7 +88401,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutContactNestedInput
-    company?: CompanyUpdateOneRequiredWithoutContactsNestedInput
+    company?: CompanyUpdateOneWithoutContactsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutContactsNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedContactsNestedInput
     deals?: DealUpdateManyWithoutContactNestedInput
@@ -88381,7 +88418,7 @@ export namespace Prisma {
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -89798,7 +89835,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     closedAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutDealInput
-    company: CompanyCreateNestedOneWithoutDealsInput
+    company?: CompanyCreateNestedOneWithoutDealsInput
     lead?: LeadCreateNestedOneWithoutDealsInput
     organization: OrganizationCreateNestedOneWithoutDealsInput
     owner: UserCreateNestedOneWithoutOwnedDealsInput
@@ -89818,7 +89855,7 @@ export namespace Prisma {
     notes?: string | null
     organizationId: string
     ownerId: string
-    companyId: string
+    companyId?: string | null
     leadId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -90457,7 +90494,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutContactInput
-    company: CompanyCreateNestedOneWithoutContactsInput
+    company?: CompanyCreateNestedOneWithoutContactsInput
     organization: OrganizationCreateNestedOneWithoutContactsInput
     owner: UserCreateNestedOneWithoutOwnedContactsInput
     visits?: FieldVisitCreateNestedManyWithoutContactInput
@@ -90474,7 +90511,7 @@ export namespace Prisma {
     mobile?: string | null
     status?: string
     organizationId: string
-    companyId: string
+    companyId?: string | null
     ownerId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -90985,7 +91022,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutContactNestedInput
-    company?: CompanyUpdateOneRequiredWithoutContactsNestedInput
+    company?: CompanyUpdateOneWithoutContactsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutContactsNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedContactsNestedInput
     visits?: FieldVisitUpdateManyWithoutContactNestedInput
@@ -91002,7 +91039,7 @@ export namespace Prisma {
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -91497,7 +91534,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
-    company: CompanyCreateNestedOneWithoutContactsInput
+    company?: CompanyCreateNestedOneWithoutContactsInput
     organization: OrganizationCreateNestedOneWithoutContactsInput
     owner: UserCreateNestedOneWithoutOwnedContactsInput
     deals?: DealCreateNestedManyWithoutContactInput
@@ -91515,7 +91552,7 @@ export namespace Prisma {
     mobile?: string | null
     status?: string
     organizationId: string
-    companyId: string
+    companyId?: string | null
     ownerId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -91543,7 +91580,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     closedAt?: Date | string | null
-    company: CompanyCreateNestedOneWithoutDealsInput
+    company?: CompanyCreateNestedOneWithoutDealsInput
     contact?: ContactCreateNestedOneWithoutDealsInput
     lead?: LeadCreateNestedOneWithoutDealsInput
     organization: OrganizationCreateNestedOneWithoutDealsInput
@@ -91564,7 +91601,7 @@ export namespace Prisma {
     notes?: string | null
     organizationId: string
     ownerId: string
-    companyId: string
+    companyId?: string | null
     contactId?: string | null
     leadId?: string | null
     createdAt?: Date | string
@@ -91914,7 +91951,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    company?: CompanyUpdateOneRequiredWithoutContactsNestedInput
+    company?: CompanyUpdateOneWithoutContactsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutContactsNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedContactsNestedInput
     deals?: DealUpdateManyWithoutContactNestedInput
@@ -91932,7 +91969,7 @@ export namespace Prisma {
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -91966,7 +92003,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    company?: CompanyUpdateOneRequiredWithoutDealsNestedInput
+    company?: CompanyUpdateOneWithoutDealsNestedInput
     contact?: ContactUpdateOneWithoutDealsNestedInput
     lead?: LeadUpdateOneWithoutDealsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutDealsNestedInput
@@ -91987,7 +92024,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -92672,7 +92709,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     closedAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutDealInput
-    company: CompanyCreateNestedOneWithoutDealsInput
+    company?: CompanyCreateNestedOneWithoutDealsInput
     contact?: ContactCreateNestedOneWithoutDealsInput
     lead?: LeadCreateNestedOneWithoutDealsInput
     organization: OrganizationCreateNestedOneWithoutDealsInput
@@ -92692,7 +92729,7 @@ export namespace Prisma {
     notes?: string | null
     organizationId: string
     ownerId: string
-    companyId: string
+    companyId?: string | null
     contactId?: string | null
     leadId?: string | null
     createdAt?: Date | string
@@ -93038,7 +93075,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutDealNestedInput
-    company?: CompanyUpdateOneRequiredWithoutDealsNestedInput
+    company?: CompanyUpdateOneWithoutDealsNestedInput
     contact?: ContactUpdateOneWithoutDealsNestedInput
     lead?: LeadUpdateOneWithoutDealsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutDealsNestedInput
@@ -93058,7 +93095,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -93542,7 +93579,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutContactInput
-    company: CompanyCreateNestedOneWithoutContactsInput
+    company?: CompanyCreateNestedOneWithoutContactsInput
     organization: OrganizationCreateNestedOneWithoutContactsInput
     owner: UserCreateNestedOneWithoutOwnedContactsInput
     deals?: DealCreateNestedManyWithoutContactInput
@@ -93559,7 +93596,7 @@ export namespace Prisma {
     mobile?: string | null
     status?: string
     organizationId: string
-    companyId: string
+    companyId?: string | null
     ownerId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -93588,7 +93625,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     closedAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutDealInput
-    company: CompanyCreateNestedOneWithoutDealsInput
+    company?: CompanyCreateNestedOneWithoutDealsInput
     contact?: ContactCreateNestedOneWithoutDealsInput
     lead?: LeadCreateNestedOneWithoutDealsInput
     organization: OrganizationCreateNestedOneWithoutDealsInput
@@ -93608,7 +93645,7 @@ export namespace Prisma {
     notes?: string | null
     organizationId: string
     ownerId: string
-    companyId: string
+    companyId?: string | null
     contactId?: string | null
     leadId?: string | null
     createdAt?: Date | string
@@ -93966,7 +94003,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutContactNestedInput
-    company?: CompanyUpdateOneRequiredWithoutContactsNestedInput
+    company?: CompanyUpdateOneWithoutContactsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutContactsNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedContactsNestedInput
     deals?: DealUpdateManyWithoutContactNestedInput
@@ -93983,7 +94020,7 @@ export namespace Prisma {
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -94018,7 +94055,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutDealNestedInput
-    company?: CompanyUpdateOneRequiredWithoutDealsNestedInput
+    company?: CompanyUpdateOneWithoutDealsNestedInput
     contact?: ContactUpdateOneWithoutDealsNestedInput
     lead?: LeadUpdateOneWithoutDealsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutDealsNestedInput
@@ -94038,7 +94075,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -95381,7 +95418,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutContactInput
-    company: CompanyCreateNestedOneWithoutContactsInput
+    company?: CompanyCreateNestedOneWithoutContactsInput
     organization: OrganizationCreateNestedOneWithoutContactsInput
     owner: UserCreateNestedOneWithoutOwnedContactsInput
     deals?: DealCreateNestedManyWithoutContactInput
@@ -95398,7 +95435,7 @@ export namespace Prisma {
     mobile?: string | null
     status?: string
     organizationId: string
-    companyId: string
+    companyId?: string | null
     ownerId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -95534,7 +95571,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     closedAt?: Date | string | null
     activities?: ActivityCreateNestedManyWithoutDealInput
-    company: CompanyCreateNestedOneWithoutDealsInput
+    company?: CompanyCreateNestedOneWithoutDealsInput
     contact?: ContactCreateNestedOneWithoutDealsInput
     lead?: LeadCreateNestedOneWithoutDealsInput
     organization: OrganizationCreateNestedOneWithoutDealsInput
@@ -95554,7 +95591,7 @@ export namespace Prisma {
     notes?: string | null
     organizationId: string
     ownerId: string
-    companyId: string
+    companyId?: string | null
     contactId?: string | null
     leadId?: string | null
     createdAt?: Date | string
@@ -95856,7 +95893,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutContactNestedInput
-    company?: CompanyUpdateOneRequiredWithoutContactsNestedInput
+    company?: CompanyUpdateOneWithoutContactsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutContactsNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedContactsNestedInput
     deals?: DealUpdateManyWithoutContactNestedInput
@@ -95873,7 +95910,7 @@ export namespace Prisma {
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -96021,7 +96058,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutDealNestedInput
-    company?: CompanyUpdateOneRequiredWithoutDealsNestedInput
+    company?: CompanyUpdateOneWithoutDealsNestedInput
     contact?: ContactUpdateOneWithoutDealsNestedInput
     lead?: LeadUpdateOneWithoutDealsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutDealsNestedInput
@@ -96041,7 +96078,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -99366,7 +99403,7 @@ export namespace Prisma {
     phone?: string | null
     mobile?: string | null
     status?: string
-    companyId: string
+    companyId?: string | null
     ownerId: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -99383,7 +99420,7 @@ export namespace Prisma {
     priority?: string
     notes?: string | null
     ownerId: string
-    companyId: string
+    companyId?: string | null
     contactId?: string | null
     leadId?: string | null
     createdAt?: Date | string
@@ -99854,7 +99891,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutContactNestedInput
-    company?: CompanyUpdateOneRequiredWithoutContactsNestedInput
+    company?: CompanyUpdateOneWithoutContactsNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedContactsNestedInput
     deals?: DealUpdateManyWithoutContactNestedInput
     visits?: FieldVisitUpdateManyWithoutContactNestedInput
@@ -99870,7 +99907,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -99890,7 +99927,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -99910,7 +99947,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutDealNestedInput
-    company?: CompanyUpdateOneRequiredWithoutDealsNestedInput
+    company?: CompanyUpdateOneWithoutDealsNestedInput
     contact?: ContactUpdateOneWithoutDealsNestedInput
     lead?: LeadUpdateOneWithoutDealsNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedDealsNestedInput
@@ -99929,7 +99966,7 @@ export namespace Prisma {
     priority?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -99951,7 +99988,7 @@ export namespace Prisma {
     priority?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -100803,7 +100840,7 @@ export namespace Prisma {
     mobile?: string | null
     status?: string
     organizationId: string
-    companyId: string
+    companyId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -100819,7 +100856,7 @@ export namespace Prisma {
     priority?: string
     notes?: string | null
     organizationId: string
-    companyId: string
+    companyId?: string | null
     contactId?: string | null
     leadId?: string | null
     createdAt?: Date | string
@@ -101429,7 +101466,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutContactNestedInput
-    company?: CompanyUpdateOneRequiredWithoutContactsNestedInput
+    company?: CompanyUpdateOneWithoutContactsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutContactsNestedInput
     deals?: DealUpdateManyWithoutContactNestedInput
     visits?: FieldVisitUpdateManyWithoutContactNestedInput
@@ -101446,7 +101483,7 @@ export namespace Prisma {
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -101466,7 +101503,7 @@ export namespace Prisma {
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -101485,7 +101522,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutDealNestedInput
-    company?: CompanyUpdateOneRequiredWithoutDealsNestedInput
+    company?: CompanyUpdateOneWithoutDealsNestedInput
     contact?: ContactUpdateOneWithoutDealsNestedInput
     lead?: LeadUpdateOneWithoutDealsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutDealsNestedInput
@@ -101504,7 +101541,7 @@ export namespace Prisma {
     priority?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -101526,7 +101563,7 @@ export namespace Prisma {
     priority?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -103406,7 +103443,7 @@ export namespace Prisma {
     notes?: string | null
     organizationId: string
     ownerId: string
-    companyId: string
+    companyId?: string | null
     contactId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -103481,7 +103518,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutDealNestedInput
-    company?: CompanyUpdateOneRequiredWithoutDealsNestedInput
+    company?: CompanyUpdateOneWithoutDealsNestedInput
     contact?: ContactUpdateOneWithoutDealsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutDealsNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedDealsNestedInput
@@ -103501,7 +103538,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -103523,7 +103560,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     contactId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -104162,7 +104199,7 @@ export namespace Prisma {
     notes?: string | null
     organizationId: string
     ownerId: string
-    companyId: string
+    companyId?: string | null
     leadId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -104278,7 +104315,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     activities?: ActivityUpdateManyWithoutDealNestedInput
-    company?: CompanyUpdateOneRequiredWithoutDealsNestedInput
+    company?: CompanyUpdateOneWithoutDealsNestedInput
     lead?: LeadUpdateOneWithoutDealsNestedInput
     organization?: OrganizationUpdateOneRequiredWithoutDealsNestedInput
     owner?: UserUpdateOneRequiredWithoutOwnedDealsNestedInput
@@ -104298,7 +104335,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -104320,7 +104357,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
-    companyId?: StringFieldUpdateOperationsInput | string
+    companyId?: NullableStringFieldUpdateOperationsInput | string | null
     leadId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

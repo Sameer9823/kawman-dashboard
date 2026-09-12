@@ -155,3 +155,33 @@ export async function getCompanyById(id: string): Promise<CompanyDetail | null> 
   if (!row) return null
   return { ...mapCompany(row), ownerId: row.ownerId }
 }
+
+/**
+ * Find an existing Company by name (case-insensitive, scoped to organizationId)
+ * or create it. Extracted from the inline logic in leads/actions.ts
+ * (convertLeadToDeal + CSV import) so contacts/deals can share the same path.
+ * Returns null when name is empty/whitespace. Requires ownerId for creation
+ * because Company.ownerId is NOT NULL — callers pass session.user.id or the
+ * record's ownerId. Case-insensitive via `mode: 'insensitive'` on Postgres.
+ */
+export async function findOrCreateCompanyByName(input: {
+  name: string
+  organizationId: string
+  ownerId: string
+}): Promise<{ id: string; name: string } | null> {
+  const trimmed = input.name?.trim()
+  if (!trimmed) return null
+  const existing = await prisma.company.findFirst({
+    where: { organizationId: input.organizationId, name: { equals: trimmed, mode: 'insensitive' as const } },
+    select: { id: true, name: true },
+  })
+  if (existing) return existing
+  const created = await prisma.company.create({
+    data: { name: trimmed, organizationId: input.organizationId, ownerId: input.ownerId },
+    select: { id: true, name: true },
+  })
+  return created
+}
+
+// Alias matching the spec's suggested name — both are exported.
+export const findOrCreateCompany = findOrCreateCompanyByName

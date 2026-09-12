@@ -43,9 +43,13 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
         <PageHeader
           title={contact.name}
           subtitle={
-            <Link href={`/companies/${contact.companyId}`} className="hover:text-purple-300 transition-colors">
-              {contact.company}
-            </Link>
+            contact.companyId ? (
+              <Link href={`/companies/${contact.companyId}`} className="hover:text-purple-300 transition-colors">
+                {contact.company}
+              </Link>
+            ) : (
+              contact.company
+            )
           }
         />
         <ContactDetailForm contact={contact} owners={owners} companies={companies} />

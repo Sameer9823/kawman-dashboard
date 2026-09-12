@@ -310,9 +310,9 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       title: 'Workspace Insight',
       description:
         followUpsDueTodayCount > 0
-          ? followUpsDueTodayCount + ' follow-up' + (followUpsDueTodayCount === 1 ? '' : 's') + ' due today.' + (topOpenDeal ? ' ' + topOpenDeal.company.name + ' is your highest-value open opportunity.' : '')
+          ? followUpsDueTodayCount + ' follow-up' + (followUpsDueTodayCount === 1 ? '' : 's') + ' due today.' + (topOpenDeal ? ' ' + (topOpenDeal.company?.name ?? '—') + ' is your highest-value open opportunity.' : '')
           : topOpenDeal
-            ? 'No follow-ups due today. ' + topOpenDeal.company.name + ' is your highest-value open opportunity.'
+            ? 'No follow-ups due today. ' + (topOpenDeal.company?.name ?? '—') + ' is your highest-value open opportunity.'
             : 'No follow-ups due today. Add some leads and deals to see insights here.',
     },
     aiInsights: [
@@ -364,7 +364,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
 
     upcomingFollowUps: upcomingFollowUps.map((f) => ({
       id: f.id,
-      company: f.company?.name ?? f.deal?.company.name ?? f.lead?.company ?? '—',
+      company: f.company?.name ?? f.deal?.company?.name ?? f.lead?.company ?? '—',
       purpose: f.title,
       dateLabel: formatDueDateLabel(f.dueDate),
       timeLabel: f.dueDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),

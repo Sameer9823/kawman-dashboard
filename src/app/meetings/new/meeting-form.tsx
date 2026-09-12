@@ -17,7 +17,7 @@ export function NewMeetingForm({
 }: {
   users: UserOption[]
   companies: { id: string; name: string }[]
-  contacts: { id: string; name: string; companyId: string }[]
+  contacts: { id: string; name: string; companyId: string | null }[]
   currentUserId: string
 }) {
   const [state, formAction, pending] = useActionState(createMeetingWithVideoAction, initialState)

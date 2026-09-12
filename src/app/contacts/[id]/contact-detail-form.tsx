@@ -39,19 +39,13 @@ export function ContactDetailForm({
         <Field label="Full name *" error={state.fieldErrors?.name}>
           <Input name="name" defaultValue={contact.name} required />
         </Field>
-        <Field label="Company *" error={state.fieldErrors?.companyId}>
-          <select
-            name="companyId"
-            defaultValue={contact.companyId}
-            required
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
+        <Field label="Company" error={state.fieldErrors?.company}>
+          <Input name="company" defaultValue={contact.company === '—' ? '' : contact.company} list="company-suggestions-detail" />
+          <datalist id="company-suggestions-detail">
             {companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.name} />
             ))}
-          </select>
+          </datalist>
         </Field>
         <Field label="Designation" error={state.fieldErrors?.designation}>
           <Input name="designation" defaultValue={contact.designation === '—' ? '' : contact.designation} />

@@ -22,7 +22,7 @@ export function DealDetailForm({
   deal: DealDetail
   owners: UserOption[]
   companies: { id: string; name: string }[]
-  contacts: { id: string; name: string; companyId: string }[]
+  contacts: { id: string; name: string; companyId: string | null }[]
 }) {
   const router = useRouter()
   const [deleting, startDelete] = useTransition()
@@ -43,19 +43,13 @@ export function DealDetailForm({
         <Field label="Deal name *" error={state.fieldErrors?.name}>
           <Input name="name" defaultValue={deal.name} required />
         </Field>
-        <Field label="Company *" error={state.fieldErrors?.companyId}>
-          <select
-            name="companyId"
-            defaultValue={deal.companyId}
-            required
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
+        <Field label="Company" error={state.fieldErrors?.company}>
+          <Input name="company" defaultValue={deal.company === '—' ? '' : deal.company} list="company-suggestions-detail" />
+          <datalist id="company-suggestions-detail">
             {companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.name} />
             ))}
-          </select>
+          </datalist>
         </Field>
         <Field label="Contact" error={state.fieldErrors?.contactId}>
           <select

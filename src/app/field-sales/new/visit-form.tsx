@@ -16,7 +16,7 @@ export function NewVisitForm({
 }: {
   owners: UserOption[]
   companies: { id: string; name: string }[]
-  contacts: { id: string; name: string; companyId: string }[]
+  contacts: { id: string; name: string; companyId: string | null }[]
 }) {
   const [state, formAction, pending] = useActionState(createFieldVisitAction, initialState)
 

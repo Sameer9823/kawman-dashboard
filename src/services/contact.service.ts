@@ -35,7 +35,7 @@ function mapContact(row: ContactRow): Contact {
   return {
     id: row.id,
     name: row.name,
-    company: row.company.name,
+    company: row.company?.name ?? '—',
     designation: row.designation ?? '—',
     email: row.email ?? '',
     phone: row.phone ?? row.mobile ?? '',
@@ -126,7 +126,7 @@ export async function getContactsPage(query: ContactQuery = {}): Promise<Contact
 }
 
 /** Lightweight list for form <select> pickers (create deal/meeting). Scoped to caller's visibility. */
-export async function getContactOptions(): Promise<{ id: string; name: string; companyId: string }[]> {
+export async function getContactOptions(): Promise<{ id: string; name: string; companyId: string | null }[]> {
   const session = await requireApiSession()
   return prisma.contact.findMany({
     where: { organizationId: session.user.organizationId, ...scopeWhere(session.user) },
@@ -137,7 +137,7 @@ export async function getContactOptions(): Promise<{ id: string; name: string; c
 
 export interface ContactDetail extends Contact {
   ownerId: string
-  companyId: string
+  companyId: string | null
   mobile: string
 }
 

@@ -24,23 +24,13 @@ export function ContactForm({
         <Field label="Full name *" error={state.fieldErrors?.name}>
           <Input name="name" placeholder="Anjali Mehta" required />
         </Field>
-        <Field label="Company *" error={state.fieldErrors?.companyId}>
-          <select
-            name="companyId"
-            defaultValue=""
-            required
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
-            <option value="" disabled>
-              Select a company
-            </option>
+        <Field label="Company" error={state.fieldErrors?.company}>
+          <Input name="company" placeholder="Acme Nutraceuticals" list="company-suggestions" />
+          <datalist id="company-suggestions">
             {companies.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.name} />
             ))}
-          </select>
-          {companies.length === 0 && (
-            <p className="text-xs text-white/40">No companies yet — create one first.</p>
-          )}
+          </datalist>
         </Field>
         <Field label="Designation" error={state.fieldErrors?.designation}>
           <Input name="designation" placeholder="Procurement Head" />

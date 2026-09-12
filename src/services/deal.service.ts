@@ -54,7 +54,7 @@ function mapDeal(row: DealRow): Deal {
   return {
     id: row.id,
     name: row.name,
-    company: row.company.name,
+    company: row.company?.name ?? '—',
     contact: row.contact?.name ?? '—',
     value: Number(row.value),
     probability: row.probability,
@@ -86,7 +86,7 @@ export async function getDeals(search?: string): Promise<Deal[]> {
 
 export interface DealDetail extends Deal {
   ownerId: string
-  companyId: string
+  companyId: string | null
   contactId: string
   notes: string
 }

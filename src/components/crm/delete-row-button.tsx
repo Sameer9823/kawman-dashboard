@@ -3,13 +3,14 @@
 import { useState, useTransition } from 'react'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 export function DeleteRowButton({
   action,
   confirmLabel = 'Delete this? This cannot be undone.',
 }: {
-  action: () => Promise<void>
+  action: () => Promise<{ success?: boolean; error?: string } | void>
   confirmLabel?: string
 }) {
   const [pending, startTransition] = useTransition()
@@ -41,7 +42,13 @@ export function DeleteRowButton({
         confirmLabel="Delete"
         variant="destructive"
         loading={pending}
-        onConfirm={() => startTransition(() => action())}
+        onConfirm={() =>
+          startTransition(async () => {
+            const res = (await action()) as { success?: boolean; error?: string } | void
+            if (res && typeof res === 'object' && 'error' in res && res.error) toast.error(res.error)
+            else if (res && typeof res === 'object' && 'success' in res && res.success) toast.success('Deleted')
+          })
+        }
       />
     </>
   )

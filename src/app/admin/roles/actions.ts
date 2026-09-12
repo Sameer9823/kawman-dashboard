@@ -7,7 +7,7 @@ import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { logAudit } from '@/lib/audit-log'
 
-export async function toggleRolePermissionAction(roleId: string, permissionId: string, grant: boolean): Promise<void> {
+export async function toggleRolePermissionAction(roleId: string, permissionId: string, grant: boolean): Promise<{ success?: boolean; error?: string }> {
   await validateCsrf()
   const session = await requireApiSession()
   if (!(session.user.permissions as string[]).includes('roles.update')) throw new Error('You do not have permission to do this.')
@@ -33,4 +33,5 @@ export async function toggleRolePermissionAction(roleId: string, permissionId: s
 
   revalidatePath(`/admin/roles/${roleId}`)
   revalidatePath('/admin/roles')
+  return { success: true }
 }

@@ -4,7 +4,6 @@ import { validateCsrf } from '@/lib/csrf'
 
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
@@ -26,6 +25,8 @@ const companySchema = z.object({
 export interface CompanyFormState {
   error?: string
   fieldErrors?: Record<string, string>
+  success?: boolean
+  createdId?: string
 }
 
 async function assertPermission(permission: string) {
@@ -79,7 +80,7 @@ export async function createCompanyAction(_prev: CompanyFormState, formData: For
   })
 
   revalidatePath('/companies')
-  redirect('/companies')
+  return { success: true, createdId: company.id }
 }
 
 export async function updateCompanyAction(
@@ -127,14 +128,14 @@ export async function updateCompanyAction(
 
   revalidatePath('/companies')
   revalidatePath(`/companies/${id}`)
-  return {}
+  return { success: true }
 }
 
-export async function deleteCompanyAction(id: string): Promise<void> {
+export async function deleteCompanyAction(id: string): Promise<{ success?: boolean; error?: string }> {
   await validateCsrf()
   const session = await assertPermission(PERMISSIONS['companies.delete'].name)
   const existing = await prisma.company.findFirst({ where: { id, organizationId: session.user.organizationId } })
-  if (!existing) return
+  if (!existing) return { error: 'Company not found.' }
   await prisma.company.delete({ where: { id } })
 
   await logAudit({
@@ -147,4 +148,5 @@ export async function deleteCompanyAction(id: string): Promise<void> {
   })
 
   revalidatePath('/companies')
+  return { success: true }
 }

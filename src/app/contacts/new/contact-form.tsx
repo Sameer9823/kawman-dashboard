@@ -1,9 +1,11 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { createContactAction, type ContactFormState } from '../actions'
 import type { UserOption } from '@/services/user.service'
 
@@ -17,6 +19,14 @@ export function ContactForm({
   companies: { id: string; name: string }[]
 }) {
   const [state, formAction, pending] = useActionState(createContactAction, initialState)
+  const router = useRouter()
+  useEffect(() => {
+    if (state.error) toast.error(state.error)
+    if (state.success && state.createdId) {
+      toast.success('Contact created')
+      router.push(`/contacts/${state.createdId}`)
+    }
+  }, [state.error, state.success, state.createdId, router])
 
   return (
     <Card className="bg-[#0a111c]/80 border-white/[0.08] p-6">

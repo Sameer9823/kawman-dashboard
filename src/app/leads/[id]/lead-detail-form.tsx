@@ -1,7 +1,9 @@
 'use client'
 
-import { useActionState, useState, useTransition } from 'react'
+import { useActionState, useEffect, useState, useTransition } from 'react'
 import { RotateCcw } from 'lucide-react'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -22,16 +24,21 @@ const initialState: LeadFormState = {}
 export function LeadDetailForm({ lead, owners }: { lead: Lead; owners: UserOption[] }) {
   const boundUpdate = updateLeadAction.bind(null, lead.id)
   const [state, formAction, pending] = useActionState(boundUpdate, initialState)
+  useEffect(() => {
+    if (state.error) toast.error(state.error)
+    if (state.success) toast.success('Lead updated')
+  }, [state.error, state.success])
   const [scorePending, startScoreTransition] = useTransition()
   const [scoreError, setScoreError] = useState<string | null>(null)
+  const router = useRouter()
   const [liveScore, setLiveScore] = useState(lead.score)
 
   function handleRecalculate() {
     setScoreError(null)
     startScoreTransition(async () => {
       const result = await recalculateLeadScoreAction(lead.id)
-      if (result.error) setScoreError(result.error)
-      else if (typeof result.score === 'number') setLiveScore(result.score)
+      if (result.error) { setScoreError(result.error); toast.error(result.error) }
+      else if (typeof result.score === 'number') { setLiveScore(result.score); toast.success('Score recalculated') }
     })
   }
 
@@ -120,16 +127,42 @@ export function LeadDetailForm({ lead, owners }: { lead: Lead; owners: UserOptio
       <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/[0.06]">
         <span className="text-xs text-white/40">Current value: {formatCurrency(lead.value)}</span>
         <div className="flex gap-2">
-          <form action={convertLeadToDealAction.bind(null, lead.id)}>
-            <Button type="submit" variant="secondary" size="sm">
-              Convert to deal
-            </Button>
-          </form>
-          <form action={deleteLeadAction.bind(null, lead.id)}>
-            <Button type="submit" variant="destructive" size="sm">
-              Delete lead
-            </Button>
-          </form>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              startScoreTransition(async () => {
+                try {
+                  await convertLeadToDealAction(lead.id)
+                  toast.success('Lead converted to deal')
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : 'Failed to convert')
+                }
+              })
+            }}
+            disabled={scorePending}
+          >
+            Convert to deal
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={() => {
+              startScoreTransition(async () => {
+                const res = await deleteLeadAction(lead.id)
+                if (res?.error) toast.error(res.error)
+                else if (res?.success) {
+                  toast.success('Lead deleted')
+                  router.push('/leads')
+                }
+              })
+            }}
+            disabled={scorePending}
+          >
+            Delete lead
+          </Button>
         </div>
       </div>
     </Card>

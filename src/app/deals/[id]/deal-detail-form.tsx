@@ -1,7 +1,8 @@
 'use client'
 
-import { useActionState, useState, useTransition } from 'react'
+import { useActionState, useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -30,11 +31,19 @@ export function DealDetailForm({
   const [confirmOpen, setConfirmOpen] = useState(false)
   const boundUpdate = updateDealAction.bind(null, deal.id)
   const [state, formAction, pending] = useActionState(boundUpdate, initialState)
+  useEffect(() => {
+    if (state.error) toast.error(state.error)
+    if (state.success) toast.success('Deal updated')
+  }, [state.error, state.success])
 
   function handleDelete() {
     startDelete(async () => {
-      await deleteDealAction(deal.id)
-      router.push('/deals')
+      const res = await deleteDealAction(deal.id)
+      if (res?.error) toast.error(res.error)
+      else if (res?.success) {
+        toast.success('Deal deleted')
+        router.push('/deals')
+      }
     })
   }
 

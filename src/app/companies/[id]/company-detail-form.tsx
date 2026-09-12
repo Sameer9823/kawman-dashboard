@@ -1,7 +1,8 @@
 'use client'
 
-import { useActionState, useState, useTransition } from 'react'
+import { useActionState, useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -18,11 +19,19 @@ export function CompanyDetailForm({ company, owners }: { company: CompanyDetail;
   const [confirmOpen, setConfirmOpen] = useState(false)
   const boundUpdate = updateCompanyAction.bind(null, company.id)
   const [state, formAction, pending] = useActionState(boundUpdate, initialState)
+  useEffect(() => {
+    if (state.error) toast.error(state.error)
+    if (state.success) toast.success('Company updated')
+  }, [state.error, state.success])
 
   function handleDelete() {
     startDelete(async () => {
-      await deleteCompanyAction(company.id)
-      router.push('/companies')
+      const res = await deleteCompanyAction(company.id)
+      if (res?.error) toast.error(res.error)
+      else if (res?.success) {
+        toast.success('Company deleted')
+        router.push('/companies')
+      }
     })
   }
 

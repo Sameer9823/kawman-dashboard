@@ -4,7 +4,6 @@ import { validateCsrf } from '@/lib/csrf'
 
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
@@ -24,6 +23,8 @@ const contactSchema = z.object({
 export interface ContactFormState {
   error?: string
   fieldErrors?: Record<string, string>
+  success?: boolean
+  createdId?: string
 }
 
 async function assertPermission(permission: string) {
@@ -86,7 +87,7 @@ export async function createContactAction(_prev: ContactFormState, formData: For
   })
 
   revalidatePath('/contacts')
-  redirect('/contacts')
+  return { success: true, createdId: contact.id }
 }
 
 export async function updateContactAction(
@@ -143,14 +144,14 @@ export async function updateContactAction(
 
   revalidatePath('/contacts')
   revalidatePath(`/contacts/${id}`)
-  return {}
+  return { success: true }
 }
 
-export async function deleteContactAction(id: string): Promise<void> {
+export async function deleteContactAction(id: string): Promise<{ success?: boolean; error?: string }> {
   await validateCsrf()
   const session = await assertPermission(PERMISSIONS['contacts.delete'].name)
   const existing = await prisma.contact.findFirst({ where: { id, organizationId: session.user.organizationId } })
-  if (!existing) return
+  if (!existing) return { error: 'Contact not found.' }
   await prisma.contact.delete({ where: { id } })
 
   await logAudit({
@@ -163,4 +164,5 @@ export async function deleteContactAction(id: string): Promise<void> {
   })
 
   revalidatePath('/contacts')
+  return { success: true }
 }

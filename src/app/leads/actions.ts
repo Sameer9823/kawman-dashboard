@@ -31,6 +31,7 @@ export interface LeadFormState {
   error?: string
   fieldErrors?: Record<string, string>
   success?: boolean
+  createdId?: string
 }
 
 async function assertPermission(permission: string) {
@@ -97,7 +98,7 @@ export async function createLeadAction(_prev: LeadFormState, formData: FormData)
 
   revalidatePath('/leads')
   revalidatePath('/dashboard')
-  redirect(`/leads/${lead.id}`)
+  return { success: true, createdId: lead.id }
 }
 
 export async function updateLeadAction(id: string, _prev: LeadFormState, formData: FormData): Promise<LeadFormState> {
@@ -160,11 +161,11 @@ export async function updateLeadAction(id: string, _prev: LeadFormState, formDat
   return { success: true }
 }
 
-export async function deleteLeadAction(id: string): Promise<void> {
+export async function deleteLeadAction(id: string): Promise<{ success?: boolean; error?: string }> {
   await validateCsrf()
   const session = await assertPermission(PERMISSIONS['leads.delete'].name)
   const existing = await prisma.lead.findFirst({ where: { id, organizationId: session.user.organizationId } })
-  if (!existing) return
+  if (!existing) return { error: 'Lead not found.' }
   await prisma.lead.delete({ where: { id } })
 
   await logAudit({
@@ -178,7 +179,7 @@ export async function deleteLeadAction(id: string): Promise<void> {
 
   revalidatePath('/leads')
   revalidatePath('/dashboard')
-  redirect('/leads')
+  return { success: true }
 }
 
 export async function convertLeadToDealAction(id: string): Promise<void> {

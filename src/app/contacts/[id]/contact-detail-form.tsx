@@ -1,7 +1,8 @@
 'use client'
 
-import { useActionState, useState, useTransition } from 'react'
+import { useActionState, useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -26,11 +27,19 @@ export function ContactDetailForm({
   const [confirmOpen, setConfirmOpen] = useState(false)
   const boundUpdate = updateContactAction.bind(null, contact.id)
   const [state, formAction, pending] = useActionState(boundUpdate, initialState)
+  useEffect(() => {
+    if (state.error) toast.error(state.error)
+    if (state.success) toast.success('Contact updated')
+  }, [state.error, state.success])
 
   function handleDelete() {
     startDelete(async () => {
-      await deleteContactAction(contact.id)
-      router.push('/contacts')
+      const res = await deleteContactAction(contact.id)
+      if (res?.error) toast.error(res.error)
+      else if (res?.success) {
+        toast.success('Contact deleted')
+        router.push('/contacts')
+      }
     })
   }
 

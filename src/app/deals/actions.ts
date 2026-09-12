@@ -4,7 +4,6 @@ import { validateCsrf } from '@/lib/csrf'
 
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
@@ -28,6 +27,8 @@ const dealSchema = z.object({
 export interface DealFormState {
   error?: string
   fieldErrors?: Record<string, string>
+  success?: boolean
+  createdId?: string
 }
 
 async function assertPermission(permission: string) {
@@ -92,7 +93,7 @@ export async function createDealAction(_prev: DealFormState, formData: FormData)
 
   revalidatePath('/deals')
   revalidatePath('/dashboard')
-  redirect('/deals')
+  return { success: true, createdId: deal.id }
 }
 
 export async function updateDealAction(id: string, _prev: DealFormState, formData: FormData): Promise<DealFormState> {
@@ -161,7 +162,7 @@ export async function updateDealAction(id: string, _prev: DealFormState, formDat
   revalidatePath('/deals')
   revalidatePath(`/deals/${id}`)
   revalidatePath('/dashboard')
-  return {}
+  return { success: true }
 }
 
 /** Called from the kanban board on drag-and-drop — updates just the stage. */
@@ -201,11 +202,11 @@ export async function updateDealStageAction(dealId: string, stage: (typeof STAGE
   revalidatePath('/dashboard')
 }
 
-export async function deleteDealAction(id: string): Promise<void> {
+export async function deleteDealAction(id: string): Promise<{ success?: boolean; error?: string }> {
   await validateCsrf()
   const session = await assertPermission(PERMISSIONS['deals.delete'].name)
   const existing = await prisma.deal.findFirst({ where: { id, organizationId: session.user.organizationId } })
-  if (!existing) return
+  if (!existing) return { error: 'Deal not found.' }
   await prisma.deal.delete({ where: { id } })
 
   await logAudit({
@@ -219,4 +220,5 @@ export async function deleteDealAction(id: string): Promise<void> {
 
   revalidatePath('/deals')
   revalidatePath('/dashboard')
+  return { success: true }
 }

@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import {
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   Search,
   Bell,
   HelpCircle,
@@ -63,9 +65,10 @@ export function Header() {
   // Selector (via useShallow) instead of a bare useUIStore() call — this
   // component now only re-renders when one of these three fields changes,
   // not on every unrelated UI-store update (theme, notifications, etc).
-  const { sidebarCollapsed, toggleMobileDrawer, toggleCommandPalette } = useUIStore(
+  const { sidebarCollapsed, toggleSidebar, toggleMobileDrawer, toggleCommandPalette } = useUIStore(
     useShallow((s) => ({
       sidebarCollapsed: s.sidebarCollapsed,
+      toggleSidebar: s.toggleSidebar,
       toggleMobileDrawer: s.toggleMobileDrawer,
       toggleCommandPalette: s.toggleCommandPalette,
     }))
@@ -124,6 +127,16 @@ export function Header() {
           aria-label="Toggle menu"
         >
           <Menu className="h-5 w-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="hidden lg:inline-flex text-white/50 hover:text-white shrink-0"
+          aria-label={sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
+          title={sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
+        >
+          {sidebarCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
         </Button>
 
         <button

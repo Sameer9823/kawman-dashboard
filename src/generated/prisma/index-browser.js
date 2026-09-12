@@ -166,7 +166,9 @@ exports.Prisma.SessionScalarFieldEnum = {
   userAgent: 'userAgent',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  userId: 'userId'
+  userId: 'userId',
+  endedAt: 'endedAt',
+  lastSeenAt: 'lastSeenAt'
 };
 
 exports.Prisma.AccountScalarFieldEnum = {
@@ -433,6 +435,26 @@ exports.Prisma.ActivityScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.DailyReportScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  organizationId: 'organizationId',
+  date: 'date',
+  workDescription: 'workDescription',
+  completedWork: 'completedWork',
+  pendingWork: 'pendingWork',
+  blockers: 'blockers',
+  tomorrowPlan: 'tomorrowPlan',
+  tasksCompletedCount: 'tasksCompletedCount',
+  crmRecordsUpdatedCount: 'crmRecordsUpdatedCount',
+  leadsWorkedOnCount: 'leadsWorkedOnCount',
+  filesUploadedCount: 'filesUploadedCount',
+  activeWorkingTimeMinutes: 'activeWorkingTimeMinutes',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.FollowUpScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -620,6 +642,7 @@ exports.Prisma.AIReportScalarFieldEnum = {
   filters: 'filters',
   organizationId: 'organizationId',
   generatedById: 'generatedById',
+  dailyReportId: 'dailyReportId',
   createdAt: 'createdAt'
 };
 
@@ -742,6 +765,12 @@ exports.DealStage = exports.$Enums.DealStage = {
   LOST: 'LOST'
 };
 
+exports.DailyReportStatus = exports.$Enums.DailyReportStatus = {
+  SUBMITTED: 'SUBMITTED',
+  MISSED: 'MISSED',
+  DRAFT: 'DRAFT'
+};
+
 exports.FollowUpStatus = exports.$Enums.FollowUpStatus = {
   PENDING: 'PENDING',
   COMPLETED: 'COMPLETED',
@@ -828,6 +857,7 @@ exports.Prisma.ModelName = {
   Contact: 'Contact',
   Deal: 'Deal',
   Activity: 'Activity',
+  DailyReport: 'DailyReport',
   FollowUp: 'FollowUp',
   FieldVisit: 'FieldVisit',
   CheckIn: 'CheckIn',

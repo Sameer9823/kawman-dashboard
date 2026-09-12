@@ -45,6 +45,7 @@ model Organization {
   savedViews      SavedView[]
   teams           Team[]
   users           User[]
+  dailyReports    DailyReport[]
 
   @@index([slug])
   @@index([createdAt])
@@ -103,6 +104,7 @@ model User {
   team                   Team?                @relation("TeamMembers", fields: [teamId], references: [id])
   roles                  UserRole[]
   visitReports           VisitReport[]        @relation("VisitReportCreator")
+  dailyReports           DailyReport[]
 
   @@index([organizationId])
   @@index([email])
@@ -123,6 +125,8 @@ model Session {
   updatedAt DateTime @updatedAt
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endedAt   DateTime?
+  lastSeenAt DateTime?
 
   @@index([userId])
 }
@@ -576,6 +580,35 @@ model Activity {
   @@index([createdAt])
 }
 
+model DailyReport {
+  id                       String              @id @default(cuid())
+  userId                   String
+  organizationId           String
+  date                     DateTime            @db.Date
+  workDescription          String?
+  completedWork            String?
+  pendingWork              String?
+  blockers                 String?
+  tomorrowPlan             String?
+  tasksCompletedCount      Int                 @default(0)
+  crmRecordsUpdatedCount   Int                 @default(0)
+  leadsWorkedOnCount       Int                 @default(0)
+  filesUploadedCount       Int                 @default(0)
+  activeWorkingTimeMinutes Int                 @default(0)
+  status                   DailyReportStatus   @default(DRAFT)
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime            @updatedAt
+  user                     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization             Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  aiReport                 AIReport?
+
+  @@unique([userId, date])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([date])
+  @@index([status])
+}
+
 model FollowUp {
   id             String         @id @default(cuid())
   title          String
@@ -866,13 +899,16 @@ model AIReport {
   filters        Json?
   organizationId String
   generatedById  String
+  dailyReportId  String?      @unique
   createdAt      DateTime     @default(now())
   generatedBy    User         @relation("AIReportGenerator", fields: [generatedById], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  dailyReport    DailyReport? @relation(fields: [dailyReportId], references: [id])
 
   @@index([organizationId])
   @@index([type])
   @@index([createdAt])
+  @@index([dailyReportId])
 }
 
 model Notification {
@@ -1027,6 +1063,12 @@ enum NotificationType {
   AI_REPORT_READY
   CHECK_IN_COMPLETED
   SECURITY_EVENT
+}
+
+enum DailyReportStatus {
+  SUBMITTED
+  MISSED
+  DRAFT
 }
 
 enum AuditAction {

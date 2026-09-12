@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Plus, Target, Building2, User, Handshake, Calendar, ClipboardList, Upload } from 'lucide-react'
+import { Plus, Target, Building2, User, Handshake, Calendar, ClipboardList, Upload, ClipboardCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -18,6 +18,7 @@ const ACTIONS = [
   { label: 'Schedule Meeting', href: '/meetings/new', icon: Calendar },
   { label: 'Create Follow-up', href: '/follow-ups/new', icon: ClipboardList },
   { label: 'Upload Document', href: '/files/upload', icon: Upload },
+  { label: "Submit Daily Report", href: '/dashboard/daily-report', icon: ClipboardCheck },
 ]
 
 export function NewActionDropdown() {

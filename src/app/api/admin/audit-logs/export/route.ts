@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   } catch {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   }
-  if (!session.user.permissions.includes('audit_logs.view')) {
+  if (!(session.user.permissions as string[]).includes('audit_logs.view')) {
     return new Response('Forbidden', { status: 403 })
   }
 

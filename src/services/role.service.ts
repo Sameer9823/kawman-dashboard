@@ -13,7 +13,7 @@ export interface RoleRow {
 
 export async function getRoles(): Promise<RoleRow[]> {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes('roles.view')) throw new Error('Forbidden')
+  if (!(session.user.permissions as string[]).includes('roles.view')) throw new Error('Forbidden')
 
   const roles = await prisma.role.findMany({
     include: { _count: { select: { users: true, permissions: true } } },
@@ -39,7 +39,7 @@ export interface RoleDetail {
 
 export async function getRoleById(id: string): Promise<RoleDetail | null> {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes('roles.view')) throw new Error('Forbidden')
+  if (!(session.user.permissions as string[]).includes('roles.view')) throw new Error('Forbidden')
 
   const role = await prisma.role.findUnique({
     where: { id },

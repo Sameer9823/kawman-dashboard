@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -10,7 +12,7 @@ import { createCheckIn as createCheckInRow } from '@/services/field-visit.servic
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes(permission)) throw new Error('You do not have permission to do this.')
+  if (!(session.user.permissions as string[]).includes(permission)) throw new Error('You do not have permission to do this.')
   return session
 }
 
@@ -36,6 +38,7 @@ export interface VisitFormState {
 }
 
 export async function createFieldVisitAction(_prev: VisitFormState, formData: FormData): Promise<VisitFormState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['field_visits.create'].name)
   const parsed = visitSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -75,6 +78,7 @@ export async function createFieldVisitAction(_prev: VisitFormState, formData: Fo
 const VISIT_STATUSES = ['SCHEDULED', 'ON_THE_WAY', 'CHECKED_IN', 'IN_MEETING', 'COMPLETED', 'CANCELLED'] as const
 
 export async function updateVisitStatusAction(visitId: string, status: (typeof VISIT_STATUSES)[number]): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['field_visits.update'].name)
   if (!VISIT_STATUSES.includes(status)) throw new Error('Invalid status')
   const existing = await prisma.fieldVisit.findFirst({ where: { id: visitId, organizationId: session.user.organizationId } })
@@ -103,6 +107,7 @@ export async function checkInAction(
   coords: { latitude: number; longitude: number; accuracy?: number }
 ): Promise<CheckInState> {
   try {
+    await validateCsrf()
     await assertPermission(PERMISSIONS['field_visits.update'].name)
     const result = await createCheckInRow({ visitId, ...coords })
     revalidatePath('/field-sales')
@@ -133,6 +138,7 @@ export interface GeoFenceFormState {
 }
 
 export async function createGeoFenceAction(_prev: GeoFenceFormState, formData: FormData): Promise<GeoFenceFormState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['field_visits.create'].name)
   const parsed = geoFenceSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -157,6 +163,7 @@ export async function createGeoFenceAction(_prev: GeoFenceFormState, formData: F
 }
 
 export async function toggleGeoFenceAction(id: string, isActive: boolean): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['field_visits.update'].name)
   const existing = await prisma.geoFence.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!existing) return
@@ -166,6 +173,7 @@ export async function toggleGeoFenceAction(id: string, isActive: boolean): Promi
 }
 
 export async function deleteGeoFenceAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['field_visits.update'].name)
   const existing = await prisma.geoFence.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!existing) return

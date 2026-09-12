@@ -2,18 +2,39 @@ import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { generateCompletion, isAIConfigured, type AIChatMessage } from '@/lib/ai'
+import { getRecordScope } from '@/lib/record-scope'
+import type { Session } from '@/lib/auth'
+import type { Prisma } from '@/generated/prisma'
 
 // ============================================================
 // Org data grounding — pulls a real CRM snapshot so the model
 // answers from actual pipeline data instead of guessing.
+// Scoped to caller visibility (ALL / DEPARTMENT / OWN) so a
+// non-admin never sees org-wide aggregates via the AI.
 // ============================================================
 
-async function buildOrgContext(organizationId: string): Promise<string> {
+function scopeFilterForAI(user: Session['user']): { ownerFilter: Prisma.LeadWhereInput; dealOwnerFilter: Prisma.DealWhereInput; followUpOwnerFilter: Prisma.FollowUpWhereInput; visitAssigneeFilter: Prisma.FieldVisitWhereInput } {
+  const scope = getRecordScope(user)
+  if (scope === 'ALL') return { ownerFilter: {}, dealOwnerFilter: {}, followUpOwnerFilter: {}, visitAssigneeFilter: {} }
+  if (scope === 'DEPARTMENT' && user.department?.id) {
+    const deptLead = { owner: { departmentId: user.department.id } } as unknown as Prisma.LeadWhereInput
+    const deptAssignee = { assignee: { departmentId: user.department.id } } as unknown as Prisma.FieldVisitWhereInput
+    return { ownerFilter: deptLead, dealOwnerFilter: deptLead as unknown as Prisma.DealWhereInput, followUpOwnerFilter: { owner: { departmentId: user.department.id } } as unknown as Prisma.FollowUpWhereInput, visitAssigneeFilter: deptAssignee }
+  }
+  return { ownerFilter: { ownerId: user.id } as Prisma.LeadWhereInput, dealOwnerFilter: { ownerId: user.id } as Prisma.DealWhereInput, followUpOwnerFilter: { ownerId: user.id } as Prisma.FollowUpWhereInput, visitAssigneeFilter: { assigneeId: user.id } as Prisma.FieldVisitWhereInput }
+}
+
+async function buildOrgContext(organizationId: string, user?: Session['user']): Promise<string> {
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
+  const s = user ? scopeFilterForAI(user) : null
+  const leadWhere: Prisma.LeadWhereInput = { organizationId, ...(s?.ownerFilter ?? {}) }
+  const dealWhere: Prisma.DealWhereInput = { organizationId, ...(s?.dealOwnerFilter ?? {}) }
+  const followUpWhere: Prisma.FollowUpWhereInput = { organizationId, ...(s?.followUpOwnerFilter ?? {}) }
+  const visitWhere: Prisma.FieldVisitWhereInput = { organizationId, ...(s?.visitAssigneeFilter ?? {}) }
 
   const [
     leadsByStatus,
@@ -24,34 +45,34 @@ async function buildOrgContext(organizationId: string): Promise<string> {
     recentLeads,
     todaysVisits,
   ] = await Promise.all([
-    prisma.lead.groupBy({ by: ['status'], where: { organizationId }, _count: { _all: true } }),
+    prisma.lead.groupBy({ by: ['status'], where: leadWhere, _count: { _all: true } }),
     prisma.deal.groupBy({
       by: ['stage'],
-      where: { organizationId },
+      where: dealWhere,
       _count: { _all: true },
       _sum: { value: true },
     }),
     prisma.deal.aggregate({
-      where: { organizationId, stage: 'WON', closedAt: { gte: monthStart } },
+      where: { ...dealWhere, stage: 'WON', closedAt: { gte: monthStart } },
       _sum: { value: true },
       _count: { _all: true },
     }),
     prisma.followUp.count({
-      where: { organizationId, status: { in: ['PENDING', 'OVERDUE'] }, dueDate: { lt: tomorrow } },
+      where: { ...followUpWhere, status: { in: ['PENDING', 'OVERDUE'] }, dueDate: { lt: tomorrow } },
     }),
     prisma.deal.findMany({
-      where: { organizationId, stage: { notIn: ['WON', 'LOST'] } },
+      where: { ...dealWhere, stage: { notIn: ['WON', 'LOST'] } },
       orderBy: { value: 'desc' },
       take: 8,
       select: { name: true, value: true, stage: true, probability: true, expectedClose: true },
     }),
     prisma.lead.findMany({
-      where: { organizationId },
+      where: leadWhere,
       orderBy: { createdAt: 'desc' },
       take: 5,
       select: { name: true, company: true, status: true, source: true, createdAt: true },
     }),
-    prisma.fieldVisit.count({ where: { organizationId, scheduledAt: { gte: today, lt: tomorrow } } }),
+    prisma.fieldVisit.count({ where: { ...visitWhere, scheduledAt: { gte: today, lt: tomorrow } } }),
   ])
 
   const fmt = (n: number) => `₹${Number(n).toLocaleString('en-IN')}`
@@ -191,7 +212,7 @@ export async function prepareChatTurn(conversationId: string | undefined, userMe
     take: 40,
   })
 
-  const orgContext = await buildOrgContext(organizationId)
+  const orgContext = await buildOrgContext(organizationId, session.user)
 
   return {
     conversationId: conversation.id,
@@ -316,7 +337,7 @@ export async function generateReport(type: ReportType) {
   const meta = REPORT_TYPES.find((r) => r.type === type)
   if (!meta) throw new Error('Unknown report type')
 
-  const orgContext = await buildOrgContext(organizationId)
+  const orgContext = await buildOrgContext(organizationId, session.user)
   const content = await generateCompletion(
     [{ role: 'user', content: REPORT_PROMPTS[type] }],
     systemPrompt(orgContext)
@@ -335,6 +356,83 @@ export async function generateReport(type: ReportType) {
   return { id: row.id }
 }
 
+
+export async function generateEmployeeDailySummary(dailyReportId: string): Promise<{ id: string }> {
+  const session = await requireApiSession()
+  if (!(session.user.permissions as string[]).includes('team.view') && !(session.user.permissions as string[]).includes('team.view_all')) throw new Error('Forbidden: missing team.view')
+  const report = await prisma.dailyReport.findFirst({
+    where: { id: dailyReportId, organizationId: session.user.organizationId },
+    include: { user: { select: { name: true, email: true } } },
+  })
+  if (!report) throw new Error('Daily report not found')
+  if (report.userId !== session.user.id && !(session.user.permissions as string[]).includes('team.view_all')) throw new Error('Forbidden: missing team.view_all')
+  const orgContext = await buildOrgContext(session.user.organizationId, session.user)
+  const prompt = [
+    'Write an Employee Daily Summary based on the daily report below. Be concise, highlight completed work, pending work, blockers, and tomorrow plan. Call out productivity signals.',
+    '',
+    'Employee: ' + (report.user.name ?? report.user.email),
+    'Date: ' + report.date.toISOString().slice(0, 10),
+    'Status: ' + report.status,
+    'Work description: ' + (report.workDescription ?? '-'),
+    'Completed: ' + (report.completedWork ?? '-'),
+    'Pending: ' + (report.pendingWork ?? '-'),
+    'Blockers: ' + (report.blockers ?? '-'),
+    'Tomorrow: ' + (report.tomorrowPlan ?? '-'),
+    'Stats: tasksCompleted=' + report.tasksCompletedCount + ', crmUpdated=' + report.crmRecordsUpdatedCount + ', leadsWorkedOn=' + report.leadsWorkedOnCount + ', filesUploaded=' + report.filesUploadedCount + ', activeMinutes=' + report.activeWorkingTimeMinutes,
+  ].join('\n')
+  const content = await generateCompletion([{ role: 'user', content: prompt }], systemPrompt(orgContext))
+  const row = await prisma.aIReport.create({
+    data: {
+      type: 'employee_daily_summary',
+      title: 'Daily Summary — ' + (report.user.name ?? report.user.email) + ' — ' + report.date.toISOString().slice(0, 10),
+      content,
+      organizationId: session.user.organizationId,
+      generatedById: session.user.id,
+      dailyReportId: report.id,
+    },
+  })
+  return { id: row.id }
+}
+
+export async function generateTeamManagementSummary(dateRange?: { from: Date; to: Date }): Promise<{ id: string }> {
+  const session = await requireApiSession()
+  if (!(session.user.permissions as string[]).includes('team.view_all')) throw new Error('Forbidden: missing team.view_all')
+  const organizationId = session.user.organizationId
+  const from = dateRange?.from ?? new Date(Date.now() - 6 * 86400000)
+  const to = dateRange?.to ?? new Date()
+  const reports = await prisma.dailyReport.findMany({
+    where: { organizationId, date: { gte: from, lte: to }, status: 'SUBMITTED' },
+    include: { user: { select: { name: true, email: true } } },
+    orderBy: { date: 'desc' },
+    take: 100,
+  })
+  const total = await prisma.user.count({ where: { organizationId, status: 'ACTIVE' } })
+  const todayKey = new Date().toISOString().slice(0, 10)
+  const submittedTodayCount = reports.filter((r) => r.date.toISOString().slice(0, 10) === todayKey).length
+  const orgContext = await buildOrgContext(organizationId, session.user)
+  const reportLines = reports.slice(0, 30).map((r) => '- ' + (r.user.name ?? r.user.email) + ' (' + r.date.toISOString().slice(0, 10) + '): ' + (r.workDescription ?? r.completedWork ?? '-') + ' | blockers: ' + (r.blockers ?? 'none')).join('\n') || '- No submitted reports in range.'
+  const prompt = [
+    'Write a Team Management Summary for leadership. Summarize team productivity, submission rate, common blockers, and 3 actionable recommendations. Use the daily reports below plus the CRM snapshot.',
+    '',
+    'Date range: ' + from.toISOString().slice(0, 10) + ' to ' + to.toISOString().slice(0, 10),
+    'Team size (active): ' + total + ', submitted in range: ' + reports.length + ', submitted today: ' + submittedTodayCount,
+    '',
+    'Daily reports (sample):',
+    reportLines,
+  ].join('\n')
+  const content = await generateCompletion([{ role: 'user', content: prompt }], systemPrompt(orgContext))
+  const row = await prisma.aIReport.create({
+    data: {
+      type: 'team_management_summary',
+      title: 'Team Management Summary — ' + from.toISOString().slice(0, 10) + ' to ' + to.toISOString().slice(0, 10),
+      content,
+      organizationId,
+      generatedById: session.user.id,
+    },
+  })
+  return { id: row.id }
+}
+
 export { isAIConfigured }
 
 // ============================================================
@@ -346,7 +444,7 @@ export { isAIConfigured }
 
 export async function analyzeQuestion(question: string): Promise<string> {
   const session = await requireApiSession()
-  const orgContext = await buildOrgContext(session.user.organizationId)
+  const orgContext = await buildOrgContext(session.user.organizationId, session.user)
   const system = [
     'You are a data analyst embedded in Kawman ExAct, a CRM and field-sales platform.',
     'Answer the question below using ONLY the live CRM snapshot provided. Be specific and quote the',

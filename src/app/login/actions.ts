@@ -1,15 +1,20 @@
 'use server'
 
-import { requireApiSession } from '@/lib/session'
+import { getSession } from '@/lib/session'
 import { logAudit } from '@/lib/audit-log'
 
-/** Called client-side right after a successful signIn.email() to record a real audit trail entry. */
+/** Best-effort post-login audit — never throws 500 (race: cookie may not be visible yet). */
 export async function logLoginAction(): Promise<void> {
-  const session = await requireApiSession()
-  await logAudit({
-    organizationId: session.user.organizationId,
-    actorId: session.user.id,
-    action: 'LOGIN',
-    resource: 'session',
-  })
+  const session = await getSession()
+  if (!session) return
+  try {
+    await logAudit({
+      organizationId: session.user.organizationId,
+      actorId: session.user.id,
+      action: 'LOGIN',
+      resource: 'session',
+    })
+  } catch {
+    // audit is best-effort — login must succeed even if audit write fails
+  }
 }

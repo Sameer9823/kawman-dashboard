@@ -15,13 +15,11 @@ interface PermissionRow {
 export function PermissionMatrix({
   roleId,
   roleName,
-  isSystem,
   permissions,
   grantedIds,
 }: {
   roleId: string
   roleName: string
-  isSystem: boolean
   permissions: PermissionRow[]
   grantedIds: string[]
 }) {

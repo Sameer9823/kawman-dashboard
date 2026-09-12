@@ -45,12 +45,12 @@ export async function getUserPermissions(userId: string, organizationId: string)
 
 export async function hasPermission(userId: string, organizationId: string, permission: string): Promise<boolean> {
   const permissions = await getUserPermissions(userId, organizationId)
-  return permissions.includes(permission)
+  return (permissions as string[]).includes(permission)
 }
 
 export async function hasAnyPermission(userId: string, organizationId: string, permissionList: string[]): Promise<boolean> {
   const permissions = await getUserPermissions(userId, organizationId)
-  return permissionList.some((permission) => permissions.includes(permission))
+  return permissionList.some((permission) => (permissions as string[]).includes(permission))
 }
 
 /** Throws (never returns false) so callers can use it as a guard clause. */

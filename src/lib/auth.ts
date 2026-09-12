@@ -3,9 +3,10 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { nextCookies } from 'better-auth/next-js'
 import { customSession } from 'better-auth/plugins/custom-session'
+import { emailOTP } from 'better-auth/plugins/email-otp'
 import { prisma } from '@/lib/db'
 import { getUserPermissions } from '@/services/permission.service'
-import { sendPasswordResetEmail } from '@/lib/email'
+import { sendPasswordResetEmail, sendEmail, isEmailConfigured } from '@/lib/email'
 
 /**
  * Central auth instance. Everything server-side that needs to know
@@ -73,36 +74,82 @@ export const auth = betterAuth({
   },
 
   plugins: [
+    // Email verification via OTP - sends verification email on signup
+    // Requires RESEND_API_KEY and EMAIL_FROM env vars to actually send emails;
+    // otherwise falls back to logging the verification link server-side.
+    emailOTP({
+      sendVerificationOTP: async ({ email, otp, type }) => {
+        const subject = type === 'email-verification'
+          ? 'Verify your Kawman ExAct email address'
+          : type === 'forget-password'
+            ? 'Reset your Kawman ExAct password'
+            : 'Your Kawman ExAct verification code'
+        const html = `
+          <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#0f172a;">
+            <h2 style="margin:0 0 16px;font-size:18px;">${subject}</h2>
+            <p style="font-size:14px;line-height:1.6;">Your verification code is: <strong style="font-size:24px;letter-spacing:4px;">${otp}</strong></p>
+            <p style="font-size:14px;line-height:1.6;">This code expires in 5 minutes.</p>
+            <p style="font-size:12px;color:#64748b;">If you didn't request this, you can safely ignore this email.</p>
+            <p style="margin-top:32px;font-size:12px;color:#64748b;">Kawman ExAct · Enterprise Workspace Platform</p>
+          </div>
+        `
+        if (isEmailConfigured()) {
+          await sendEmail({ to: email, subject, html })
+        } else {
+          console.log(`[email:dev] OTP email to ${email} (${type}) — delivery simulated (OTP hidden)`)
+        }
+      },
+      sendVerificationOnSignUp: true,
+      overrideDefaultEmailVerification: true,
+    }),
+
     // Every session response (server AND client) is enriched here with the
     // caller's resolved org/department/team/roles/permissions, computed
     // fresh from the DB — never trust a client-cached permission list.
     customSession(async ({ user, session }) => {
-      const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        include: {
-          organization: { select: { id: true, name: true, slug: true } },
-          department: { select: { id: true, name: true } },
-          team: { select: { id: true, name: true } },
-          roles: { include: { role: true } },
-        },
-      })
+      try {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            organization: { select: { id: true, name: true, slug: true } },
+            department: { select: { id: true, name: true } },
+            team: { select: { id: true, name: true } },
+            roles: { include: { role: true } },
+          },
+        })
 
-      const permissions = dbUser
-        ? await getUserPermissions(dbUser.id, dbUser.organizationId)
-        : []
+        const permissions = dbUser
+          ? await getUserPermissions(dbUser.id, dbUser.organizationId)
+          : []
 
-      return {
-        session,
-        user: {
-          ...user,
-          organizationId: dbUser?.organizationId ?? '',
-          organization: dbUser?.organization ?? null,
-          department: dbUser?.department ?? null,
-          team: dbUser?.team ?? null,
-          status: dbUser?.status ?? 'ACTIVE',
-          roles: dbUser?.roles.map((r) => r.role.name) ?? [],
-          permissions,
-        },
+        return {
+          session,
+          user: {
+            ...user,
+            organizationId: dbUser?.organizationId ?? '',
+            organization: dbUser?.organization ?? null,
+            department: dbUser?.department ?? null,
+            team: dbUser?.team ?? null,
+            status: dbUser?.status ?? 'ACTIVE',
+            roles: dbUser?.roles.map((r) => r.role.name) ?? [],
+            permissions,
+          },
+        }
+      } catch (err) {
+        console.error('[auth:customSession] Prisma error (returning bare session):', err)
+        return {
+          session,
+          user: {
+            ...user,
+            organizationId: (user as unknown as { organizationId?: string }).organizationId ?? '',
+            organization: null,
+            department: null,
+            team: null,
+            status: 'ACTIVE',
+            roles: [],
+            permissions: [],
+          },
+        }
       }
     }),
     nextCookies(), // must be registered last: applies Set-Cookie on Server Actions

@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireApiSession } from '@/lib/session'
@@ -25,7 +27,7 @@ import type { FileVisibility, FilePermissionLevel } from '@/types/files'
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes(permission)) throw new Error('You do not have permission to do this.')
+  if (!(session.user.permissions as string[]).includes(permission)) throw new Error('You do not have permission to do this.')
   return session
 }
 
@@ -40,6 +42,7 @@ export interface SimpleActionState {
 
 export async function createFolderAction(name: string, parentId: string | null): Promise<SimpleActionState> {
   try {
+    await validateCsrf()
     await assertPermission(PERMISSIONS['files.upload'].name)
     if (!name.trim()) return { error: 'Folder name is required' }
     await createFolder(name.trim(), parentId)
@@ -52,6 +55,7 @@ export async function createFolderAction(name: string, parentId: string | null):
 }
 
 export async function deleteFolderAction(id: string): Promise<void> {
+  await validateCsrf()
   await assertPermission(PERMISSIONS['files.delete'].name)
   await deleteFolder(id)
   revalidatePath('/files/my-files')
@@ -67,6 +71,7 @@ export interface FolderAccessActionState {
 }
 
 export async function listFolderAccessAction(folderId: string) {
+  await validateCsrf()
   return getFolderAccessGrants(folderId)
 }
 
@@ -76,6 +81,7 @@ export async function grantFolderAccessAction(
   level: FilePermissionLevel
 ): Promise<FolderAccessActionState> {
   try {
+    await validateCsrf()
     await assertPermission(PERMISSIONS['files.share'].name)
     await grantFolderAccess(folderId, userId, level)
     revalidatePath('/files/my-files')
@@ -87,6 +93,7 @@ export async function grantFolderAccessAction(
 }
 
 export async function revokeFolderAccessAction(grantId: string): Promise<void> {
+  await validateCsrf()
   await assertPermission(PERMISSIONS['files.share'].name)
   await revokeFolderAccess(grantId)
   revalidatePath('/files/my-files')
@@ -98,12 +105,14 @@ export async function revokeFolderAccessAction(grantId: string): Promise<void> {
 // ============================================================
 
 export async function listFileVersionsAction(fileId: string) {
+  await validateCsrf()
   await assertPermission(PERMISSIONS['files.view'].name)
   return getFileVersions(fileId)
 }
 
 export async function restoreFileVersionAction(fileId: string, versionId: string): Promise<SimpleActionState> {
   try {
+    await validateCsrf()
     await assertPermission(PERMISSIONS['files.update'].name)
     await restoreFileVersion(fileId, versionId)
     revalidatePath('/files/my-files')
@@ -118,6 +127,7 @@ export async function restoreFileVersionAction(fileId: string, versionId: string
 // ============================================================
 
 export async function toggleStarAction(fileId: string, star: boolean): Promise<void> {
+  await validateCsrf()
   await assertPermission(PERMISSIONS['files.view'].name)
   await toggleStar(fileId, star)
   revalidatePath('/files/my-files')
@@ -126,6 +136,7 @@ export async function toggleStarAction(fileId: string, star: boolean): Promise<v
 }
 
 export async function trashFileAction(fileId: string): Promise<void> {
+  await validateCsrf()
   await assertPermission(PERMISSIONS['files.delete'].name)
   await trashFile(fileId)
   revalidatePath('/files/my-files')
@@ -135,6 +146,7 @@ export async function trashFileAction(fileId: string): Promise<void> {
 }
 
 export async function restoreFileAction(fileId: string): Promise<void> {
+  await validateCsrf()
   await assertPermission(PERMISSIONS['files.delete'].name)
   await restoreFile(fileId)
   revalidatePath('/files/my-files')
@@ -142,6 +154,7 @@ export async function restoreFileAction(fileId: string): Promise<void> {
 }
 
 export async function permanentlyDeleteFileAction(fileId: string): Promise<void> {
+  await validateCsrf()
   await assertPermission(PERMISSIONS['files.delete'].name)
   await permanentlyDeleteFile(fileId)
   revalidatePath('/files/trash')
@@ -152,6 +165,7 @@ export async function permanentlyDeleteFileAction(fileId: string): Promise<void>
 // ============================================================
 
 export async function updateFileVisibilityAction(fileId: string, visibility: FileVisibility): Promise<void> {
+  await validateCsrf()
   await assertPermission(PERMISSIONS['files.manage'].name)
   await updateFileVisibility(fileId, visibility)
   revalidatePath('/files/my-files')
@@ -164,6 +178,7 @@ const shareSchema = z.object({
 
 export async function shareFileAction(fileId: string, formData: FormData): Promise<SimpleActionState> {
   try {
+    await validateCsrf()
     await assertPermission(PERMISSIONS['files.share'].name)
     const parsed = shareSchema.safeParse(Object.fromEntries(formData))
     if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Invalid input' }
@@ -191,6 +206,7 @@ export interface CategoryFormState {
 }
 
 export async function createCategoryAction(_prev: CategoryFormState, formData: FormData): Promise<CategoryFormState> {
+  await validateCsrf()
   await assertPermission(PERMISSIONS['files.manage'].name)
   const parsed = categorySchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -204,6 +220,7 @@ export async function createCategoryAction(_prev: CategoryFormState, formData: F
 }
 
 export async function deleteCategoryAction(id: string): Promise<void> {
+  await validateCsrf()
   await assertPermission(PERMISSIONS['files.manage'].name)
   await deleteCategory(id)
   revalidatePath('/files/categories')

@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { auth } from '@/lib/auth'
@@ -40,6 +42,7 @@ async function uniqueSlug(base: string): Promise<string> {
 }
 
 export async function signupAction(_prevState: SignupState, formData: FormData): Promise<SignupState> {
+  await validateCsrf()
   const parsed = signupSchema.safeParse({
     organizationName: formData.get('organizationName'),
     name: formData.get('name'),

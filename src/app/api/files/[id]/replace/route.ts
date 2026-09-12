@@ -18,7 +18,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   } catch {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   }
-  if (!session.user.permissions.includes('files.update')) {
+  if (!(session.user.permissions as string[]).includes('files.update')) {
     return NextResponse.json({ error: 'You do not have permission to replace files.' }, { status: 403 })
   }
 

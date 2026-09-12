@@ -71,7 +71,9 @@ export function Header() {
     queryFn: async () => {
       const res = await fetch('/api/notifications')
       if (!res.ok) return []
-      return res.json()
+      const data = await res.json()
+      // Ensure we always return an array
+      return Array.isArray(data) ? data : []
     },
     enabled: !!user,
     refetchInterval: 60_000,

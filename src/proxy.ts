@@ -6,69 +6,64 @@ import { auth } from '@/lib/auth'
 // Security Headers
 // ============================================================
 const SECURITY_HEADERS = {
-  // Prevent clickjacking
   'X-Frame-Options': 'DENY',
-  // Prevent MIME type sniffing
   'X-Content-Type-Options': 'nosniff',
-  // Referrer policy
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  // Permissions policy (formerly Feature Policy)
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  // Content Security Policy
   'Content-Security-Policy': [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com",
+    // Next.js injects inline <script> (and in dev uses eval for HMR) — without
+    // 'unsafe-inline' / 'unsafe-eval' every navigation including /login?redirect=
+    // is blocked with "Executing inline script violates CSP". Nonce-based CSP
+    // would be stricter but needs next.config headers + per-request nonce.
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: https: blob:",
     "connect-src 'self' https://api.resend.com https://api.cloudinary.com https://api.assemblyai.com https://generativelanguage.googleapis.com https://api.openai.com wss:",
     "frame-ancestors 'none'",
+    "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
   ].join('; '),
-  // HSTS - only in production
   ...(process.env.NODE_ENV === 'production'
     ? { 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload' }
     : {}),
 }
 
 // ============================================================
-// Public routes that don't require authentication
+// Public routes — exact match + slash-prefix only, so
+// '/api/auth' does NOT match '/api/auth-bypass'.
 // ============================================================
-const PUBLIC_PATHS = [
+const PUBLIC_EXACT = new Set([
   '/login',
   '/signup',
   '/forgot-password',
   '/reset-password',
-  '/api/auth',
   '/api/health',
-  '/_next',
   '/favicon.ico',
   '/robots.txt',
   '/sitemap.xml',
-]
+])
+const PUBLIC_PREFIXES = ['/api/auth', '/_next']
 
-// Of those, only these should redirect an already-authenticated visitor away
-const AUTH_ONLY_PATHS = ['/login', '/signup']
-
-// Auth API routes that need rate limiting headers
-const AUTH_API_ROUTES = [
-  '/api/auth/sign-in',
-  '/api/auth/sign-up',
-  '/api/auth/request-password-reset',
-  '/api/auth/reset-password',
-]
+// PUBLIC_PATHS / AUTH_ONLY_PATHS / AUTH_API_ROUTES removed — see PUBLIC_EXACT/PREFIXES and isAuth* helpers above.
 
 function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.some((p) => pathname.startsWith(p))
+  if (PUBLIC_EXACT.has(pathname)) return true
+  if (PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))) return true
+  return false
 }
 
 function isAuthOnlyPath(pathname: string): boolean {
-  return AUTH_ONLY_PATHS.some((p) => pathname.startsWith(p))
+  return pathname === '/login' || pathname.startsWith('/login/') || pathname === '/signup' || pathname.startsWith('/signup/')
 }
 
 function isAuthApiRoute(pathname: string): boolean {
-  return AUTH_API_ROUTES.some((route) => pathname.startsWith(route))
+  return pathname === '/api/auth/sign-in' || pathname.startsWith('/api/auth/sign-in/')
+    || pathname === '/api/auth/sign-up' || pathname.startsWith('/api/auth/sign-up/')
+    || pathname === '/api/auth/request-password-reset' || pathname.startsWith('/api/auth/request-password-reset/')
+    || pathname === '/api/auth/reset-password' || pathname.startsWith('/api/auth/reset-password/')
 }
 
 function isApiPath(pathname: string): boolean {
@@ -139,30 +134,23 @@ export const config = {
   matcher: [
     /*
      * Match all paths except:
-     * - api/auth (handled by better-auth itself)
-     * - api/meetings/[id]/upload-recording, and /meetings/new — both
-     *   receive large (up to 500MB) multipart video uploads: the API
+     * - api/auth (handled by better-auth itself — must not be intercepted)
+     * - api/meetings/[id]/upload-recording and /meetings/new — both
+     *   receive large (up to 500MB) multipart video uploads. The API
      *   route via fetch(), and /meetings/new via a Server Action
-     *   (createMeetingWithVideoAction) invoked directly from the upload
-     *   form, which POSTs the multipart body to the page URL itself, not
-     *   the API route. Next.js has a known race condition
+     *   (createMeetingWithVideoAction) that POSTs the multipart body to
+     *   the page URL itself. Next has a known race
      *   (github.com/lucasadrianof/nextjs-middleware-bug) where
-     *   requestData.body.finalize() isn't awaited when middleware sits in
-     *   front of a route/action reading a large multipart body, causing
-     *   an intermittent "Unexpected end of form" error. Both paths still
-     *   enforce auth server-side (auth.api.getSession() in route.ts;
-     *   requireApiSession() in page.tsx and in assertPermission() inside
-     *   createMeetingWithVideoAction), so skipping the edge cookie
-     *   pre-check here is safe.
+     *   requestData.body.finalize() isn't awaited when proxy sits in
+     *   front of a large multipart body, causing "Unexpected end of form".
+     *   Both paths still enforce auth server-side (auth.api.getSession()
+     *   in route.ts; requireApiSession() in assertPermission()), so
+     *   skipping the edge cookie pre-check is safe.
      * - _next/static, _next/image (Next internals)
-     * - favicon.ico, manifest.json, sw.js, and common static asset
-     *   extensions — the PWA manifest/service-worker/icons must be
-     *   fetchable by an unauthenticated browser (installability checks,
-     *   and ServiceWorkerRegistration runs on every page including
-     *   /login) or they'd get redirected to an HTML login page instead
-     *   of the actual file, which breaks service worker registration
-     *   outright (browsers reject a non-JS MIME type for it).
+     * - favicon.ico, manifest.json, sw.js, and static asset extensions —
+     *   the PWA manifest/service-worker/icons must be fetchable
+     *   unauthenticated or browsers reject the service worker (non-JS MIME).
      */
-    '/((?!api/auth|api/meetings/.*/upload-recording|meetings/new|_next/static|_next/image|favicon.ico|manifest.json|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api/auth|api/meetings/[^/]+/upload-recording|meetings/new|_next/static|_next/image|favicon\\.ico|manifest\\.json|sw\\.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
@@ -20,6 +22,7 @@ export interface ProfileFormState {
 
 /** Updates the CURRENT user's own profile only — there is deliberately no userId parameter, so this can never be used to edit someone else's account. */
 export async function updateOwnProfileAction(_prev: ProfileFormState, formData: FormData): Promise<ProfileFormState> {
+  await validateCsrf()
   const session = await requireApiSession()
   const parsed = profileSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {

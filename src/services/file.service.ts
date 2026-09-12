@@ -51,7 +51,7 @@ async function canAccessFolder(
   organizationId: string,
   permissions: string[]
 ): Promise<boolean> {
-  if (permissions.includes('files.manage')) return true
+  if ((permissions as string[]).includes('files.manage')) return true
 
   const folder = await prisma.folder.findFirst({
     where: { id: folderId, organizationId },
@@ -73,7 +73,7 @@ async function filterAccessibleFolders(
   userId: string,
   permissions: string[]
 ): Promise<Set<string>> {
-  if (permissions.includes('files.manage')) return new Set(folders.map((f) => f.id))
+  if ((permissions as string[]).includes('files.manage')) return new Set(folders.map((f) => f.id))
   if (folders.length === 0) return new Set()
 
   const folderIds = folders.map((f) => f.id)
@@ -108,7 +108,7 @@ export async function getFolderAccessGrants(folderId: string): Promise<FolderAcc
     where: { id: folderId, organizationId: session.user.organizationId },
   })
   if (!folder) throw new Error('Folder not found')
-  if (folder.createdById !== session.user.id && !session.user.permissions.includes('files.manage')) {
+  if (folder.createdById !== session.user.id && !(session.user.permissions as string[]).includes('files.manage')) {
     throw new Error('You do not have permission to manage access for this folder.')
   }
 
@@ -134,7 +134,7 @@ export async function grantFolderAccess(folderId: string, userId: string, level:
     where: { id: folderId, organizationId: session.user.organizationId },
   })
   if (!folder) throw new Error('Folder not found')
-  if (folder.createdById !== session.user.id && !session.user.permissions.includes('files.manage')) {
+  if (folder.createdById !== session.user.id && !(session.user.permissions as string[]).includes('files.manage')) {
     throw new Error('You do not have permission to manage access for this folder.')
   }
 
@@ -157,7 +157,7 @@ export async function revokeFolderAccess(grantId: string): Promise<void> {
   if (!grant?.folder || grant.folder.organizationId !== session.user.organizationId) {
     throw new Error('Grant not found')
   }
-  if (grant.folder.createdById !== session.user.id && !session.user.permissions.includes('files.manage')) {
+  if (grant.folder.createdById !== session.user.id && !(session.user.permissions as string[]).includes('files.manage')) {
     throw new Error('You do not have permission to manage access for this folder.')
   }
   await prisma.filePermission.delete({ where: { id: grantId } })
@@ -206,7 +206,7 @@ type FileRow = Awaited<ReturnType<typeof fetchFileRows>>[number]
  *     explicit share, never by default.
  */
 function fileVisibilityWhere(user: Session['user']): Prisma.FileWhereInput {
-  if (user.permissions.includes('files.manage')) return {}
+  if ((user.permissions as string[]).includes('files.manage')) return {}
 
   const or: Prisma.FileWhereInput[] = [
     { uploadedById: user.id },
@@ -388,9 +388,7 @@ export async function createFileRecord(input: {
   folderId: string | null
   visibility: FileVisibility
 }) {
-  console.log('[FILE_SERVICE] Creating file record:', { fileName: input.fileName, cloudinaryPublicId: input.cloudinaryPublicId, folderId: input.folderId })
   const session = await requireApiSession()
-  console.log('[FILE_SERVICE] Session obtained for file creation:', { userId: session.user.id, orgId: session.user.organizationId })
   const file = await prisma.file.create({
     data: {
       fileName: input.fileName,
@@ -408,9 +406,7 @@ export async function createFileRecord(input: {
       uploadedById: session.user.id,
     },
   })
-  console.log('[FILE_SERVICE] File record created in DB:', { id: file.id, fileName: file.fileName })
   await logActivity(file.id, session.user.id, 'UPLOADED')
-  console.log('[FILE_SERVICE] Activity logged for file:', file.id)
   return file.id
 }
 

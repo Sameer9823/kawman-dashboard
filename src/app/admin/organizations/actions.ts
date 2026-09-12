@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
@@ -26,8 +28,9 @@ export interface OrgFormState {
 }
 
 export async function updateOrganizationAction(_prev: OrgFormState, formData: FormData): Promise<OrgFormState> {
+  await validateCsrf()
   const session = await requireApiSession()
-  if (!session.user.permissions.includes('organizations.update')) {
+  if (!(session.user.permissions as string[]).includes('organizations.update')) {
     return { error: 'You do not have permission to do this.' }
   }
 

@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
@@ -8,7 +10,7 @@ import { PERMISSIONS } from '@/lib/permissions-data'
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes(permission)) {
+  if (!(session.user.permissions as string[]).includes(permission)) {
     throw new Error('You do not have permission to do this.')
   }
   return session
@@ -34,6 +36,7 @@ export async function createFollowUpAction(
   _prev: FollowUpFormState,
   formData: FormData
 ): Promise<FollowUpFormState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['leads.update'].name)
   const parsed = followUpSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -64,6 +67,7 @@ export async function createFollowUpAction(
 }
 
 export async function completeFollowUpAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['leads.update'].name)
   await prisma.followUp.updateMany({
     where: { id, organizationId: session.user.organizationId },
@@ -74,6 +78,7 @@ export async function completeFollowUpAction(id: string): Promise<void> {
 }
 
 export async function reopenFollowUpAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['leads.update'].name)
   await prisma.followUp.updateMany({
     where: { id, organizationId: session.user.organizationId },
@@ -84,6 +89,7 @@ export async function reopenFollowUpAction(id: string): Promise<void> {
 }
 
 export async function deleteFollowUpAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['leads.update'].name)
   await prisma.followUp.deleteMany({ where: { id, organizationId: session.user.organizationId } })
   revalidatePath('/follow-ups')

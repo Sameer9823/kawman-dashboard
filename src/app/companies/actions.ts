@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -28,11 +30,12 @@ export interface CompanyFormState {
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes(permission)) throw new Error('You do not have permission to do this.')
+  if (!(session.user.permissions as string[]).includes(permission)) throw new Error('You do not have permission to do this.')
   return session
 }
 
 export async function createCompanyAction(_prev: CompanyFormState, formData: FormData): Promise<CompanyFormState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['companies.create'].name)
   const parsed = companySchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -84,6 +87,7 @@ export async function updateCompanyAction(
   _prev: CompanyFormState,
   formData: FormData
 ): Promise<CompanyFormState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['companies.update'].name)
   const parsed = companySchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -127,6 +131,7 @@ export async function updateCompanyAction(
 }
 
 export async function deleteCompanyAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['companies.delete'].name)
   const existing = await prisma.company.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!existing) return

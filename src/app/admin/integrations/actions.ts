@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
@@ -8,7 +10,7 @@ import { logAudit } from '@/lib/audit-log'
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes(permission)) {
+  if (!(session.user.permissions as string[]).includes(permission)) {
     throw new Error('You do not have permission to do this.')
   }
   return session
@@ -36,6 +38,7 @@ export async function createIntegrationAction(
   _prev: IntegrationFormState,
   formData: FormData
 ): Promise<IntegrationFormState> {
+  await validateCsrf()
   const session = await assertPermission('organizations.update')
   const parsed = createSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -74,6 +77,7 @@ export async function createIntegrationAction(
 }
 
 export async function toggleIntegrationAction(id: string, isActive: boolean): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission('organizations.update')
   await prisma.integration.updateMany({
     where: { id, organizationId: session.user.organizationId },
@@ -83,6 +87,7 @@ export async function toggleIntegrationAction(id: string, isActive: boolean): Pr
 }
 
 export async function deleteIntegrationAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission('organizations.update')
   await prisma.integration.deleteMany({ where: { id, organizationId: session.user.organizationId } })
   revalidatePath('/admin/integrations')

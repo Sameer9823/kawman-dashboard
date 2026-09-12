@@ -16,7 +16,8 @@ interface Bucket {
   resetAt: number
 }
 
-// In-memory fallback (single instance only)
+// In-memory fallback (single instance only) — bounded to prevent DoS via key flooding
+const MAX_MEMORY_BUCKETS = 10000
 const memoryBuckets = new Map<string, Bucket>()
 const CLEANUP_INTERVAL_MS = 5 * 60 * 1000
 let lastCleanup = Date.now()
@@ -91,6 +92,11 @@ export async function checkRateLimit(key: string, max: number, windowSeconds: nu
 
   // In-memory fallback (single instance)
   cleanupMemoryIfDue()
+  // Evict oldest entry if at capacity
+  if (!memoryBuckets.has(key) && memoryBuckets.size >= MAX_MEMORY_BUCKETS) {
+    const firstKey = memoryBuckets.keys().next().value
+    if (firstKey) memoryBuckets.delete(firstKey)
+  }
   const existing = memoryBuckets.get(key)
 
   if (!existing || existing.resetAt <= now) {

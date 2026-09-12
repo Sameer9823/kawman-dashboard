@@ -42,6 +42,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  UserCog,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useUIStore } from '@/stores/ui'
@@ -120,6 +121,15 @@ const NAV_GROUPS: NavGroup[] = [
       { name: 'Geo-Fencing', href: '/field-sales/geofencing', icon: ShieldCheck },
       { name: 'Check-ins', href: '/field-sales/checkins', icon: UserCheck },
       { name: 'Visit Reports', href: '/field-sales/reports', icon: ClipboardCheck },
+    ],
+  },
+  {
+    label: 'My Team',
+    requiresAnyPermission: ['team.view', 'team.view_all'],
+    items: [
+      { name: 'Team Dashboard', href: '/admin/my-team', icon: Users, permission: 'team.view' },
+      { name: 'Daily Reports', href: '/admin/my-team/reports', icon: ClipboardCheck, permission: 'team.view' },
+      { name: 'Team Members', href: '/admin/my-team/members', icon: UserCog, permission: 'team.view_all' },
     ],
   },
   {

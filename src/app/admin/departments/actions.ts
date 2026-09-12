@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
@@ -19,11 +21,12 @@ export interface DeptFormState {
 
 async function assertPermission() {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes('organizations.update')) throw new Error('You do not have permission to do this.')
+  if (!(session.user.permissions as string[]).includes('organizations.update')) throw new Error('You do not have permission to do this.')
   return session
 }
 
 export async function createDepartmentAction(_prev: DeptFormState, formData: FormData): Promise<DeptFormState> {
+  await validateCsrf()
   const session = await assertPermission()
   const parsed = schema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -59,6 +62,7 @@ export async function createDepartmentAction(_prev: DeptFormState, formData: For
 }
 
 export async function deleteDepartmentAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission()
   const existing = await prisma.department.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!existing) return

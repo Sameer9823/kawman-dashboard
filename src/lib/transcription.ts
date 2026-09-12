@@ -1,15 +1,11 @@
 import 'server-only'
-import { v2 as cloudinary } from 'cloudinary'
 import ffmpeg from 'fluent-ffmpeg'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
+import { tmpdir } from 'os'
+import { join } from 'path'
 import { createWriteStream, unlinkSync, existsSync } from 'fs'
 import { pipeline } from 'stream/promises'
 import OpenAI from 'openai'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 
 export interface TranscriptionResult {
   text: string
@@ -144,7 +140,7 @@ class OpenAIWhisperTranscriptionService implements TranscriptionService {
     }
 
     const audioBuffer = await this.downloadAudio(audioUrl)
-    const tempFilePath = join(__dirname, `temp-audio-${Date.now()}.mp3`)
+    const tempFilePath = join(tmpdir(), `exact-audio-${Date.now()}.mp3`)
     await this.saveBufferToFile(audioBuffer, tempFilePath)
 
     try {
@@ -240,7 +236,7 @@ class GeminiAudioTranscriptionService implements TranscriptionService {
 
 class MockTranscriptionService implements TranscriptionService {
   async transcribe(audioUrl: string): Promise<TranscriptionResult> {
-    console.log('[TRANSCRIPTION] Using mock service for:', audioUrl)
+    console.log('[TRANSCRIPTION] Using mock service (audio URL hidden)')
     await new Promise(resolve => setTimeout(resolve, 2000))
     return {
       text: `[Mock Transcript] This is a simulated transcript for the meeting recording at ${audioUrl}. In production, this would be the actual speech-to-text result from AssemblyAI, OpenAI Whisper, or Google Gemini.`,
@@ -270,8 +266,8 @@ export async function extractAudioFromVideo(videoUrl: string): Promise<Buffer> {
   }
   const videoBuffer = Buffer.from(await response.arrayBuffer())
 
-  const tempVideoPath = join(__dirname, `temp-video-${Date.now()}.mp4`)
-  const tempAudioPath = join(__dirname, `temp-audio-${Date.now()}.mp3`)
+  const tempVideoPath = join(tmpdir(), `exact-video-${Date.now()}.mp4`)
+  const tempAudioPath = join(tmpdir(), `exact-audio-${Date.now()}.mp3`)
 
   try {
     const writeStream = createWriteStream(tempVideoPath)

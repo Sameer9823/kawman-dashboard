@@ -2,14 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { v2 as cloudinary } from 'cloudinary'
-import { Readable } from 'stream'
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-})
+import { uploadToCloudinary, isCloudinaryConfigured } from '@/lib/cloudinary'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function POST(
   request: NextRequest,
@@ -21,11 +15,27 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Permission gate — only users who can update meetings may attach recordings
+    if (!(session.user.permissions as string[]).includes('meetings.update') && !(session.user.permissions as string[]).includes('meetings.create')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const limit = await checkRateLimit(`meeting-upload:${session.user.id}`, 5, 60)
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many uploads. Please slow down.' },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } }
+      )
+    }
+
+    if (!isCloudinaryConfigured()) {
+      return NextResponse.json({ error: 'File uploads are not configured.' }, { status: 503 })
+    }
+
     const { id: meetingId } = await params
 
-    // Verify meeting exists and user has access
-    const meeting = await prisma.meeting.findUnique({
-      where: { id: meetingId },
+    const meeting = await prisma.meeting.findFirst({
+      where: { id: meetingId, organizationId: session.user.organizationId },
       select: { id: true, organizationId: true },
     })
 
@@ -33,75 +43,44 @@ export async function POST(
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 })
     }
 
-    // Check if user belongs to the same organization
-    if (meeting.organizationId !== session.user.organizationId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     const formData = await request.formData()
-    const file = formData.get('file') as File
+    const file = formData.get('file') as File | null
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    // Validate file type
-    const allowedTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska']
-    if (!allowedTypes.includes(file.type)) {
+    const allowedTypes = new Set(['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'])
+    if (!allowedTypes.has(file.type)) {
       return NextResponse.json({ error: 'Invalid file type. Please upload a video file.' }, { status: 400 })
     }
 
-    // Validate file size (500MB max)
-    const maxSize = 500 * 1024 * 1024
+    const maxSize = 50 * 1024 * 1024 // 50 MB — Cloudinary handles larger via chunked upload, but cap API payload
     if (file.size > maxSize) {
-      return NextResponse.json({ error: 'File too large. Maximum size is 500MB.' }, { status: 400 })
+      return NextResponse.json({ error: 'File too large. Maximum size is 50 MB.' }, { status: 400 })
     }
 
-    // Convert file to buffer
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    const buffer = Buffer.from(await file.arrayBuffer())
 
-    // Upload to Cloudinary
-    const uploadResult = await new Promise<{ secure_url: string; public_id: string; duration?: number }>((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          resource_type: 'video',
-          folder: `meetings/${meetingId}`,
-          public_id: `recording_${Date.now()}`,
-          chunk_size: 6000000,
-        },
-        (error, result) => {
-          if (error) reject(error)
-          else if (result) resolve({
-            secure_url: result.secure_url,
-            public_id: result.public_id,
-            duration: result.duration,
-          })
-          else reject(new Error('Upload failed'))
-        }
-      )
-
-      const readable = new Readable()
-      readable._read = () => {}
-      readable.push(buffer)
-      readable.push(null)
-      readable.pipe(uploadStream)
+    const upload = await uploadToCloudinary(buffer, {
+      organizationId: session.user.organizationId,
+      fileName: file.name,
+      mimeType: file.type || 'video/mp4',
     })
 
-    // Create recording record in database
     const recording = await prisma.meetingRecording.create({
       data: {
         meetingId,
-        cloudinaryPublicId: uploadResult.public_id,
-        secureUrl: uploadResult.secure_url,
-        duration: uploadResult.duration ? Math.round(uploadResult.duration) : null,
-        fileSize: file.size,
+        cloudinaryPublicId: upload.publicId,
+        secureUrl: upload.secureUrl,
+        duration: null,
+        fileSize: upload.fileSize,
       },
     })
 
-    // Trigger transcription and MoM generation asynchronously
-    // We don't await this to return response quickly
-    triggerTranscriptionAndMoM(meetingId, recording.id, uploadResult.secure_url).catch(console.error)
+    triggerTranscriptionAndMoM(meetingId, recording.id, upload.secureUrl).catch((e) =>
+      console.error('[MEETING-UPLOAD] Transcription/MoM failed:', e)
+    )
 
     return NextResponse.json({
       success: true,
@@ -120,15 +99,12 @@ export async function POST(
 
 async function triggerTranscriptionAndMoM(meetingId: string, recordingId: string, videoUrl: string) {
   try {
-    // Import dynamically to avoid circular dependencies
     const { transcribeVideo } = await import('@/lib/transcription')
     const { generateMeetingSummary } = await import('@/services/meeting.service')
 
-    // Transcribe the video
     const transcript = await transcribeVideo(videoUrl)
 
     if (transcript) {
-      // Save transcript
       await prisma.meetingTranscript.create({
         data: {
           meetingId,
@@ -137,7 +113,6 @@ async function triggerTranscriptionAndMoM(meetingId: string, recordingId: string
         },
       })
 
-      // Generate MoM from transcript
       await generateMeetingSummary(meetingId)
     }
   } catch (error) {

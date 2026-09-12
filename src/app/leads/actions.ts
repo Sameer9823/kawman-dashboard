@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -32,13 +34,14 @@ export interface LeadFormState {
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes(permission)) {
+  if (!(session.user.permissions as string[]).includes(permission)) {
     throw new Error('You do not have permission to do this.')
   }
   return session
 }
 
 export async function createLeadAction(_prev: LeadFormState, formData: FormData): Promise<LeadFormState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['leads.create'].name)
 
   const parsed = leadSchema.safeParse(Object.fromEntries(formData))
@@ -49,40 +52,46 @@ export async function createLeadAction(_prev: LeadFormState, formData: FormData)
   }
 
   const data = parsed.data
-  const lead = await prisma.lead.create({
-    data: {
-      name: data.name,
-      company: data.company || null,
-      companyId: data.companyId || null,
-      email: data.email || null,
-      phone: data.phone || null,
-      source: data.source || 'Other',
-      score: data.score ?? 0,
-      value: data.value ?? null,
-      notes: data.notes || null,
-      organizationId: session.user.organizationId,
-      ownerId: data.ownerId || session.user.id,
-      lastActivityAt: new Date(),
-    },
-  })
+  const lead = await prisma.$transaction(async (tx) => {
+    const created = await tx.lead.create({
+      data: {
+        name: data.name,
+        company: data.company || null,
+        companyId: data.companyId || null,
+        email: data.email || null,
+        phone: data.phone || null,
+        source: data.source || 'Other',
+        score: data.score ?? 0,
+        value: data.value ?? null,
+        notes: data.notes || null,
+        organizationId: session.user.organizationId,
+        ownerId: data.ownerId || session.user.id,
+        lastActivityAt: new Date(),
+      },
+    })
 
-  await prisma.activity.create({
-    data: {
-      type: 'LEAD_CREATED',
-      description: `${session.user.name} created lead "${lead.name}"`,
-      organizationId: session.user.organizationId,
-      actorId: session.user.id,
-      leadId: lead.id,
-    },
-  })
+    await tx.activity.create({
+      data: {
+        type: 'LEAD_CREATED',
+        description: `${session.user.name} created lead "${created.name}"`,
+        organizationId: session.user.organizationId,
+        actorId: session.user.id,
+        leadId: created.id,
+      },
+    })
 
-  await logAudit({
-    organizationId: session.user.organizationId,
-    actorId: session.user.id,
-    action: 'CREATE',
-    resource: 'Lead',
-    resourceId: lead.id,
-    metadata: { name: lead.name, source: lead.source },
+    await tx.auditLog.create({
+      data: {
+        organizationId: session.user.organizationId,
+        actorId: session.user.id,
+        action: 'CREATE',
+        resource: 'Lead',
+        resourceId: created.id,
+        metadata: { name: created.name, source: created.source } as never,
+      },
+    })
+
+    return created
   })
 
   revalidatePath('/leads')
@@ -91,6 +100,7 @@ export async function createLeadAction(_prev: LeadFormState, formData: FormData)
 }
 
 export async function updateLeadAction(id: string, _prev: LeadFormState, formData: FormData): Promise<LeadFormState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['leads.update'].name)
 
   const parsed = leadSchema.safeParse(Object.fromEntries(formData))
@@ -150,6 +160,7 @@ export async function updateLeadAction(id: string, _prev: LeadFormState, formDat
 }
 
 export async function deleteLeadAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['leads.delete'].name)
   const existing = await prisma.lead.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!existing) return
@@ -170,6 +181,7 @@ export async function deleteLeadAction(id: string): Promise<void> {
 }
 
 export async function convertLeadToDealAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['deals.create'].name)
   const lead = await prisma.lead.findFirst({
     where: { id, organizationId: session.user.organizationId },
@@ -231,6 +243,7 @@ export interface RecalculateScoreState {
 
 export async function recalculateLeadScoreAction(leadId: string): Promise<RecalculateScoreState> {
   try {
+    await validateCsrf()
     await assertPermission(PERMISSIONS['leads.update'].name)
     const result = await recalculateLeadScore(leadId)
     revalidatePath('/leads')
@@ -249,6 +262,7 @@ export interface RecalculateAllState {
 
 export async function recalculateAllLeadScoresAction(): Promise<RecalculateAllState> {
   try {
+    await validateCsrf()
     await assertPermission(PERMISSIONS['leads.update'].name)
     const result = await recalculateAllLeadScores()
     revalidatePath('/leads')
@@ -281,6 +295,7 @@ export interface LeadImportResult {
 const MAX_IMPORT_ROWS = 1000
 
 export async function importLeadsAction(formData: FormData): Promise<LeadImportResult> {
+  await validateCsrf()
   let session
   try {
     session = await assertPermission(PERMISSIONS['leads.create'].name)
@@ -402,6 +417,7 @@ export interface BulkActionState {
 export async function bulkDeleteLeadsAction(ids: string[]): Promise<BulkActionState> {
   if (ids.length === 0) return { updated: 0 }
   try {
+    await validateCsrf()
     const session = await assertPermission(PERMISSIONS['leads.delete'].name)
     const result = await prisma.lead.deleteMany({ where: { id: { in: ids }, organizationId: session.user.organizationId } })
 
@@ -422,6 +438,7 @@ export async function bulkDeleteLeadsAction(ids: string[]): Promise<BulkActionSt
 }
 
 export async function bulkUpdateLeadStatusAction(ids: string[], status: string): Promise<BulkActionState> {
+  await validateCsrf()
   if (ids.length === 0) return { updated: 0 }
   const parsedStatus = z
     .enum(['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST'])
@@ -452,6 +469,7 @@ export async function bulkUpdateLeadStatusAction(ids: string[], status: string):
 }
 
 export async function bulkReassignLeadsAction(ids: string[], ownerId: string): Promise<BulkActionState> {
+  await validateCsrf()
   if (ids.length === 0) return { updated: 0 }
   if (!ownerId) return { error: 'Select a person to reassign to' }
 

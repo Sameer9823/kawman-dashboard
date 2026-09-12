@@ -7,6 +7,9 @@ import { LiveMapCard } from '@/components/dashboard/live-map-card'
 import { LeadSourceChart } from '@/components/dashboard/lead-source-chart'
 import { FollowUpList } from '@/components/dashboard/follow-up-list'
 import { RecentActivities } from '@/components/dashboard/recent-activities'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { ClipboardCheck } from 'lucide-react'
 import { NewActionDropdown } from '@/components/dashboard/new-action-dropdown'
 import { getDashboardMetrics } from '@/services/dashboard.service'
 
@@ -29,7 +32,12 @@ export default async function DashboardPage() {
               Here&apos;s what&apos;s happening in your workspace today.
             </p>
           </div>
-          <NewActionDropdown />
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/daily-report">
+              <Button variant="outline" className="gap-1.5"><ClipboardCheck className="h-4 w-4" /> Submit today&apos;s report</Button>
+            </Link>
+            <NewActionDropdown />
+          </div>
         </div>
 
         {/* KPI row */}

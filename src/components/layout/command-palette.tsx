@@ -77,16 +77,20 @@ export function CommandPalette() {
 
   // Focusing the input is a genuine side effect (imperative DOM access
   // after the dialog paints), so this one does belong in an effect.
-  // Clean up the previous frame to avoid stacking multiple focus calls
-  // when local state (query, activeIndex) changes while the palette is open.
+  // Only focus when the palette transitions from closed -> open, not on
+  // every render while open. Track previous open state with a ref.
+  const wasOpenForFocusRef = useRef(commandPaletteOpen)
   useEffect(() => {
-    if (!commandPaletteOpen) return
+    const wasOpen = wasOpenForFocusRef.current
+    wasOpenForFocusRef.current = commandPaletteOpen
 
-    const frame = requestAnimationFrame(() => {
-      inputRef.current?.focus()
-    })
-
-    return () => cancelAnimationFrame(frame)
+    // Only focus on closed -> open transition
+    if (!wasOpen && commandPaletteOpen) {
+      const frame = requestAnimationFrame(() => {
+        inputRef.current?.focus()
+      })
+      return () => cancelAnimationFrame(frame)
+    }
   }, [commandPaletteOpen])
 
   // Derived (not stored) — clamp the selection to the current result

@@ -35,7 +35,7 @@ export default async function AdminAuditLogsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const session = await requireSession()
-  if (!session.user.permissions.includes('audit_logs.view')) {
+  if (!(session.user.permissions as string[]).includes('audit_logs.view')) {
     return (
       <MainLayout>
         <PageHeader title="Audit Logs" subtitle="You don't have permission to view this." />

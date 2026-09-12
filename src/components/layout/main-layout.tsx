@@ -7,12 +7,14 @@ import { Header } from './header'
 import { Footer } from './footer'
 import { CommandPalette } from './command-palette'
 import { useUIStore } from '@/stores/ui'
+import { useHeartbeat } from '@/hooks/use-heartbeat'
 
 interface MainLayoutProps {
   children: React.ReactNode
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
+  useHeartbeat(true)
   const { sidebarCollapsed, mobileDrawerOpen, setMobileDrawerOpen } = useUIStore()
 
   return (

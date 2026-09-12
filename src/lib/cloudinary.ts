@@ -35,17 +35,12 @@ export async function uploadToCloudinary(
   buffer: Buffer,
   options: { organizationId: string; fileName: string; mimeType: string }
 ): Promise<CloudinaryUploadResult> {
-  console.log('[CLOUDINARY] Starting upload:', { fileName: options.fileName, mimeType: options.mimeType, orgId: options.organizationId, bufferSize: buffer.length })
-  
   if (!isCloudinaryConfigured()) {
-    console.error('[CLOUDINARY] Not configured - missing env vars')
     throw new Error('Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.')
   }
   configure()
 
   const resourceType = resourceTypeForMime(options.mimeType)
-  console.log('[CLOUDINARY] Resource type determined:', resourceType)
-
   const result = await new Promise<UploadApiResponse>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
@@ -57,13 +52,10 @@ export async function uploadToCloudinary(
       },
       (error, uploadResult) => {
         if (error) {
-          console.error('[CLOUDINARY] Upload stream error:', error)
           reject(error)
         } else if (!uploadResult) {
-          console.error('[CLOUDINARY] Upload stream returned no result')
           reject(new Error('Upload failed - no result'))
         } else {
-          console.log('[CLOUDINARY] Upload stream success:', { publicId: uploadResult.public_id, resourceType: uploadResult.resource_type, bytes: uploadResult.bytes })
           resolve(uploadResult)
         }
       }
@@ -71,7 +63,6 @@ export async function uploadToCloudinary(
     stream.end(buffer)
   })
 
-  console.log('[CLOUDINARY] Upload completed, generating thumbnail URL...')
   const thumbnailUrl =
     resourceType === 'image'
       ? cloudinary.url(result.public_id, { transformation: [{ width: 300, height: 300, crop: 'fill' }], secure: true })
@@ -79,7 +70,6 @@ export async function uploadToCloudinary(
         ? cloudinary.url(result.public_id, { resource_type: 'video', format: 'jpg', secure: true })
         : null
 
-  console.log('[CLOUDINARY] Returning upload result:', { publicId: result.public_id, resourceType: result.resource_type, fileSize: result.bytes })
   return {
     publicId: result.public_id,
     resourceType: result.resource_type,

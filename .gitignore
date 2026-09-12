@@ -59,6 +59,12 @@ coverage/
 tmp/
 temp/
 *.tmp
+*.bak
+nul
+temp-audio-*.mp3
+temp-video-*.mp4
+write_page*.js
+write_page*.py
 
 # Uploads / generated files
 uploads/

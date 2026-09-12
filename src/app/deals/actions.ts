@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -29,11 +31,12 @@ export interface DealFormState {
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes(permission)) throw new Error('You do not have permission to do this.')
+  if (!(session.user.permissions as string[]).includes(permission)) throw new Error('You do not have permission to do this.')
   return session
 }
 
 export async function createDealAction(_prev: DealFormState, formData: FormData): Promise<DealFormState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['deals.create'].name)
   const parsed = dealSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -88,6 +91,7 @@ export async function createDealAction(_prev: DealFormState, formData: FormData)
 }
 
 export async function updateDealAction(id: string, _prev: DealFormState, formData: FormData): Promise<DealFormState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['deals.update'].name)
   const parsed = dealSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -153,6 +157,7 @@ export async function updateDealAction(id: string, _prev: DealFormState, formDat
 
 /** Called from the kanban board on drag-and-drop — updates just the stage. */
 export async function updateDealStageAction(dealId: string, stage: (typeof STAGES)[number]): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['deals.update'].name)
   const deal = await prisma.deal.findFirst({ where: { id: dealId, organizationId: session.user.organizationId } })
   if (!deal || deal.stage === stage) return
@@ -188,6 +193,7 @@ export async function updateDealStageAction(dealId: string, stage: (typeof STAGE
 }
 
 export async function deleteDealAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['deals.delete'].name)
   const existing = await prisma.deal.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!existing) return

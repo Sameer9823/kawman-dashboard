@@ -10,7 +10,7 @@ export async function GET() {
   } catch {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   }
-  if (!session.user.permissions.includes('leads.export')) {
+  if (!(session.user.permissions as string[]).includes('leads.export')) {
     return new Response('Forbidden', { status: 403 })
   }
 

@@ -14,7 +14,6 @@ export function getRedisClient(): Redis | null {
 
   const redisUrl = process.env.REDIS_URL
   if (!redisUrl) {
-    console.warn('[REDIS] REDIS_URL not configured - rate limiting will use in-memory fallback')
     return null
   }
 
@@ -25,7 +24,6 @@ export function getRedisClient(): Redis | null {
         if (times > 3) return null // Stop retrying
         return Math.min(times * 200, 2000)
       },
-      lazyConnect: true,
     })
 
     redisClient.on('error', (err) => {
@@ -33,7 +31,7 @@ export function getRedisClient(): Redis | null {
     })
 
     redisClient.on('connect', () => {
-      console.log('[REDIS] Connected successfully')
+      if (process.env.NODE_ENV === 'development') console.log('[REDIS] Connected successfully')
     })
 
     return redisClient

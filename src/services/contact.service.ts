@@ -125,11 +125,11 @@ export async function getContactsPage(query: ContactQuery = {}): Promise<Contact
   }
 }
 
-/** Lightweight list for form <select> pickers (create deal/meeting). */
+/** Lightweight list for form <select> pickers (create deal/meeting). Scoped to caller's visibility. */
 export async function getContactOptions(): Promise<{ id: string; name: string; companyId: string }[]> {
   const session = await requireApiSession()
   return prisma.contact.findMany({
-    where: { organizationId: session.user.organizationId },
+    where: { organizationId: session.user.organizationId, ...scopeWhere(session.user) },
     select: { id: true, name: true, companyId: true },
     orderBy: { name: 'asc' },
   })

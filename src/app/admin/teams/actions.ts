@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
@@ -20,11 +22,12 @@ export interface TeamFormState {
 
 async function assertPermission() {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes('organizations.update')) throw new Error('You do not have permission to do this.')
+  if (!(session.user.permissions as string[]).includes('organizations.update')) throw new Error('You do not have permission to do this.')
   return session
 }
 
 export async function createTeamAction(_prev: TeamFormState, formData: FormData): Promise<TeamFormState> {
+  await validateCsrf()
   const session = await assertPermission()
   const parsed = schema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -61,6 +64,7 @@ export async function createTeamAction(_prev: TeamFormState, formData: FormData)
 }
 
 export async function deleteTeamAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission()
   const existing = await prisma.team.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!existing) return

@@ -18,7 +18,6 @@ export default async function AdminRoleDetailPage({ params }: { params: Promise<
         <PermissionMatrix
           roleId={role.id}
           roleName={role.name}
-          isSystem={true}
           permissions={permissions}
           grantedIds={Array.from(role.grantedPermissionIds)}
         />

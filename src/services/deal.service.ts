@@ -23,7 +23,9 @@ function toInitials(name: string): string {
 
 type DealRow = Awaited<ReturnType<typeof fetchDeals>>[number]
 
-async function fetchDeals(organizationId: string, scopeFilter: Prisma.DealWhereInput, search?: string) {
+const DEALS_KANBAN_LIMIT = 500
+
+async function fetchDeals(organizationId: string, scopeFilter: Prisma.DealWhereInput, search?: string, limit = DEALS_KANBAN_LIMIT) {
   return prisma.deal.findMany({
     where: {
       organizationId,
@@ -44,6 +46,7 @@ async function fetchDeals(organizationId: string, scopeFilter: Prisma.DealWhereI
       contact: { select: { name: true } },
     },
     orderBy: { createdAt: 'desc' },
+    take: limit,
   })
 }
 

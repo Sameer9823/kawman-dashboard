@@ -1,19 +1,21 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
-import { saveTranscript, addRecordingLink, generateMeetingSummary, updateMeetingSummaryText, createMeetingWithVideo, retryMeetingVideoProcessing } from '@/services/meeting.service'
+import { saveTranscript, addRecordingLink, generateMeetingSummary, updateMeetingSummaryText } from '@/services/meeting.service'
 import { isCloudinaryConfigured, uploadToCloudinary } from '@/lib/cloudinary'
 import { getTranscriptionService } from '@/lib/transcription'
 import { logAudit } from '@/lib/audit-log'
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes(permission)) throw new Error('You do not have permission to do this.')
+  if (!(session.user.permissions as string[]).includes(permission)) throw new Error('You do not have permission to do this.')
   return session
 }
 
@@ -36,6 +38,7 @@ export interface MeetingFormState {
 }
 
 export async function createMeetingAction(_prev: MeetingFormState, formData: FormData): Promise<MeetingFormState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['meetings.create'].name)
   const parsed = meetingSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -88,6 +91,7 @@ export async function createMeetingAction(_prev: MeetingFormState, formData: For
 const MEETING_STATUSES = ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'PROCESSING', 'FAILED'] as const
 
 export async function updateMeetingStatusAction(meetingId: string, status: (typeof MEETING_STATUSES)[number]): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['meetings.update'].name)
   if (!MEETING_STATUSES.includes(status)) throw new Error('Invalid status')
   const existing = await prisma.meeting.findFirst({ where: { id: meetingId, organizationId: session.user.organizationId } })
@@ -115,6 +119,7 @@ export interface SimpleActionState {
 
 export async function saveTranscriptAction(meetingId: string, content: string): Promise<SimpleActionState> {
   try {
+    await validateCsrf()
     await assertPermission(PERMISSIONS['meetings.update'].name)
     if (!content.trim()) return { error: 'Transcript cannot be empty' }
     await saveTranscript(meetingId, content.trim())
@@ -132,6 +137,7 @@ export async function saveTranscriptAction(meetingId: string, content: string): 
 
 export async function addRecordingLinkAction(meetingId: string, secureUrl: string, duration?: number): Promise<SimpleActionState> {
   try {
+    await validateCsrf()
     await assertPermission(PERMISSIONS['meetings.update'].name)
     if (!secureUrl.trim()) return { error: 'A video URL is required' }
     await addRecordingLink(meetingId, secureUrl.trim(), duration)
@@ -149,6 +155,7 @@ export async function addRecordingLinkAction(meetingId: string, secureUrl: strin
 
 export async function generateMomAction(meetingId: string): Promise<SimpleActionState> {
   try {
+    await validateCsrf()
     await assertPermission(PERMISSIONS['meetings.update'].name)
     await generateMeetingSummary(meetingId)
     revalidatePath(`/meetings/${meetingId}`)
@@ -161,6 +168,7 @@ export async function generateMomAction(meetingId: string): Promise<SimpleAction
 
 export async function editMomSummaryAction(meetingId: string, summary: string): Promise<SimpleActionState> {
   try {
+    await validateCsrf()
     await assertPermission(PERMISSIONS['meetings.update'].name)
     if (!summary.trim()) return { error: 'Summary cannot be empty' }
     await updateMeetingSummaryText(meetingId, summary.trim())
@@ -189,6 +197,7 @@ export async function uploadRecordingAction(
   formData: FormData
 ): Promise<UploadRecordingState> {
   try {
+    await validateCsrf()
     const session = await assertPermission(PERMISSIONS['meetings.update'].name)
     
     const file = formData.get('file')
@@ -251,13 +260,13 @@ export async function uploadRecordingAction(
 
 async function transcribeAndGenerateMom(meetingId: string, recordingId: string, videoUrl: string) {
   try {
-    console.log('[TRANSCRIPTION] Starting transcription for recording:', recordingId)
+    // transcription started (recording id hidden in prod logs)
     
     const transcriptionService = getTranscriptionService()
     const result = await transcriptionService.transcribe(videoUrl)
 
     // Save transcript
-    const transcript = await prisma.meetingTranscript.create({
+    await prisma.meetingTranscript.create({
       data: {
         meetingId,
         content: result.text,
@@ -265,12 +274,12 @@ async function transcribeAndGenerateMom(meetingId: string, recordingId: string, 
       },
     })
 
-    console.log('[TRANSCRIPTION] Transcript saved:', transcript.id)
+    // transcript saved
 
     // Generate MoM from transcript
     await generateMeetingSummary(meetingId)
     
-    console.log('[TRANSCRIPTION] MoM generated for meeting:', meetingId)
+    // MoM generated
   } catch (err) {
     console.error('[TRANSCRIPTION] Failed:', err)
     // Don't throw - this is a background process
@@ -291,6 +300,7 @@ export async function createMeetingWithVideoAction(
   _prev: CreateMeetingWithVideoState,
   formData: FormData
 ): Promise<CreateMeetingWithVideoState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['meetings.create'].name)
 
   const title = formData.get('title')?.toString().trim() || ''
@@ -409,6 +419,7 @@ export async function createMeetingWithVideoAction(
 // ============================================================
 
 export async function retryMeetingVideoProcessingAction(meetingId: string) {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['meetings.update'].name)
   
   const meeting = await prisma.meeting.findFirst({

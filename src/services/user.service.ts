@@ -34,7 +34,7 @@ export interface AdminUserRow {
 /** Full org user roster for the admin panel — requires users.view. */
 export async function getOrgUsers(): Promise<AdminUserRow[]> {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes('users.view')) throw new Error('Forbidden')
+  if (!(session.user.permissions as string[]).includes('users.view')) throw new Error('Forbidden')
 
   const users = await prisma.user.findMany({
     where: { organizationId: session.user.organizationId },
@@ -63,7 +63,7 @@ export async function getOrgUsers(): Promise<AdminUserRow[]> {
 
 export async function getOrgUserById(id: string): Promise<AdminUserRow | null> {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes('users.view')) throw new Error('Forbidden')
+  if (!(session.user.permissions as string[]).includes('users.view')) throw new Error('Forbidden')
 
   const u = await prisma.user.findFirst({
     where: { id, organizationId: session.user.organizationId },

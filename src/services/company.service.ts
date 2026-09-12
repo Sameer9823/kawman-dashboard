@@ -131,11 +131,11 @@ export async function getCompaniesPage(query: CompanyQuery = {}): Promise<Compan
   }
 }
 
-/** Lightweight list for form <select> pickers (create lead/contact/deal). */
+/** Lightweight list for form <select> pickers (create lead/contact/deal). Scoped to caller's visibility. */
 export async function getCompanyOptions(): Promise<{ id: string; name: string }[]> {
   const session = await requireApiSession()
   return prisma.company.findMany({
-    where: { organizationId: session.user.organizationId },
+    where: { organizationId: session.user.organizationId, ...scopeWhere(session.user) },
     select: { id: true, name: true },
     orderBy: { name: 'asc' },
   })

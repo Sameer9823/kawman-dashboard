@@ -2,10 +2,30 @@
 
 import * as React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'sonner'
 import { useUIStore } from '@/stores/ui'
+import dynamic from 'next/dynamic'
+
+// Devtools touches localStorage on mount and throws SecurityError when
+// storage is blocked (sandboxed iframe, CSP sandbox, strict browser
+// settings). Load it client-only and gate behind a safe check.
+const ReactQueryDevtools = dynamic(
+  () => import('@tanstack/react-query-devtools').then((m) => m.ReactQueryDevtools),
+  { ssr: false }
+)
+
+function canUseLocalStorage(): boolean {
+  try {
+    if (typeof window === 'undefined') return false
+    const k = '__storage_test__'
+    window.localStorage.setItem(k, '1')
+    window.localStorage.removeItem(k)
+    return true
+  } catch {
+    return false
+  }
+}
 
 function getQueryClient() {
   return new QueryClient({
@@ -26,6 +46,14 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   const [queryClient] = React.useState(getQueryClient)
   const theme = useUIStore((state) => state.theme)
+  const [devtoolsEnabled, setDevtoolsEnabled] = React.useState(false)
+
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && canUseLocalStorage()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time devtools gate, not a render loop
+      setDevtoolsEnabled(true)
+    }
+  }, [])
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -45,7 +73,7 @@ export function Providers({ children }: ProvidersProps) {
             style: { background: '#0a1623' },
           }}
         />
-        <ReactQueryDevtools initialIsOpen={false} />
+        {devtoolsEnabled && <ReactQueryDevtools initialIsOpen={false} />}
       </ThemeProvider>
     </QueryClientProvider>
   )

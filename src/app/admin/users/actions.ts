@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -40,7 +42,7 @@ export interface UserFormState {
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes(permission)) throw new Error('You do not have permission to do this.')
+  if (!(session.user.permissions as string[]).includes(permission)) throw new Error('You do not have permission to do this.')
   return session
 }
 
@@ -52,6 +54,7 @@ function generateTempPassword(): string {
 }
 
 export async function createUserAction(_prev: UserFormState, formData: FormData): Promise<UserFormState> {
+  await validateCsrf()
   const session = await assertPermission('users.create')
   const parsed = createUserSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -124,6 +127,7 @@ export async function createUserAction(_prev: UserFormState, formData: FormData)
 }
 
 export async function updateUserAction(id: string, _prev: UserFormState, formData: FormData): Promise<UserFormState> {
+  await validateCsrf()
   const session = await assertPermission('users.update')
   const parsed = updateUserSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -169,6 +173,7 @@ export async function updateUserAction(id: string, _prev: UserFormState, formDat
 }
 
 export async function deleteUserAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission('users.delete')
   if (id === session.user.id) return // can't delete yourself
   const target = await prisma.user.findFirst({ where: { id, organizationId: session.user.organizationId } })

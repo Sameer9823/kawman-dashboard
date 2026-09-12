@@ -1,5 +1,7 @@
 'use server'
 
+import { validateCsrf } from '@/lib/csrf'
+
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -25,11 +27,12 @@ export interface ContactFormState {
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
-  if (!session.user.permissions.includes(permission)) throw new Error('You do not have permission to do this.')
+  if (!(session.user.permissions as string[]).includes(permission)) throw new Error('You do not have permission to do this.')
   return session
 }
 
 export async function createContactAction(_prev: ContactFormState, formData: FormData): Promise<ContactFormState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['contacts.create'].name)
   const parsed = contactSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -86,6 +89,7 @@ export async function updateContactAction(
   _prev: ContactFormState,
   formData: FormData
 ): Promise<ContactFormState> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['contacts.update'].name)
   const parsed = contactSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -132,6 +136,7 @@ export async function updateContactAction(
 }
 
 export async function deleteContactAction(id: string): Promise<void> {
+  await validateCsrf()
   const session = await assertPermission(PERMISSIONS['contacts.delete'].name)
   const existing = await prisma.contact.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!existing) return

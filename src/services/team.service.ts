@@ -177,26 +177,102 @@ export async function getTeamDashboardMetrics(dateRange?: DateRange): Promise<Te
   }
 }
 
-export async function getTeamMembers(): Promise<
-  { id: string; name: string; email: string; designation: string | null; team: string | null; department: string | null; status: string; lastLoginAt: string | null }[]
-> {
+export type ActivityLevel = 'high' | 'medium' | 'low' | 'none'
+
+export interface TeamMemberRow {
+  id: string
+  name: string
+  email: string
+  designation: string | null
+  team: string | null
+  department: string | null
+  status: string
+  lastLoginAt: string | null
+  isOnline: boolean
+  activeTimeToday: string
+  hasSubmittedTodayReport: boolean
+  activityLevel: ActivityLevel
+}
+
+function formatActiveTime(minutes: number): string {
+  if (!minutes || minutes <= 0) return '—'
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) return `${m}m`
+  if (m === 0) return `${h}h`
+  return `${h}h ${m}m`
+}
+
+/**
+ * Activity level thresholds — easy to tune in one place.
+ * Derived from today's DailyReport: combined actions = tasksCompletedCount + crmRecordsUpdatedCount + leadsWorkedOnCount
+ *   none   -> no DailyReport row for today (no submission yet)
+ *   low    -> 0-3 combined actions
+ *   medium -> 4-9 combined actions
+ *   high   -> >= 10 combined actions
+ */
+function deriveActivityLevel(report: { tasksCompletedCount: number; crmRecordsUpdatedCount: number; leadsWorkedOnCount: number } | null): ActivityLevel {
+  if (!report) return 'none'
+  const combined = report.tasksCompletedCount + report.crmRecordsUpdatedCount + report.leadsWorkedOnCount
+  if (combined >= 10) return 'high'
+  if (combined >= 4) return 'medium'
+  return 'low'
+}
+
+export async function getTeamMembers(): Promise<TeamMemberRow[]> {
   const session = await requireApiSession()
   if (!(session.user.permissions as string[]).includes('team.view_all')) throw new Error('Forbidden: missing team.view_all')
 
+  const organizationId = session.user.organizationId
+
   const users = await prisma.user.findMany({
-    where: { organizationId: session.user.organizationId, status: 'ACTIVE' },
+    where: { organizationId, status: 'ACTIVE' },
     include: { team: { select: { name: true } }, department: { select: { name: true } } },
     orderBy: { name: 'asc' },
   })
 
-  return users.map((u) => ({
-    id: u.id,
-    name: u.name ?? 'Unnamed',
-    email: u.email,
-    designation: u.designation,
-    team: u.team?.name ?? null,
-    department: u.department?.name ?? null,
-    status: u.status,
-    lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
-  }))
+  if (users.length === 0) return []
+
+  const userIds = users.map((u) => u.id)
+
+  // Online/offline: reuse the same 5-minute threshold as getTeamDashboardMetrics / heartbeat (Session.lastSeenAt)
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
+  const sessions = await prisma.session.findMany({
+    where: { userId: { in: userIds }, lastSeenAt: { gte: fiveMinutesAgo } },
+    select: { userId: true },
+  })
+  const onlineUserIds = new Set(sessions.map((s) => s.userId))
+
+  // Today's DailyReports for this org — one query for all members (covers isOnline companion data:
+  // active time + submitted flag + activity level without N+1).
+  const today = startOfDay()
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const todayReports = await prisma.dailyReport.findMany({
+    where: { organizationId, userId: { in: userIds }, date: { gte: today, lt: tomorrow } },
+    select: { userId: true, activeWorkingTimeMinutes: true, status: true, tasksCompletedCount: true, crmRecordsUpdatedCount: true, leadsWorkedOnCount: true },
+  })
+  const reportByUserId = new Map(todayReports.map((r) => [r.userId, r]))
+
+  return users.map((u) => {
+    const report = reportByUserId.get(u.id) ?? null
+    const hasSubmittedTodayReport = report?.status === 'SUBMITTED'
+    // Active time comes from today's DailyReport (computed via getTodayReportDraft-style session/activity logic at submit time).
+    // If the user hasn't submitted today there is no persisted active time yet, so show placeholder.
+    const activeTimeToday = report ? formatActiveTime(report.activeWorkingTimeMinutes) : '—'
+    return {
+      id: u.id,
+      name: u.name ?? 'Unnamed',
+      email: u.email,
+      designation: u.designation,
+      team: u.team?.name ?? null,
+      department: u.department?.name ?? null,
+      status: u.status,
+      lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
+      isOnline: onlineUserIds.has(u.id),
+      activeTimeToday,
+      hasSubmittedTodayReport: !!hasSubmittedTodayReport,
+      activityLevel: deriveActivityLevel(report ? { tasksCompletedCount: report.tasksCompletedCount, crmRecordsUpdatedCount: report.crmRecordsUpdatedCount, leadsWorkedOnCount: report.leadsWorkedOnCount } : null),
+    }
+  })
 }

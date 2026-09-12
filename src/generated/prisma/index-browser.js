@@ -811,7 +811,8 @@ exports.NotificationType = exports.$Enums.NotificationType = {
   FILE_UPLOADED: 'FILE_UPLOADED',
   AI_REPORT_READY: 'AI_REPORT_READY',
   CHECK_IN_COMPLETED: 'CHECK_IN_COMPLETED',
-  SECURITY_EVENT: 'SECURITY_EVENT'
+  SECURITY_EVENT: 'SECURITY_EVENT',
+  DAILY_REPORT_SUBMITTED: 'DAILY_REPORT_SUBMITTED'
 };
 
 exports.AuditAction = exports.$Enums.AuditAction = {

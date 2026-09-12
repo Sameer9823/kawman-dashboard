@@ -40,6 +40,7 @@ const NOTIF_COLOR: Record<string, string> = {
   AI_REPORT_READY: 'bg-fuchsia-500/15 text-fuchsia-400',
   CHECK_IN_COMPLETED: 'bg-emerald-500/15 text-emerald-400',
   SECURITY_EVENT: 'bg-red-500/15 text-red-400',
+  DAILY_REPORT_SUBMITTED: 'bg-indigo-500/15 text-indigo-400',
 }
 
 interface NotificationDTO {
@@ -47,8 +48,14 @@ interface NotificationDTO {
   type: string
   title: string
   message: string
+  data?: { dailyReportId?: string; userId?: string } | null
   createdAt: string
   read: boolean
+}
+
+function notifHref(n: NotificationDTO): string {
+  if (n.type === 'DAILY_REPORT_SUBMITTED' && n.data?.userId) return `/admin/my-team/${n.data.userId}`
+  return '/notifications'
 }
 
 export function Header() {
@@ -78,6 +85,10 @@ export function Header() {
     enabled: !!user,
     refetchInterval: 60_000,
   })
+
+  function markRead(id: string) {
+    fetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }).catch(() => {})
+  }
 
   async function handleLogout() {
     await signOut()
@@ -148,15 +159,17 @@ export function Header() {
                 <div className="px-2 py-6 text-center text-sm text-white/40">You&apos;re all caught up.</div>
               )}
               {notifications.slice(0, 6).map((notification) => (
-                <DropdownMenuItem key={notification.id} className="text-white/70 hover:bg-white/5 focus:bg-white/5 items-start gap-3 py-2.5">
-                  <div className={cn('h-8 w-8 shrink-0 rounded-full flex items-center justify-center', NOTIF_COLOR[notification.type] ?? 'bg-white/10 text-white/60')}>
-                    <Bell className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-white">{notification.title}</p>
-                    <p className="text-xs text-white/50">{notification.message}</p>
-                    <p className="text-xs text-white/35 mt-0.5">{formatRelativeTime(notification.createdAt)}</p>
-                  </div>
+                <DropdownMenuItem key={notification.id} asChild className="p-0 focus:bg-white/5 data-[highlighted]:bg-white/5">
+                  <Link href={notifHref(notification)} onClick={() => markRead(notification.id)} className="flex items-start gap-3 px-2 py-2.5 w-full text-left hover:bg-white/5 rounded-sm">
+                    <div className={cn('h-8 w-8 shrink-0 rounded-full flex items-center justify-center', NOTIF_COLOR[notification.type] ?? 'bg-white/10 text-white/60')}>
+                      <Bell className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-white">{notification.title}</p>
+                      <p className="text-xs text-white/50">{notification.message}</p>
+                      <p className="text-xs text-white/35 mt-0.5">{formatRelativeTime(notification.createdAt)}</p>
+                    </div>
+                  </Link>
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator className="border-white/10" />

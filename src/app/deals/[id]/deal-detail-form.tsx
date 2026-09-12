@@ -1,10 +1,12 @@
 'use client'
 
-import { useActionState, useTransition } from 'react'
+import { useActionState, useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { DealDetail } from '@/services/deal.service'
 import type { DealStage } from '@/types/crm'
 import type { UserOption } from '@/services/user.service'
@@ -22,18 +24,26 @@ export function DealDetailForm({
   deal: DealDetail
   owners: UserOption[]
   companies: { id: string; name: string }[]
-  contacts: { id: string; name: string; companyId: string }[]
+  contacts: { id: string; name: string; companyId: string | null }[]
 }) {
   const router = useRouter()
   const [deleting, startDelete] = useTransition()
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const boundUpdate = updateDealAction.bind(null, deal.id)
   const [state, formAction, pending] = useActionState(boundUpdate, initialState)
+  useEffect(() => {
+    if (state.error) toast.error(state.error)
+    if (state.success) toast.success('Deal updated')
+  }, [state.error, state.success])
 
   function handleDelete() {
-    if (!window.confirm(`Delete "${deal.name}"? This cannot be undone.`)) return
     startDelete(async () => {
-      await deleteDealAction(deal.id)
-      router.push('/deals')
+      const res = await deleteDealAction(deal.id)
+      if (res?.error) toast.error(res.error)
+      else if (res?.success) {
+        toast.success('Deal deleted')
+        router.push('/deals')
+      }
     })
   }
 
@@ -43,19 +53,13 @@ export function DealDetailForm({
         <Field label="Deal name *" error={state.fieldErrors?.name}>
           <Input name="name" defaultValue={deal.name} required />
         </Field>
-        <Field label="Company *" error={state.fieldErrors?.companyId}>
-          <select
-            name="companyId"
-            defaultValue={deal.companyId}
-            required
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
+        <Field label="Company" error={state.fieldErrors?.company}>
+          <Input name="company" defaultValue={deal.company === '—' ? '' : deal.company} list="company-suggestions-detail" />
+          <datalist id="company-suggestions-detail">
             {companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.name} />
             ))}
-          </select>
+          </datalist>
         </Field>
         <Field label="Contact" error={state.fieldErrors?.contactId}>
           <select
@@ -141,10 +145,20 @@ export function DealDetailForm({
 
       <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/[0.06]">
         <span className="text-xs text-white/40">Owned by {deal.owner}</span>
-        <Button type="button" variant="destructive" size="sm" onClick={handleDelete} disabled={deleting}>
+        <Button type="button" variant="destructive" size="sm" onClick={() => setConfirmOpen(true)} disabled={deleting}>
           {deleting ? 'Deleting…' : 'Delete deal'}
         </Button>
       </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={`Delete "${deal.name}"?`}
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </Card>
   )
 }

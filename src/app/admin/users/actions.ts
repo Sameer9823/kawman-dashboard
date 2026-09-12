@@ -4,7 +4,6 @@ import { validateCsrf } from '@/lib/csrf'
 
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { hashPassword } from 'better-auth/crypto'
 import { createLocalAccountIssuer } from '@better-auth/core/db'
 import { prisma } from '@/lib/db'
@@ -38,6 +37,7 @@ export interface UserFormState {
   error?: string
   fieldErrors?: Record<string, string>
   tempPassword?: string
+  success?: boolean
 }
 
 async function assertPermission(permission: string) {
@@ -169,15 +169,15 @@ export async function updateUserAction(id: string, _prev: UserFormState, formDat
 
   revalidatePath('/admin/users')
   revalidatePath(`/admin/users/${id}`)
-  return {}
+  return { success: true }
 }
 
-export async function deleteUserAction(id: string): Promise<void> {
+export async function deleteUserAction(id: string): Promise<{ success?: boolean; error?: string }> {
   await validateCsrf()
   const session = await assertPermission('users.delete')
-  if (id === session.user.id) return // can't delete yourself
+  if (id === session.user.id) return { error: "You can't delete your own account." }
   const target = await prisma.user.findFirst({ where: { id, organizationId: session.user.organizationId } })
-  if (!target) return
+  if (!target) return { error: 'User not found.' }
 
   await prisma.user.delete({ where: { id } })
 
@@ -191,5 +191,5 @@ export async function deleteUserAction(id: string): Promise<void> {
   })
 
   revalidatePath('/admin/users')
-  redirect('/admin/users')
+  return { success: true }
 }

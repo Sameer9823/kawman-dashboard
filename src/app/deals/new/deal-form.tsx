@@ -1,9 +1,11 @@
 'use client'
 
-import { useActionState, useMemo, useState } from 'react'
+import { useActionState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { createDealAction, type DealFormState } from '../actions'
 import type { UserOption } from '@/services/user.service'
 
@@ -17,11 +19,17 @@ export function DealForm({
 }: {
   owners: UserOption[]
   companies: { id: string; name: string }[]
-  contacts: { id: string; name: string; companyId: string }[]
+  contacts: { id: string; name: string; companyId: string | null }[]
 }) {
   const [state, formAction, pending] = useActionState(createDealAction, initialState)
-  const [companyId, setCompanyId] = useState('')
-  const filteredContacts = useMemo(() => contacts.filter((c) => c.companyId === companyId), [contacts, companyId])
+  const router = useRouter()
+  useEffect(() => {
+    if (state.error) toast.error(state.error)
+    if (state.success && state.createdId) {
+      toast.success('Deal created')
+      router.push(`/deals/${state.createdId}`)
+    }
+  }, [state.error, state.success, state.createdId, router])
 
   return (
     <Card className="bg-[#0a111c]/80 border-white/[0.08] p-6">
@@ -29,19 +37,13 @@ export function DealForm({
         <Field label="Deal name *" error={state.fieldErrors?.name}>
           <Input name="name" placeholder="Acme — Bulk Supply Q3" required />
         </Field>
-        <Field label="Company *" error={state.fieldErrors?.companyId}>
-          <select
-            name="companyId"
-            value={companyId}
-            onChange={(e) => setCompanyId(e.target.value)}
-            required
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
-            <option value="" disabled>Select a company</option>
+        <Field label="Company" error={state.fieldErrors?.company}>
+          <Input name="company" placeholder="Acme Nutraceuticals" list="company-suggestions" />
+          <datalist id="company-suggestions">
             {companies.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.name} />
             ))}
-          </select>
+          </datalist>
         </Field>
         <Field label="Contact" error={state.fieldErrors?.contactId}>
           <select
@@ -50,7 +52,7 @@ export function DealForm({
             className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
           >
             <option value="">None</option>
-            {filteredContacts.map((c) => (
+            {contacts.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>

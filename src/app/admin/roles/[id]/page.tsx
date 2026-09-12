@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { MainLayout } from '@/components/layout'
+import { requirePermission } from '@/lib/session'
 import { PageHeader } from '@/components/crm/page-header'
 import { getRoleById, getAllPermissions } from '@/services/role.service'
 import { PermissionMatrix } from './permission-matrix'
@@ -7,6 +8,8 @@ import { PermissionMatrix } from './permission-matrix'
 export const metadata = { title: 'Role Detail | Kawman ExAct Admin' }
 
 export default async function AdminRoleDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  await requirePermission('roles.view')
+
   const { id } = await params
   const [role, permissions] = await Promise.all([getRoleById(id), getAllPermissions()])
   if (!role) notFound()

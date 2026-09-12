@@ -11,6 +11,7 @@ import { PERMISSIONS } from '@/lib/permissions-data'
 import { recalculateLeadScore, recalculateAllLeadScores } from '@/services/lead.service'
 import { parseCSV } from '@/lib/csv'
 import { logAudit } from '@/lib/audit-log'
+import { findOrCreateCompanyByName } from '@/services/company.service'
 
 const leadSchema = z.object({
   name: z.string().trim().min(2, 'Name is required'),
@@ -30,6 +31,7 @@ export interface LeadFormState {
   error?: string
   fieldErrors?: Record<string, string>
   success?: boolean
+  createdId?: string
 }
 
 async function assertPermission(permission: string) {
@@ -96,7 +98,7 @@ export async function createLeadAction(_prev: LeadFormState, formData: FormData)
 
   revalidatePath('/leads')
   revalidatePath('/dashboard')
-  redirect(`/leads/${lead.id}`)
+  return { success: true, createdId: lead.id }
 }
 
 export async function updateLeadAction(id: string, _prev: LeadFormState, formData: FormData): Promise<LeadFormState> {
@@ -159,11 +161,11 @@ export async function updateLeadAction(id: string, _prev: LeadFormState, formDat
   return { success: true }
 }
 
-export async function deleteLeadAction(id: string): Promise<void> {
+export async function deleteLeadAction(id: string): Promise<{ success?: boolean; error?: string }> {
   await validateCsrf()
   const session = await assertPermission(PERMISSIONS['leads.delete'].name)
   const existing = await prisma.lead.findFirst({ where: { id, organizationId: session.user.organizationId } })
-  if (!existing) return
+  if (!existing) return { error: 'Lead not found.' }
   await prisma.lead.delete({ where: { id } })
 
   await logAudit({
@@ -177,7 +179,7 @@ export async function deleteLeadAction(id: string): Promise<void> {
 
   revalidatePath('/leads')
   revalidatePath('/dashboard')
-  redirect('/leads')
+  return { success: true }
 }
 
 export async function convertLeadToDealAction(id: string): Promise<void> {
@@ -189,17 +191,15 @@ export async function convertLeadToDealAction(id: string): Promise<void> {
   })
   if (!lead) return
 
-  let companyId = lead.companyId
+  let companyId: string | null = lead.companyId
   if (!companyId) {
-    const company = await prisma.company.create({
-      data: {
-        name: lead.company || lead.name,
-        organizationId: session.user.organizationId,
-        ownerId: lead.ownerId,
-      },
+    const resolved = await findOrCreateCompanyByName({
+      name: lead.company || lead.name,
+      organizationId: session.user.organizationId,
+      ownerId: lead.ownerId,
     })
-    companyId = company.id
-    await prisma.lead.update({ where: { id }, data: { companyId } })
+    companyId = resolved?.id ?? null
+    if (companyId) await prisma.lead.update({ where: { id }, data: { companyId } })
   }
 
   const deal = await prisma.deal.create({
@@ -355,14 +355,16 @@ export async function importLeadsAction(formData: FormData): Promise<LeadImportR
   // per-row queries — a CSV naming an existing company by name should
   // link to it rather than always creating a bare lead.
   const companyNames = [...new Set(validRows.map((r) => r.company).filter((c): c is string => Boolean(c)))]
-  const companies =
-    companyNames.length > 0
-      ? await prisma.company.findMany({
-          where: { organizationId: session.user.organizationId, name: { in: companyNames } },
-          select: { id: true, name: true },
-        })
-      : []
-  const companyIdByName = new Map(companies.map((c) => [c.name, c.id]))
+  // Resolve via shared helper — case-insensitive, org-scoped, auto-creates missing companies
+  const companyIdByName = new Map<string, string>()
+  for (const name of companyNames) {
+    const resolved = await findOrCreateCompanyByName({ name, organizationId: session.user.organizationId, ownerId: session.user.id })
+    if (resolved) {
+      companyIdByName.set(name, resolved.id)
+      // also map lowercased variant so CSV casing differences still hit the same record
+      companyIdByName.set(name.toLowerCase(), resolved.id)
+    }
+  }
 
   const created = await prisma.$transaction(
     validRows.map((data) =>
@@ -370,7 +372,7 @@ export async function importLeadsAction(formData: FormData): Promise<LeadImportR
         data: {
           name: data.name,
           company: data.company || null,
-          companyId: data.company ? (companyIdByName.get(data.company) ?? null) : null,
+          companyId: data.company ? (companyIdByName.get(data.company) ?? companyIdByName.get(data.company.toLowerCase()) ?? null) : null,
           email: data.email || null,
           phone: data.phone || null,
           source: data.source || 'Import',

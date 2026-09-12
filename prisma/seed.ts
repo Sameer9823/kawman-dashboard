@@ -1,313 +1,110 @@
 /**
- * Seeds a fresh Neon database with one demo organization so the app is
- * immediately usable after `npm run db:seed`. Safe to re-run: it exits
- * early if the demo org already exists.
+ * Seeds a single-organization database.
  *
- * Run with:  npm run db:seed
+ * This app is single-tenant — only one Organization ever exists.
+ * Self-serve org creation was removed (src/app/signup deleted in
+ * refactor/single-org-and-fixes). Run this once on a fresh Neon DB
+ * to create that one org + the first SUPER_ADMIN.
+ *
+ * Usage:
+ *   1. Set env vars before running (or edit the PLACEHOLDERs below):
+ *      SEED_ADMIN_EMAIL     — super-admin login email  (required in prod)
+ *      SEED_ADMIN_PASSWORD  — super-admin password, ≥8 chars (required in prod)
+ *      SEED_ADMIN_NAME      — display name (optional, defaults to "Admin")
+ *      SEED_ORG_NAME        — organization name (optional, see ORG_NAME)
+ *      SEED_ORG_SLUG        — org slug, URL-safe (optional, derived from name)
+ *
+ *   2. npm run db:seed   (runs `tsx prisma/seed.ts`)
+ *
+ * Safe to re-run: exits early if the org (by slug) already exists.
+ * To reseed, delete the org row first or change SEED_ORG_SLUG.
  */
 import { prisma } from '../src/lib/db'
 import { ensureRolesAndPermissionsSeeded } from '../src/lib/rbac-seed'
 import { hashPassword } from 'better-auth/crypto'
 
-const DEMO_PASSWORD = 'Password123!'
-const ORG_SLUG = 'kawman-exact-demo'
+// ── Edit these placeholders before first production seed ──────────
+// They are only used when the corresponding SEED_* env var is unset.
+const ORG_NAME = process.env.SEED_ORG_NAME || 'My Company' // <-- EDIT ME
+const ORG_SLUG = process.env.SEED_ORG_SLUG || slugify(ORG_NAME)
+
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@example.com' // <-- EDIT ME (must be a real inbox if you want invite/reset emails)
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe123!' // <-- EDIT ME (≥8 chars, change immediately after first login)
+const ADMIN_NAME = process.env.SEED_ADMIN_NAME || 'Admin'
+
+function slugify(input: string): string {
+  return input.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 60) || 'my-company'
+}
 
 async function main() {
+  // Warn loudly if placeholders are still in use in production
+  const usingPlaceholderEmail = !process.env.SEED_ADMIN_EMAIL
+  const usingPlaceholderPassword = !process.env.SEED_ADMIN_PASSWORD
+  const usingPlaceholderOrg = !process.env.SEED_ORG_NAME
+  if (process.env.NODE_ENV === 'production' && (usingPlaceholderEmail || usingPlaceholderPassword)) {
+    console.warn('[seed] WARNING: SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD not set — using placeholders. Change the password immediately after first login.')
+  }
+  if (usingPlaceholderOrg) {
+    console.warn(`[seed] Using placeholder org name "${ORG_NAME}" (set SEED_ORG_NAME to override).`)
+  }
+
   const existing = await prisma.organization.findUnique({ where: { slug: ORG_SLUG } })
   if (existing) {
-    console.log(`Organization "${existing.name}" already seeded (slug: ${ORG_SLUG}). Skipping.`)
-    console.log('Delete it first (or change ORG_SLUG in prisma/seed.ts) to reseed.')
+    console.log(`Organization "${existing.name}" already exists (slug: ${ORG_SLUG}). Skipping.`)
+    console.log('Delete it first or change SEED_ORG_SLUG to reseed.')
     return
   }
 
   console.log('Seeding Permission/Role catalog...')
   await ensureRolesAndPermissionsSeeded()
 
-  console.log('Creating organization...')
+  console.log(`Creating organization "${ORG_NAME}" (slug: ${ORG_SLUG})...`)
   const org = await prisma.organization.create({
-    data: {
-      name: 'Kawman ExAct Ingredients Pvt. Ltd.',
-      slug: ORG_SLUG,
-      industry: 'Nutraceuticals & Specialty Ingredients',
-      phone: '+91 22 4012 5000',
-      email: 'hello@kawmanexact.com',
-      website: 'https://kawmanexact.com',
-    },
+    data: { name: ORG_NAME, slug: ORG_SLUG },
   })
 
   const department = await prisma.department.create({
-    data: { name: 'Sales', organizationId: org.id },
+    data: { name: 'General', organizationId: org.id },
   })
   const team = await prisma.team.create({
-    data: { name: 'Field Sales - West', organizationId: org.id, departmentId: department.id },
+    data: { name: 'General', organizationId: org.id, departmentId: department.id },
   })
 
-  console.log('Creating users...')
-  const passwordHash = await hashPassword(DEMO_PASSWORD)
+  console.log(`Creating SUPER_ADMIN ${ADMIN_EMAIL}...`)
+  if (ADMIN_PASSWORD.length < 8) throw new Error('SEED_ADMIN_PASSWORD must be ≥8 characters')
 
-  async function createUser(input: {
-    name: string
-    email: string
-    role: string
-    designation: string
-  }) {
-    const user = await prisma.user.create({
-      data: {
-        name: input.name,
-        email: input.email,
-        organizationId: org.id,
-        departmentId: department.id,
-        teamId: team.id,
-        designation: input.designation,
-        emailVerified: true,
-        status: 'ACTIVE',
-      },
-    })
-    await prisma.account.create({
-      data: {
-        userId: user.id,
-        accountId: user.id,
-        providerId: 'credential',
-        password: passwordHash,
-      },
-    })
-    const role = await prisma.role.findUniqueOrThrow({ where: { name: input.role as never } })
-    await prisma.userRole.create({ data: { userId: user.id, roleId: role.id } })
-    return user
-  }
+  const passwordHash = await hashPassword(ADMIN_PASSWORD)
 
-  const admin = await createUser({
-    name: 'Priya Sharma',
-    email: 'admin@kawmanexact.com',
-    role: 'SUPER_ADMIN',
-    designation: 'Founder & CEO',
-  })
-  const salesManager = await createUser({
-    name: 'Arjun Mehta',
-    email: 'manager@kawmanexact.com',
-    role: 'SALES_MANAGER',
-    designation: 'Sales Manager',
-  })
-  const exec1 = await createUser({
-    name: 'Rahul Sharma',
-    email: 'rahul@kawmanexact.com',
-    role: 'SALES_EXECUTIVE',
-    designation: 'Field Sales Executive',
-  })
-  const exec2 = await createUser({
-    name: 'Sneha Kulkarni',
-    email: 'sneha@kawmanexact.com',
-    role: 'SALES_EXECUTIVE',
-    designation: 'Field Sales Executive',
-  })
-
-  await prisma.team.update({ where: { id: team.id }, data: { managerId: salesManager.id } })
-
-  console.log('Creating companies + contacts...')
-  const companySeed = [
-    { name: 'Wellness Labs Pvt. Ltd.', industry: 'Nutraceuticals', city: 'Mumbai', state: 'Maharashtra', employees: 240, revenue: 85_00_00_000 },
-    { name: 'VitaCore Biosciences', industry: 'Pharmaceuticals', city: 'Pune', state: 'Maharashtra', employees: 180, revenue: 42_00_00_000 },
-    { name: 'GreenLeaf Nutraceuticals', industry: 'Nutraceuticals', city: 'Ahmedabad', state: 'Gujarat', employees: 95, revenue: 18_00_00_000 },
-    { name: 'PureSource Ingredients', industry: 'Food Ingredients', city: 'Bengaluru', state: 'Karnataka', employees: 310, revenue: 120_00_00_000 },
-    { name: 'NutriEdge Formulations', industry: 'Nutraceuticals', city: 'Delhi', state: 'Delhi', employees: 60, revenue: 9_50_00_000 },
-    { name: 'BioActive Compounds Co.', industry: 'Specialty Chemicals', city: 'Hyderabad', state: 'Telangana', employees: 150, revenue: 33_00_00_000 },
-  ]
-
-  const owners = [admin, salesManager, exec1, exec2]
-  const companies = []
-  for (let i = 0; i < companySeed.length; i++) {
-    const c = companySeed[i]
-    const company = await prisma.company.create({
-      data: {
-        ...c,
-        organizationId: org.id,
-        ownerId: owners[i % owners.length].id,
-      },
-    })
-    companies.push(company)
-
-    await prisma.contact.create({
-      data: {
-        name: ['Anjali Mehta', 'Vikram Rao', 'Kavita Nair', 'Suresh Iyer', 'Neha Joshi', 'Amit Desai'][i],
-        designation: ['Procurement Head', 'R&D Director', 'CEO', 'Purchase Manager', 'VP Operations', 'Quality Head'][i],
-        email: `contact${i + 1}@${company.name.toLowerCase().replace(/[^a-z]+/g, '')}.com`,
-        phone: `+91 22 4${100 + i}0 00${i}0`,
-        mobile: `+91 98${100 + i}0 0000${i}`,
-        companyId: company.id,
-        organizationId: org.id,
-        ownerId: owners[i % owners.length].id,
-        lastActivityAt: new Date(Date.now() - i * 86_400_000),
-      },
-    })
-  }
-
-  console.log('Creating leads...')
-  const leadSources = ['Website', 'Referral', 'Trade Show', 'Cold Call', 'Email Campaign', 'Social Media']
-  const leadStatuses = ['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST'] as const
-  const leadNames = [
-    'Rohan Kapoor', 'Divya Reddy', 'Manish Agarwal', 'Pooja Bansal', 'Karan Malhotra',
-    'Ritu Chawla', 'Sanjay Verma', 'Ananya Ghosh', 'Vivek Pillai', 'Meera Krishnan',
-  ]
-  for (let i = 0; i < leadNames.length; i++) {
-    const owner = owners[i % owners.length]
-    const company = companies[i % companies.length]
-    const status = leadStatuses[i % leadStatuses.length]
-    const lead = await prisma.lead.create({
-      data: {
-        name: leadNames[i],
-        company: company.name,
-        companyId: Math.random() > 0.4 ? company.id : null,
-        email: `${leadNames[i].toLowerCase().replace(' ', '.')}@example.com`,
-        phone: `+91 90${100 + i}0 0000${i}`,
-        source: leadSources[i % leadSources.length],
-        status,
-        score: 40 + ((i * 13) % 60),
-        value: 2_00_000 + i * 75_000,
-        organizationId: org.id,
-        ownerId: owner.id,
-        createdAt: new Date(Date.now() - (i % 12) * 86_400_000),
-        lastActivityAt: new Date(Date.now() - (i % 5) * 86_400_000),
-      },
-    })
-    await prisma.activity.create({
-      data: {
-        type: 'LEAD_CREATED',
-        description: `${owner.name} created lead "${lead.name}"`,
-        organizationId: org.id,
-        actorId: owner.id,
-        leadId: lead.id,
-        createdAt: lead.createdAt,
-      },
-    })
-  }
-
-  console.log('Creating deals...')
-  const dealStages = ['NEW_LEAD', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST'] as const
-  const dealNames = [
-    'AlphaExAct™ Bulk Supply Q3', 'OmniBoost Capsule Formulation', 'PureWhey Isolate Contract',
-    'NutriBlend Custom Mix', 'VitaCore Annual Supply', 'GreenLeaf Trial Order',
-    'BioActive R&D Partnership', 'PureSource Expansion Deal',
-  ]
-  for (let i = 0; i < dealNames.length; i++) {
-    const owner = owners[i % owners.length]
-    const company = companies[i % companies.length]
-    const stage = dealStages[i % dealStages.length]
-    const isClosed = stage === 'WON' || stage === 'LOST'
-    const deal = await prisma.deal.create({
-      data: {
-        name: dealNames[i],
-        value: 5_00_000 + i * 3_25_000,
-        probability: stage === 'WON' ? 100 : stage === 'LOST' ? 0 : 20 + i * 10,
-        stage,
-        priority: i % 3 === 0 ? 'HIGH' : i % 3 === 1 ? 'MEDIUM' : 'LOW',
-        expectedClose: new Date(Date.now() + (14 - i) * 86_400_000),
-        companyId: company.id,
-        organizationId: org.id,
-        ownerId: owner.id,
-        createdAt: new Date(Date.now() - (i + 2) * 86_400_000),
-        closedAt: isClosed ? new Date(Date.now() - i * 86_400_000) : null,
-      },
-    })
-    await prisma.activity.create({
-      data: {
-        type: stage === 'WON' ? 'DEAL_WON' : 'DEAL_UPDATED',
-        description: `${owner.name} ${stage === 'WON' ? 'won' : 'updated'} deal "${deal.name}"`,
-        organizationId: org.id,
-        actorId: owner.id,
-        dealId: deal.id,
-        companyId: company.id,
-        createdAt: deal.createdAt,
-      },
-    })
-  }
-
-  console.log('Creating follow-ups...')
-  const followUpTitles = ['Send proposal', 'Schedule demo call', 'Follow up on pricing', 'Confirm PO details', 'Share samples']
-  for (let i = 0; i < followUpTitles.length; i++) {
-    const owner = owners[i % owners.length]
-    const company = companies[i % companies.length]
-    await prisma.followUp.create({
-      data: {
-        title: followUpTitles[i],
-        dueDate: new Date(Date.now() + (i - 1) * 3_600_000 * (i % 2 === 0 ? 1 : 24)),
-        status: 'PENDING',
-        organizationId: org.id,
-        ownerId: owner.id,
-        companyId: company.id,
-      },
-    })
-  }
-
-  console.log('Creating today\'s field visits + check-ins...')
-  // Roughly Mumbai-area coordinates, spread out so the live-map card has something to plot.
-  const visitCoords = [
-    { lat: 19.076, lng: 72.8777 },
-    { lat: 19.099, lng: 72.9081 },
-    { lat: 19.017, lng: 72.8311 },
-  ]
-  const visitStatuses = ['CHECKED_IN', 'IN_MEETING', 'ON_THE_WAY'] as const
-  for (let i = 0; i < visitCoords.length; i++) {
-    const assignee = [exec1, exec2, salesManager][i % 3]
-    const company = companies[i % companies.length]
-    const visit = await prisma.fieldVisit.create({
-      data: {
-        title: `Visit — ${company.name}`,
-        purpose: 'Product demo & requirements discussion',
-        scheduledAt: new Date(),
-        status: visitStatuses[i],
-        latitude: visitCoords[i].lat,
-        longitude: visitCoords[i].lng,
-        organizationId: org.id,
-        assigneeId: assignee.id,
-        companyId: company.id,
-      },
-    })
-    if (visitStatuses[i] !== 'ON_THE_WAY') {
-      await prisma.checkIn.create({
-        data: {
-          visitId: visit.id,
-          userId: assignee.id,
-          latitude: visitCoords[i].lat,
-          longitude: visitCoords[i].lng,
-          verificationStatus: 'VERIFIED',
-        },
-      })
-    }
-  }
-
-  console.log('Creating a completed meeting + AI summary...')
-  const meetingCompany = companies[0]
-  const meeting = await prisma.meeting.create({
+  const user = await prisma.user.create({
     data: {
-      title: `Q3 review — ${meetingCompany.name}`,
-      type: 'VIDEO_CALL',
-      status: 'COMPLETED',
-      scheduledAt: new Date(Date.now() - 3_600_000),
-      duration: 45,
+      name: ADMIN_NAME,
+      email: ADMIN_EMAIL,
       organizationId: org.id,
-      createdById: salesManager.id,
-      companyId: meetingCompany.id,
-      startedAt: new Date(Date.now() - 3_600_000),
-      endedAt: new Date(Date.now() - 900_000),
+      departmentId: department.id,
+      teamId: team.id,
+      emailVerified: true,
+      status: 'ACTIVE',
     },
   })
-  await prisma.meetingSummary.create({
+  await prisma.account.create({
     data: {
-      meetingId: meeting.id,
-      summary: `Discussed Q3 supply targets with ${meetingCompany.name}. Positive signals on renewing the annual contract; pricing to be finalized next week.`,
-      discussionPoints: ['Q3 volume forecast', 'New product line interest', 'Pricing renegotiation'],
-      actionItems: ['Send updated pricing sheet', 'Schedule sample shipment'],
-      nextSteps: ['Follow up in 5 business days'],
+      userId: user.id,
+      accountId: user.id,
+      providerId: 'credential',
+      password: passwordHash,
     },
   })
+  const superAdminRole = await prisma.role.findUniqueOrThrow({ where: { name: 'SUPER_ADMIN' as never } })
+  await prisma.userRole.create({ data: { userId: user.id, roleId: superAdminRole.id } })
 
-  console.log('\nDone!\n')
-  console.log('Log in with any of these accounts (all use the same password):\n')
-  console.log(`  Password: ${DEMO_PASSWORD}\n`)
-  console.log(`  ${admin.email}   (Super Admin)`)
-  console.log(`  ${salesManager.email} (Sales Manager)`)
-  console.log(`  ${exec1.email}   (Sales Executive)`)
-  console.log(`  ${exec2.email}   (Sales Executive)`)
+  console.log('\nDone.\n')
+  console.log(`Organization: ${org.name} (${org.slug})`)
+  console.log(`Super admin:  ${ADMIN_EMAIL}`)
+  if (usingPlaceholderPassword) console.log('Password:     (placeholder — ChangeMe123! — rotate immediately)')
+  console.log('\nLog in at /login with the credentials above, then change the password in Settings → Profile.')
+  if (usingPlaceholderEmail || usingPlaceholderPassword || usingPlaceholderOrg) {
+    console.log('Placeholders were used — set SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD / SEED_ORG_NAME in your env before re-seeding a fresh DB.')
+  }
 }
 
 main()

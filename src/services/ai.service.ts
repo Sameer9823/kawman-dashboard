@@ -115,9 +115,10 @@ function systemPrompt(orgContext: string): string {
     'You are the AI assistant embedded in Kawman ExAct, a CRM and field-sales platform.',
     'You have access to a live snapshot of the organization\'s CRM data below. Ground your',
     'answers in this data whenever the question relates to leads, deals, pipeline, or follow-ups.',
-    'Be concise, use concrete numbers from the snapshot, and use markdown formatting',
-    '(short headings, bullet points, bold for key figures) where it aids readability.',
-    'If the question is unrelated to the CRM data, just answer normally.',
+    'Formatting standards for reports: use ## headings for each section, markdown tables (| col |) for any',
+    'comparison or ranking, > blockquote for TL;DR, **bold** for every monetary figure / count / percentage,',
+    'and keep paragraphs to max 3 lines. Prefer bullets and tables over prose. Never invent data not in the snapshot.',
+    'If the question is unrelated to the CRM data, answer normally without the report template.',
     '',
     orgContext,
   ].join('\n')
@@ -256,19 +257,55 @@ export const REPORT_TYPES = [
 export type ReportType = (typeof REPORT_TYPES)[number]['type']
 
 const REPORT_PROMPTS: Record<ReportType, string> = {
-  PIPELINE_HEALTH:
-    'Write a Pipeline Health Report. Analyze the deal pipeline by stage, call out any stage that looks ' +
-    'over-loaded or stalled, highlight the largest at-risk deals, and give 3 concrete recommendations.',
-  WEEKLY_SALES_SUMMARY:
-    'Write a Weekly Sales Summary. Summarize deals won, new leads added, and overall pipeline movement. ' +
-    'Keep it crisp and suitable for a Monday-morning leadership read.',
-  FOLLOW_UP_RISK:
-    'Write a Follow-up Risk Report. Identify leads and deals that risk going cold due to overdue or ' +
-    'upcoming follow-ups, rank them by urgency, and recommend which ones to prioritize this week.',
-  EXECUTIVE_SUMMARY:
-    'Write a one-page Executive Summary of the business right now: total leads, pipeline value, deals won ' +
-    'this month, and the single biggest opportunity and single biggest risk. Keep it short, scannable, ' +
-    'and written for a busy executive who has 60 seconds to read it.',
+  PIPELINE_HEALTH: [
+    'Write a **Pipeline Health Report** as a professional business document.',
+    '',
+    'Required structure (use exactly these ## headings in order):',
+    '## 1. Executive Summary — 2–3 sentences, top-line health and one number that matters most.',
+    '## 2. Pipeline by Stage — a markdown table with columns | Stage | Deals | Total Value | Avg Probability | Notes |, then 2–3 bullets interpreting the table (where is it overloaded or stalled).',
+    '## 3. At-Risk & Stalled Deals — table | Deal | Stage | Value | Probability | Risk Reason | ranked by risk (largest + lowest probability first).',
+    '## 4. Bottleneck Analysis — what stages are blocking flow and why (use snapshot numbers).',
+    '## 5. Recommendations — exactly 3 numbered, actionable recommendations (owner + next step + expected impact).',
+    '',
+    'Formatting rules: Use **bold** for every monetary figure, count, and percentage. Use tables where specified. Keep tone executive, concise, and data-grounded. Do not invent data not in the snapshot.',
+  ].join('\n'),
+  WEEKLY_SALES_SUMMARY: [
+    'Write a **Weekly Sales Summary** as a Monday-morning leadership briefing.',
+    '',
+    'Required structure (use exactly these ## headings in order):',
+    '## 1. At a Glance — a markdown table | Metric | This Week | Notes | covering: new leads, deals won, pipeline movement, overdue follow-ups, field visits today.',
+    '## 2. Wins of the Week — bullets for each deal won (name, value, stage movement). If none, say so plainly.',
+    '## 3. New Leads & Sources — bullets grouped by source/status with counts.',
+    '## 4. Pipeline Movement — what moved forward, what stalled, with 2–3 insight bullets.',
+    '## 5. Focus for Next Week — 3 prioritized actions (what, who, by when).',
+    '',
+    'Formatting rules: Start with a 1-sentence TL;DR in > blockquote. Use **bold** for all numbers. Use tables where specified. Keep scannable; no paragraph longer than 3 lines.',
+  ].join('\n'),
+  FOLLOW_UP_RISK: [
+    'Write a **Follow-up Risk Report** as an urgency-ranked operational brief.',
+    '',
+    'Required structure (use exactly these ## headings in order):',
+    '## 1. Summary — one paragraph: how many follow-ups are overdue/due today and the revenue at risk.',
+    '## 2. Overdue & Due Today — markdown table | Lead / Deal | Owner | Due Date | Days Overdue | Urgency | Next Step | sorted by Urgency (High → Medium → Low). Urgency = High if overdue >3 days or high-value deal.',
+    '## 3. Going Cold — leads/deals with no touch in the snapshot window that risk going cold (bullets).',
+    '## 4. Priority Queue — numbered 1–5, the exact 5 items to act on this week in order.',
+    '## 5. Recommendations — 3 bullets to prevent future slippage (process, not just effort).',
+    '',
+    'Formatting rules: Use **bold** for dates, counts, and values. Use tables where specified. Be direct; no filler.',
+  ].join('\n'),
+  EXECUTIVE_SUMMARY: [
+    'Write a **one-page Executive Summary** for a busy executive (60-second read).',
+    '',
+    'Required structure (use exactly these ## headings in order):',
+    '## 1. TL;DR — a > blockquote with 2 sentences: the single most important win and the single biggest risk right now.',
+    '## 2. Key Metrics — markdown table | Metric | Value | Trend / Note | covering: total leads, pipeline value, deals won this month (count + value), overdue follow-ups, field visits today.',
+    '## 3. Pipeline Snapshot — 3 bullets interpreting the pipeline by stage.',
+    '## 4. Biggest Opportunity — one deal/segment with value, stage, probability, and why it matters (use snapshot).',
+    '## 5. Biggest Risk — one risk with impact and mitigation in one sentence.',
+    '## 6. What Needs Attention This Week — 3 numbered, owner-ready actions.',
+    '',
+    'Formatting rules: Entire report must fit one printed page. Use **bold** for every KPI. Prefer tables and bullets over paragraphs. No fluff, no invented data.',
+  ].join('\n'),
 }
 
 export interface ReportSummary {
@@ -368,7 +405,15 @@ export async function generateEmployeeDailySummary(dailyReportId: string): Promi
   if (report.userId !== session.user.id && !(session.user.permissions as string[]).includes('team.view_all')) throw new Error('Forbidden: missing team.view_all')
   const orgContext = await buildOrgContext(session.user.organizationId, session.user)
   const prompt = [
-    'Write an Employee Daily Summary based on the daily report below. Be concise, highlight completed work, pending work, blockers, and tomorrow plan. Call out productivity signals.',
+    'Write an **Employee Daily Summary** as a professional status report.',
+    'Required structure (use exactly these ## headings):',
+    '## 1. Summary — 2 sentences: what was accomplished and overall productivity signal.',
+    '## 2. Completed Today — bullets from the completedWork field; include counts inline.',
+    '## 3. Pending & Carry-Forward — bullets from pendingWork.',
+    '## 4. Blockers & Risks — bullets; if none, write "No blockers reported."',
+    '## 5. Plan for Tomorrow — bullets from tomorrowPlan.',
+    '## 6. Activity Snapshot — markdown table | Metric | Count | with rows: Tasks Completed, CRM Records Updated, Leads Worked On, Files Uploaded, Active Time (minutes).',
+    'Formatting: Use **bold** for all counts. Keep bullets short. Do not invent work not listed.',
     '',
     'Employee: ' + (report.user.name ?? report.user.email),
     'Date: ' + report.date.toISOString().slice(0, 10),
@@ -412,7 +457,15 @@ export async function generateTeamManagementSummary(dateRange?: { from: Date; to
   const orgContext = await buildOrgContext(organizationId, session.user)
   const reportLines = reports.slice(0, 30).map((r) => '- ' + (r.user.name ?? r.user.email) + ' (' + r.date.toISOString().slice(0, 10) + '): ' + (r.workDescription ?? r.completedWork ?? '-') + ' | blockers: ' + (r.blockers ?? 'none')).join('\n') || '- No submitted reports in range.'
   const prompt = [
-    'Write a Team Management Summary for leadership. Summarize team productivity, submission rate, common blockers, and 3 actionable recommendations. Use the daily reports below plus the CRM snapshot.',
+    'Write a **Team Management Summary** for leadership as a professional briefing.',
+    'Required structure (use exactly these ## headings):',
+    '## 1. Executive Summary — 3 sentences: team productivity, submission rate, headline blocker.',
+    '## 2. Submission Overview — markdown table | Date | Submitted | Team Size | Rate | then one sentence interpreting the trend.',
+    '## 3. Productivity Highlights — bullets: top contributors + average activity per person.',
+    '## 4. Common Blockers — bullets grouped by theme with how many reports mentioned each.',
+    '## 5. CRM Context — 2–3 bullets linking daily activity to pipeline/lead movement from the snapshot.',
+    '## 6. Recommendations — exactly 3 numbered, leadership-ready actions (what, owner type, by when).',
+    'Formatting: Use **bold** for every count/rate. Use tables where specified. Keep scannable; no paragraph >3 lines.',
     '',
     'Date range: ' + from.toISOString().slice(0, 10) + ' to ' + to.toISOString().slice(0, 10),
     'Team size (active): ' + total + ', submitted in range: ' + reports.length + ', submitted today: ' + submittedTodayCount,

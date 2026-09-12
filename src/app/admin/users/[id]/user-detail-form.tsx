@@ -1,8 +1,11 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect, useState, useTransition } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Card } from '@/components/ui/card'
 import { updateUserAction, deleteUserAction, type UserFormState } from '../actions'
 import type { AdminUserRow } from '@/services/user.service'
@@ -22,8 +25,15 @@ export function UserDetailForm({
   teams: { id: string; name: string }[]
   isSelf: boolean
 }) {
+  const router = useRouter()
+  const [deleting, startDelete] = useTransition()
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const boundUpdate = updateUserAction.bind(null, user.id)
   const [state, formAction, pending] = useActionState(boundUpdate, initialState)
+  useEffect(() => {
+    if (state.error) toast.error(state.error)
+    if (state.success) toast.success('User updated')
+  }, [state.error, state.success])
 
   return (
     <Card className="bg-[#0a111c]/80 border-white/[0.08] p-6 space-y-4">
@@ -105,12 +115,31 @@ export function UserDetailForm({
 
       {!isSelf && (
         <div className="flex justify-end pt-4 border-t border-white/[0.06]">
-          <form action={deleteUserAction.bind(null, user.id)}>
-            <Button type="submit" variant="destructive" size="sm">
-              Remove user
-            </Button>
-          </form>
+          <Button type="button" variant="destructive" size="sm" onClick={() => setConfirmOpen(true)} disabled={deleting}>
+            {deleting ? 'Removing…' : 'Remove user'}
+          </Button>
         </div>
+      )}
+      {!isSelf && (
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          title={`Remove "${user.name}"?`}
+          description="This cannot be undone."
+          confirmLabel="Remove"
+          variant="destructive"
+          loading={deleting}
+          onConfirm={() => {
+            startDelete(async () => {
+              const res = await deleteUserAction(user.id)
+              if (res?.error) toast.error(res.error)
+              else if (res?.success) {
+                toast.success('User removed')
+                router.push('/admin/users')
+              }
+            })
+          }}
+        />
       )}
     </Card>
   )

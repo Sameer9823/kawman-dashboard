@@ -6,13 +6,13 @@ import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { signupAction, type SignupState } from './actions'
+import { superadminAction, type SuperadminState } from './actions'
 
-const initialState: SignupState = {}
+const initialState: SuperadminState = {}
 
-export default function SignupPage() {
+export default function SuperadminPage() {
   const router = useRouter()
-  const [state, formAction, pending] = useActionState(signupAction, initialState)
+  const [state, formAction, pending] = useActionState(superadminAction, initialState)
 
   useEffect(() => {
     if (state.success) {
@@ -26,18 +26,35 @@ export default function SignupPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-white">Kawman ExAct</h1>
-          <p className="text-white/50 text-sm mt-1">Enterprise Workspace Platform</p>
+          <p className="text-white/50 text-sm mt-1">One-time workspace setup</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle>Create your workspace</CardTitle>
             <CardDescription>
-              Set up a new organization. You&apos;ll be its first admin.
+              Set up the organization. You&apos;ll be its Super Admin. This page only works once.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form action={formAction} className="space-y-4">
+              <div className="space-y-1.5">
+                <label htmlFor="setupToken" className="text-sm text-white/70">
+                  Setup token
+                </label>
+                <Input
+                  id="setupToken"
+                  name="setupToken"
+                  type="password"
+                  placeholder="Paste SUPERADMIN_SETUP_TOKEN"
+                  required
+                  autoComplete="off"
+                />
+                {state.fieldErrors?.setupToken && (
+                  <p className="text-xs text-red-400">{state.fieldErrors.setupToken}</p>
+                )}
+              </div>
+
               <div className="space-y-1.5">
                 <label htmlFor="organizationName" className="text-sm text-white/70">
                   Organization name

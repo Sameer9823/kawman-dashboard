@@ -36,8 +36,11 @@ export async function sendEmail(input: SendEmailInput): Promise<{ delivered: boo
   const from = process.env.EMAIL_FROM
 
   if (!apiKey || !from) {
-    // Don't log the reset URL or any sensitive data in dev mode
-    console.log(`[email:dev] To: ${input.to} | Subject: ${input.subject}`)
+    const missing = [!apiKey && 'RESEND_API_KEY', !from && 'EMAIL_FROM'].filter(Boolean).join(', ')
+    // Verbose in dev so the missing-config mode is impossible to miss
+    console.warn(
+      `[email:dev] ✗ NOT SENT — missing ${missing}. To: ${input.to} | Subject: "${input.subject}" | Mode: dev-log (set RESEND_API_KEY + EMAIL_FROM to actually deliver).`
+    )
     return { delivered: false }
   }
 
@@ -55,10 +58,11 @@ export async function sendEmail(input: SendEmailInput): Promise<{ delivered: boo
 
   if (!res.ok) {
     const body = await res.text().catch(() => '')
-    console.error(`[email] Resend send failed (${res.status}): ${body}`)
+    console.error(`[email] ✗ Resend send failed (${res.status}): ${body} | To: ${input.to} | Subject: "${input.subject}"`)
     return { delivered: false }
   }
 
+  console.log(`[email] ✓ Sent via Resend | To: ${input.to} | Subject: "${input.subject}"`)
   return { delivered: true }
 }
 

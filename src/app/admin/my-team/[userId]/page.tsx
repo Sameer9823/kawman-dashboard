@@ -8,7 +8,7 @@ import { listReports } from '@/services/ai.service'
 import { isAIConfigured } from '@/lib/ai'
 import { getInitials } from '@/lib/utils'
 import { logAudit } from '@/lib/audit-log'
-import { requireApiSession } from '@/lib/session'
+import { requirePermission } from '@/lib/session'
 import { prisma } from '@/lib/db'
 import { EmployeeTabs } from './employee-tabs'
 import { TeamDateFilter } from '../team-date-filter'
@@ -44,10 +44,11 @@ function parseDateRange(sp: Record<string, string | string[] | undefined>) {
 }
 
 export default async function EmployeeProfilePage({ params, searchParams }: { params: Promise<{ userId: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const session = await requirePermission('team.view_all')
+
   const { userId } = await params
   const sp = await searchParams
   const { from, to, preset } = parseDateRange(sp)
-  const session = await requireApiSession()
   const isSelf = session.user.id === userId
   const canViewAll = (session.user.permissions as string[]).includes('team.view_all')
   if (!isSelf && !canViewAll) {

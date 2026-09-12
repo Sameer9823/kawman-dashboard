@@ -1,4 +1,5 @@
 import { MainLayout } from '@/components/layout'
+import { requirePermission } from '@/lib/session'
 import { PageHeader } from '@/components/crm/page-header'
 import { DeleteRowButton } from '@/components/crm/delete-row-button'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +11,8 @@ import { deleteTeamAction } from './actions'
 export const metadata = { title: 'Teams | Kawman ExAct Admin' }
 
 export default async function AdminTeamsPage() {
+  await requirePermission('organizations.view')
+
   const [teams, departments, managers] = await Promise.all([getTeams(), getDepartments(), getOrgUserOptions()])
 
   return (

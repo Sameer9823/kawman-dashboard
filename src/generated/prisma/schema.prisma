@@ -493,13 +493,13 @@ model Contact {
   mobile         String?
   status         String       @default("ACTIVE")
   organizationId String
-  companyId      String
+  companyId      String?
   ownerId        String
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   lastActivityAt DateTime?
   activities     Activity[]
-  company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company        Company?     @relation(fields: [companyId], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   owner          User         @relation("ContactOwner", fields: [ownerId], references: [id])
   deals          Deal[]
@@ -526,14 +526,14 @@ model Deal {
   notes          String?
   organizationId String
   ownerId        String
-  companyId      String
+  companyId      String?
   contactId      String?
   leadId         String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   closedAt       DateTime?
   activities     Activity[]
-  company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company        Company?     @relation(fields: [companyId], references: [id])
   contact        Contact?     @relation(fields: [contactId], references: [id])
   lead           Lead?        @relation(fields: [leadId], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -1063,6 +1063,7 @@ enum NotificationType {
   AI_REPORT_READY
   CHECK_IN_COMPLETED
   SECURITY_EVENT
+  DAILY_REPORT_SUBMITTED
 }
 
 enum DailyReportStatus {

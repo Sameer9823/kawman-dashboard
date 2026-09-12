@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Check } from 'lucide-react'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { toggleRolePermissionAction } from '../actions'
 
@@ -41,8 +42,20 @@ export function PermissionMatrix({
     })
     startTransition(async () => {
       try {
-        await toggleRolePermissionAction(roleId, permissionId, willGrant)
-      } catch {
+        const res = await toggleRolePermissionAction(roleId, permissionId, willGrant)
+        if (res?.error) {
+          toast.error(res.error)
+          setGranted((prev) => {
+            const next = new Set(prev)
+            if (willGrant) next.delete(permissionId)
+            else next.add(permissionId)
+            return next
+          })
+        } else {
+          toast.success(willGrant ? 'Permission granted' : 'Permission revoked')
+        }
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : 'Failed to update permission')
         setGranted((prev) => {
           const next = new Set(prev)
           if (willGrant) next.delete(permissionId)

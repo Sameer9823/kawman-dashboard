@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { MainLayout } from '@/components/layout'
+import { requirePermission } from '@/lib/session'
 import { PageHeader } from '@/components/crm/page-header'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -61,6 +62,8 @@ function parseDateRange(searchParams: Record<string, string | string[] | undefin
 }
 
 export default async function MyTeamPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  await requirePermission('team.view')
+
   const sp = await searchParams
   const { from, to, preset } = parseDateRange(sp)
   const [metrics, aiConfigured, allReports] = await Promise.all([

@@ -214,6 +214,7 @@ export async function submitDailyReport(input: DailyReportInput & { targetUserId
 
   const existing = await prisma.dailyReport.findFirst({ where: { organizationId, userId, date: { gte: day, lt: nextDay } } })
 
+  const isFirstCreation = !existing
   const row = existing
     ? await prisma.dailyReport.update({
         where: { id: existing.id },
@@ -224,6 +225,44 @@ export async function submitDailyReport(input: DailyReportInput & { targetUserId
         data: { organizationId, userId, date: day, ...data },
         include: { user: { select: { id: true, name: true, email: true } }, aiReport: { select: { id: true, content: true } } },
       })
+
+  // Only on first creation for that day (not on edit/resubmit): notify every ADMIN / SUPER_ADMIN in the org.
+  // Best-effort — a notification failure must never block the report from saving or throw to the caller.
+  if (isFirstCreation) {
+    try {
+      const { createNotification } = await import('@/services/notification.service')
+      const adminRoleIds = await prisma.role.findMany({
+        where: { name: { in: ['ADMIN', 'SUPER_ADMIN'] as never[] } },
+        select: { id: true },
+      })
+      if (adminRoleIds.length) {
+        const adminUserIds = await prisma.userRole.findMany({
+          where: { roleId: { in: adminRoleIds.map((r) => r.id) }, user: { organizationId } },
+          select: { userId: true },
+        })
+        const uniqueAdminUserIds = [...new Set(adminUserIds.map((r) => r.userId))]
+        if (uniqueAdminUserIds.length) {
+          const submitter = row.user
+          const employeeName = submitter.name ?? submitter.email
+          const dateLabel = day.toISOString().slice(0, 10)
+          await Promise.all(
+            uniqueAdminUserIds.map((adminUserId) =>
+              createNotification({
+                organizationId,
+                userId: adminUserId,
+                type: 'DAILY_REPORT_SUBMITTED' as never,
+                title: 'Daily report submitted',
+                message: `${employeeName} submitted their report for ${dateLabel}`,
+                data: { dailyReportId: row.id, userId: row.userId } as never,
+              })
+            )
+          )
+        }
+      }
+    } catch (err) {
+      console.error('[daily-report] notify admins failed (ignored):', err)
+    }
+  }
 
   return {
     id: row.id,

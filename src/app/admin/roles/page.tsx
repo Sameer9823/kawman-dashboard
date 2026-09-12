@@ -1,12 +1,15 @@
 import Link from 'next/link'
 import { ShieldCheck } from 'lucide-react'
 import { MainLayout } from '@/components/layout'
+import { requirePermission } from '@/lib/session'
 import { PageHeader } from '@/components/crm/page-header'
 import { getRoles } from '@/services/role.service'
 
 export const metadata = { title: 'Roles & Permissions | Kawman ExAct Admin' }
 
 export default async function AdminRolesPage() {
+  await requirePermission('roles.view')
+
   const roles = await getRoles()
 
   return (

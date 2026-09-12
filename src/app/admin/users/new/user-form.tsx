@@ -1,9 +1,10 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { createUserAction, type UserFormState } from '../actions'
 
@@ -18,6 +19,10 @@ export function NewUserForm({
   teams: { id: string; name: string }[]
 }) {
   const [state, formAction, pending] = useActionState(createUserAction, initialState)
+  useEffect(() => {
+    if (state.error) toast.error(state.error)
+    if (state.success || state.tempPassword) toast.success('User created')
+  }, [state.error, state.success, state.tempPassword])
   const [copied, setCopied] = useState(false)
 
   if (state.tempPassword) {

@@ -18,6 +18,7 @@ export async function GET() {
       type: n.type,
       title: n.title,
       message: n.message,
+      data: (n as { data?: unknown }).data ?? null,
       createdAt: n.createdAt.toISOString(),
       read: n.isRead,
     }))

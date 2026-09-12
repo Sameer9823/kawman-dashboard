@@ -4,17 +4,17 @@ import { validateCsrf } from '@/lib/csrf'
 
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
 import { logAudit } from '@/lib/audit-log'
+import { findOrCreateCompanyByName } from '@/services/company.service'
 
 const STAGES = ['NEW_LEAD', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST'] as const
 
 const dealSchema = z.object({
   name: z.string().trim().min(2, 'Deal name is required'),
-  companyId: z.string().trim().min(1, 'Company is required'),
+  company: z.string().trim().optional(),
   contactId: z.string().trim().optional(),
   value: z.coerce.number().min(0, 'Value must be positive'),
   probability: z.coerce.number().int().min(0).max(100).optional(),
@@ -27,6 +27,8 @@ const dealSchema = z.object({
 export interface DealFormState {
   error?: string
   fieldErrors?: Record<string, string>
+  success?: boolean
+  createdId?: string
 }
 
 async function assertPermission(permission: string) {
@@ -46,10 +48,14 @@ export async function createDealAction(_prev: DealFormState, formData: FormData)
   }
   const data = parsed.data
 
-  const company = await prisma.company.findFirst({
-    where: { id: data.companyId, organizationId: session.user.organizationId },
-  })
-  if (!company) return { fieldErrors: { companyId: 'Select a valid company' } }
+  const company = data.company?.trim()
+    ? await findOrCreateCompanyByName({
+        name: data.company.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: data.ownerId || session.user.id,
+      })
+    : null
+  const companyId = company?.id ?? null
 
   const deal = await prisma.deal.create({
     data: {
@@ -59,7 +65,7 @@ export async function createDealAction(_prev: DealFormState, formData: FormData)
       stage: data.stage ?? 'NEW_LEAD',
       expectedClose: data.expectedClose ? new Date(data.expectedClose) : null,
       priority: data.priority ?? 'MEDIUM',
-      companyId: data.companyId,
+      companyId,
       contactId: data.contactId || null,
       organizationId: session.user.organizationId,
       ownerId: data.ownerId || session.user.id,
@@ -72,7 +78,7 @@ export async function createDealAction(_prev: DealFormState, formData: FormData)
       organizationId: session.user.organizationId,
       actorId: session.user.id,
       dealId: deal.id,
-      companyId: company.id,
+      companyId,
     },
   })
 
@@ -87,7 +93,7 @@ export async function createDealAction(_prev: DealFormState, formData: FormData)
 
   revalidatePath('/deals')
   revalidatePath('/dashboard')
-  redirect('/deals')
+  return { success: true, createdId: deal.id }
 }
 
 export async function updateDealAction(id: string, _prev: DealFormState, formData: FormData): Promise<DealFormState> {
@@ -104,11 +110,15 @@ export async function updateDealAction(id: string, _prev: DealFormState, formDat
   const existing = await prisma.deal.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!existing) return { error: 'Deal not found.' }
 
-  const company = await prisma.company.findFirst({
-    where: { id: data.companyId, organizationId: session.user.organizationId },
-  })
-  if (!company) return { fieldErrors: { companyId: 'Select a valid company' } }
-
+  const company = data.company?.trim()
+    ? await findOrCreateCompanyByName({
+        name: data.company.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: data.ownerId || existing.ownerId,
+      })
+    : null
+  const rawCompany = formData.get('company')
+  const companyId = rawCompany !== null ? (company?.id ?? null) : existing.companyId
   const notes = formData.get('notes')
 
   await prisma.deal.update({
@@ -120,7 +130,7 @@ export async function updateDealAction(id: string, _prev: DealFormState, formDat
       stage: data.stage ?? existing.stage,
       expectedClose: data.expectedClose ? new Date(data.expectedClose) : null,
       priority: data.priority ?? existing.priority,
-      companyId: data.companyId,
+      companyId,
       contactId: data.contactId || null,
       ownerId: data.ownerId || existing.ownerId,
       notes: typeof notes === 'string' && notes.trim() ? notes.trim() : existing.notes,
@@ -152,7 +162,7 @@ export async function updateDealAction(id: string, _prev: DealFormState, formDat
   revalidatePath('/deals')
   revalidatePath(`/deals/${id}`)
   revalidatePath('/dashboard')
-  return {}
+  return { success: true }
 }
 
 /** Called from the kanban board on drag-and-drop — updates just the stage. */
@@ -192,11 +202,11 @@ export async function updateDealStageAction(dealId: string, stage: (typeof STAGE
   revalidatePath('/dashboard')
 }
 
-export async function deleteDealAction(id: string): Promise<void> {
+export async function deleteDealAction(id: string): Promise<{ success?: boolean; error?: string }> {
   await validateCsrf()
   const session = await assertPermission(PERMISSIONS['deals.delete'].name)
   const existing = await prisma.deal.findFirst({ where: { id, organizationId: session.user.organizationId } })
-  if (!existing) return
+  if (!existing) return { error: 'Deal not found.' }
   await prisma.deal.delete({ where: { id } })
 
   await logAudit({
@@ -210,4 +220,5 @@ export async function deleteDealAction(id: string): Promise<void> {
 
   revalidatePath('/deals')
   revalidatePath('/dashboard')
+  return { success: true }
 }

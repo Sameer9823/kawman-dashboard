@@ -22,18 +22,18 @@ async function logActivity(fileId: string, userId: string, action: string, metad
 //
 // Uses the FilePermission model, which already existed in the schema
 // with a folderId column but had zero application code reading or
-// writing it. Semantics chosen to be purely additive — a folder with NO
-// grants behaves exactly as before (visible org-wide) — so turning this
-// on doesn't retroactively lock anyone out of folders that were never
-// explicitly restricted:
+// writing it. Semantics are private-by-default — a folder with NO
+// grants is visible ONLY to its creator and files.manage holders
+// (Admin / Super Admin). Employees see an admin's folder only after
+// an explicit FilePermission grant via Manage access:
 //
 //   - `files.manage` permission always sees everything (admin bypass).
 //   - The folder's creator always has access.
-//   - A folder with zero FilePermission rows is open to the whole org
-//     (unchanged legacy behavior).
-//   - A folder with at least one FilePermission row becomes restricted:
-//     only the creator, `files.manage` holders, and users with an
-//     explicit grant on that folder can see it.
+//   - A folder with zero FilePermission rows is private to its
+//     creator + files.manage (NOT open to the whole org).
+//   - Any folder becomes visible to a user only if they are the
+//     creator, hold files.manage, or have an explicit FilePermission
+//     grant on that folder.
 //
 // Only user-level grants are wired up below. The schema also supports
 // team- and department-level grants (FilePermission.teamId /
@@ -60,9 +60,9 @@ async function canAccessFolder(
   if (!folder) return false
   if (folder.createdById === userId) return true
 
-  const grantCount = await prisma.filePermission.count({ where: { folderId } })
-  if (grantCount === 0) return true // no grants set -> open, unchanged legacy behavior
-
+  // Folders are private by default: admin-created folders are NOT visible
+  // to employees until an explicit FilePermission grant is created via
+  // Manage access. No "open if zero grants" fallback.
   const ownGrant = await prisma.filePermission.findFirst({ where: { folderId, userId } })
   return Boolean(ownGrant)
 }
@@ -77,16 +77,16 @@ async function filterAccessibleFolders(
   if (folders.length === 0) return new Set()
 
   const folderIds = folders.map((f) => f.id)
-  const [grantCounts, ownGrants] = await Promise.all([
-    prisma.filePermission.groupBy({ by: ['folderId'], where: { folderId: { in: folderIds } }, _count: { _all: true } }),
-    prisma.filePermission.findMany({ where: { folderId: { in: folderIds }, userId }, select: { folderId: true } }),
-  ])
-  const restrictedIds = new Set(grantCounts.map((g) => g.folderId).filter((id): id is string => Boolean(id)))
+  const ownGrants = await prisma.filePermission.findMany({
+    where: { folderId: { in: folderIds }, userId },
+    select: { folderId: true },
+  })
   const ownGrantIds = new Set(ownGrants.map((g) => g.folderId).filter((id): id is string => Boolean(id)))
 
+  // Private by default: only creator or explicit grantee (files.manage already returned above)
   const visible = new Set<string>()
   for (const f of folders) {
-    if (!restrictedIds.has(f.id) || f.createdById === userId || ownGrantIds.has(f.id)) {
+    if (f.createdById === userId || ownGrantIds.has(f.id)) {
       visible.add(f.id)
     }
   }
@@ -350,11 +350,24 @@ export async function getFolderPath(folderId: string | null): Promise<{ id: stri
 
 export async function getAllFoldersFlat(): Promise<{ id: string; name: string; parentId: string | null }[]> {
   const session = await requireApiSession()
-  return prisma.folder.findMany({
+  const all = await prisma.folder.findMany({
     where: { organizationId: session.user.organizationId },
-    select: { id: true, name: true, parentId: true },
+    select: { id: true, name: true, parentId: true, createdById: true },
     orderBy: { name: 'asc' },
   })
+  if ((session.user.permissions as string[]).includes('files.manage')) {
+    return all.map(({ id, name, parentId }) => ({ id, name, parentId }))
+  }
+  if (all.length === 0) return []
+  const folderIds = all.map((f) => f.id)
+  const ownGrants = await prisma.filePermission.findMany({
+    where: { folderId: { in: folderIds }, userId: session.user.id },
+    select: { folderId: true },
+  })
+  const ownGrantIds = new Set(ownGrants.map((g) => g.folderId).filter((id): id is string => Boolean(id)))
+  return all
+    .filter((f) => f.createdById === session.user.id || ownGrantIds.has(f.id))
+    .map(({ id, name, parentId }) => ({ id, name, parentId }))
 }
 
 export async function createFolder(name: string, parentId: string | null) {

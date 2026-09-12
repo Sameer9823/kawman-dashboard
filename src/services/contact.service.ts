@@ -2,23 +2,15 @@ import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import type { Contact } from '@/types/crm'
-import { getRecordScope } from '@/lib/record-scope'
 import type { Session } from '@/lib/auth'
 import type { Prisma } from '@/generated/prisma'
+import { ownerScopeWhere } from '@/lib/record-scope-helpers'
+import { toInitials } from '@/lib/utils'
 
 /** See lib/record-scope.ts — the base "contacts.view" permission only
  * gates page access, not which rows come back. This adds that filter. */
 function scopeWhere(user: Session['user']): Prisma.ContactWhereInput {
-  const scope = getRecordScope(user)
-  if (scope === 'ALL') return {}
-  if (scope === 'DEPARTMENT' && user.department?.id) {
-    return { owner: { departmentId: user.department.id } }
-  }
-  return { ownerId: user.id }
-}
-
-function toInitials(name: string): string {
-  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+  return ownerScopeWhere<Prisma.ContactWhereInput>(user)
 }
 
 type ContactRow = Awaited<ReturnType<typeof fetchContacts>>[number]
@@ -35,7 +27,7 @@ function mapContact(row: ContactRow): Contact {
   return {
     id: row.id,
     name: row.name,
-    company: row.company.name,
+    company: row.company?.name ?? '—',
     designation: row.designation ?? '—',
     email: row.email ?? '',
     phone: row.phone ?? row.mobile ?? '',
@@ -126,7 +118,7 @@ export async function getContactsPage(query: ContactQuery = {}): Promise<Contact
 }
 
 /** Lightweight list for form <select> pickers (create deal/meeting). Scoped to caller's visibility. */
-export async function getContactOptions(): Promise<{ id: string; name: string; companyId: string }[]> {
+export async function getContactOptions(): Promise<{ id: string; name: string; companyId: string | null }[]> {
   const session = await requireApiSession()
   return prisma.contact.findMany({
     where: { organizationId: session.user.organizationId, ...scopeWhere(session.user) },
@@ -137,7 +129,7 @@ export async function getContactOptions(): Promise<{ id: string; name: string; c
 
 export interface ContactDetail extends Contact {
   ownerId: string
-  companyId: string
+  companyId: string | null
   mobile: string
 }
 

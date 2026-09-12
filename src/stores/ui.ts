@@ -30,9 +30,9 @@ export const useUIStore = create<UIState>()(
     (set) => ({
       sidebarOpen: true,
       sidebarCollapsed: false,
-      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
-      setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
-      setSidebarCollapsed: (collapsed: boolean) => set({ sidebarCollapsed: collapsed }),
+      toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed, sidebarOpen: state.sidebarCollapsed })),
+      setSidebarOpen: (open: boolean) => set({ sidebarOpen: open, sidebarCollapsed: !open }),
+      setSidebarCollapsed: (collapsed: boolean) => set({ sidebarCollapsed: collapsed, sidebarOpen: !collapsed }),
       mobileDrawerOpen: false,
       setMobileDrawerOpen: (open: boolean) => set({ mobileDrawerOpen: open }),
       toggleMobileDrawer: () => set((state) => ({ mobileDrawerOpen: !state.mobileDrawerOpen })),
@@ -54,6 +54,7 @@ export const useUIStore = create<UIState>()(
       name: 'kawman-ui-store',
       partialize: (state) => ({
         sidebarCollapsed: state.sidebarCollapsed,
+        sidebarOpen: state.sidebarOpen,
         theme: state.theme,
       }),
     }

@@ -4,15 +4,15 @@ import { validateCsrf } from '@/lib/csrf'
 
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
 import { logAudit } from '@/lib/audit-log'
+import { findOrCreateCompanyByName } from '@/services/company.service'
 
 const contactSchema = z.object({
   name: z.string().trim().min(2, 'Name is required'),
-  companyId: z.string().trim().min(1, 'Company is required'),
+  company: z.string().trim().optional(),
   designation: z.string().trim().optional(),
   email: z.string().trim().email('Enter a valid email').optional().or(z.literal('')),
   phone: z.string().trim().optional(),
@@ -23,6 +23,8 @@ const contactSchema = z.object({
 export interface ContactFormState {
   error?: string
   fieldErrors?: Record<string, string>
+  success?: boolean
+  createdId?: string
 }
 
 async function assertPermission(permission: string) {
@@ -42,10 +44,14 @@ export async function createContactAction(_prev: ContactFormState, formData: For
   }
   const data = parsed.data
 
-  const company = await prisma.company.findFirst({
-    where: { id: data.companyId, organizationId: session.user.organizationId },
-  })
-  if (!company) return { fieldErrors: { companyId: 'Select a valid company' } }
+  const company = data.company?.trim()
+    ? await findOrCreateCompanyByName({
+        name: data.company.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: data.ownerId || session.user.id,
+      })
+    : null
+  const companyId = company?.id ?? null
 
   const contact = await prisma.contact.create({
     data: {
@@ -54,7 +60,7 @@ export async function createContactAction(_prev: ContactFormState, formData: For
       email: data.email || null,
       phone: data.phone || null,
       mobile: data.mobile || null,
-      companyId: data.companyId,
+      companyId,
       organizationId: session.user.organizationId,
       ownerId: data.ownerId || session.user.id,
       lastActivityAt: new Date(),
@@ -67,7 +73,7 @@ export async function createContactAction(_prev: ContactFormState, formData: For
       organizationId: session.user.organizationId,
       actorId: session.user.id,
       contactId: contact.id,
-      companyId: company.id,
+      companyId,
     },
   })
 
@@ -77,11 +83,11 @@ export async function createContactAction(_prev: ContactFormState, formData: For
     action: 'CREATE',
     resource: 'Contact',
     resourceId: contact.id,
-    metadata: { name: contact.name, companyId: contact.companyId },
+    metadata: { name: contact.name, companyId },
   })
 
   revalidatePath('/contacts')
-  redirect('/contacts')
+  return { success: true, createdId: contact.id }
 }
 
 export async function updateContactAction(
@@ -102,10 +108,16 @@ export async function updateContactAction(
   const existing = await prisma.contact.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!existing) return { error: 'Contact not found.' }
 
-  const company = await prisma.company.findFirst({
-    where: { id: data.companyId, organizationId: session.user.organizationId },
-  })
-  if (!company) return { fieldErrors: { companyId: 'Select a valid company' } }
+  const company = data.company?.trim()
+    ? await findOrCreateCompanyByName({
+        name: data.company.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: data.ownerId || existing.ownerId,
+      })
+    : null
+  // If the field was submitted empty, clear the link; if omitted, keep existing.
+  const rawCompany = formData.get('company')
+  const companyId = rawCompany !== null ? (company?.id ?? null) : existing.companyId
 
   await prisma.contact.update({
     where: { id },
@@ -115,7 +127,7 @@ export async function updateContactAction(
       email: data.email || null,
       phone: data.phone || null,
       mobile: data.mobile || null,
-      companyId: data.companyId,
+      companyId,
       ownerId: data.ownerId || existing.ownerId,
       lastActivityAt: new Date(),
     },
@@ -132,14 +144,14 @@ export async function updateContactAction(
 
   revalidatePath('/contacts')
   revalidatePath(`/contacts/${id}`)
-  return {}
+  return { success: true }
 }
 
-export async function deleteContactAction(id: string): Promise<void> {
+export async function deleteContactAction(id: string): Promise<{ success?: boolean; error?: string }> {
   await validateCsrf()
   const session = await assertPermission(PERMISSIONS['contacts.delete'].name)
   const existing = await prisma.contact.findFirst({ where: { id, organizationId: session.user.organizationId } })
-  if (!existing) return
+  if (!existing) return { error: 'Contact not found.' }
   await prisma.contact.delete({ where: { id } })
 
   await logAudit({
@@ -152,4 +164,5 @@ export async function deleteContactAction(id: string): Promise<void> {
   })
 
   revalidatePath('/contacts')
+  return { success: true }
 }

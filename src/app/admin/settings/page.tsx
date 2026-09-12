@@ -3,13 +3,13 @@ import { PageHeader } from '@/components/crm/page-header'
 import { DeleteRowButton } from '@/components/crm/delete-row-button'
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
-import { requireSession } from '@/lib/session'
+import { requirePermission } from '@/lib/session'
 import { revokeSessionAction } from './actions'
 
 export const metadata = { title: 'Settings | Kawman ExAct Admin' }
 
 export default async function AdminSettingsPage() {
-  const session = await requireSession()
+  const session = await requirePermission('settings.manage')
   const sessions = await prisma.session.findMany({
     where: { userId: session.user.id },
     orderBy: { updatedAt: 'desc' },

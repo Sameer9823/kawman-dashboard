@@ -1,12 +1,13 @@
 'use server'
 
 import { validateCsrf } from '@/lib/csrf'
-
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { ensureRolesAndPermissionsSeeded } from '@/lib/rbac-seed'
 import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rate-limit'
+import { logAudit } from '@/lib/audit-log'
 
 const signupSchema = z.object({
   organizationName: z.string().trim().min(2, 'Organization name is too short').max(120),
@@ -15,11 +16,16 @@ const signupSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
 })
 
-export interface SignupState {
+export interface SuperadminState {
   success?: boolean
   error?: string
-  fieldErrors?: Partial<Record<'organizationName' | 'name' | 'email' | 'password', string>>
+  fieldErrors?: Partial<Record<'organizationName' | 'name' | 'email' | 'password' | 'setupToken', string>>
 }
+
+// Generic error returned for ALL bootstrap-gate failures (org already exists,
+// token missing/wrong, rate limited) so a random visitor cannot probe which
+// condition triggered — they just see "Unable to complete setup."
+const GENERIC_SETUP_ERROR = 'Unable to complete setup. Please check your details and try again.'
 
 function slugify(input: string): string {
   return input
@@ -41,8 +47,43 @@ async function uniqueSlug(base: string): Promise<string> {
   return candidate
 }
 
-export async function signupAction(_prevState: SignupState, formData: FormData): Promise<SignupState> {
+export async function superadminAction(_prevState: SuperadminState, formData: FormData): Promise<SuperadminState> {
   await validateCsrf()
+
+  // ---- Rate limit: same as old /sign-up/email customRule (5 per 10 min) ----
+  // Key by IP — Server Actions have no authenticated user yet.
+  const headersList = await headers()
+  const ip =
+    headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    headersList.get('x-real-ip') ||
+    headersList.get('x-vercel-forwarded-for') ||
+    'unknown'
+  const limit = await checkRateLimit(`superadmin:${ip}`, 5, 60 * 10)
+  if (!limit.allowed) {
+    return { error: GENERIC_SETUP_ERROR }
+  }
+
+  // ---- One-time bootstrap gate: must be first org, and must present token ----
+  // Both failures return the SAME generic message so an outsider cannot
+  // distinguish "token wrong" from "already bootstrapped".
+  const expectedToken = process.env.SUPERADMIN_SETUP_TOKEN
+  const providedToken = String(formData.get('setupToken') ?? '')
+
+  // If no token is configured at all, treat as locked — don't create an org.
+  if (!expectedToken) {
+    return { error: GENERIC_SETUP_ERROR }
+  }
+
+  const orgCount = await prisma.organization.count()
+  if (orgCount > 0) {
+    return { error: GENERIC_SETUP_ERROR }
+  }
+
+  if (providedToken !== expectedToken) {
+    return { error: GENERIC_SETUP_ERROR }
+  }
+
+  // ---- From here: original signup logic unchanged (org + user in one txn) ----
   const parsed = signupSchema.safeParse({
     organizationName: formData.get('organizationName'),
     name: formData.get('name'),
@@ -51,9 +92,9 @@ export async function signupAction(_prevState: SignupState, formData: FormData):
   })
 
   if (!parsed.success) {
-    const fieldErrors: SignupState['fieldErrors'] = {}
+    const fieldErrors: SuperadminState['fieldErrors'] = {}
     for (const issue of parsed.error.issues) {
-      const key = issue.path[0] as keyof NonNullable<SignupState['fieldErrors']>
+      const key = issue.path[0] as keyof NonNullable<SuperadminState['fieldErrors']>
       fieldErrors[key] = issue.message
     }
     return { fieldErrors }
@@ -79,13 +120,9 @@ export async function signupAction(_prevState: SignupState, formData: FormData):
         email,
         password,
         name,
-        // additional field declared in lib/auth.ts betterAuth({ user: { additionalFields }})
         organizationId: organization.id,
       } as never,
       headers: await headers(),
-      // nextCookies() plugin (registered in lib/auth.ts) sets the session
-      // cookie on this response automatically since we're inside a
-      // Server Action — no manual cookie handling needed.
     })
 
     const superAdminRole = await prisma.role.findUnique({ where: { name: 'SUPER_ADMIN' } })
@@ -96,6 +133,18 @@ export async function signupAction(_prevState: SignupState, formData: FormData):
         update: {},
         create: { userId: createdUser.id, roleId: superAdminRole.id },
       })
+    }
+
+    // Permanent audit record of exactly when/how the org was bootstrapped.
+    if (createdUser) {
+      await logAudit({
+        organizationId: organization.id,
+        actorId: createdUser.id,
+        action: 'CREATE',
+        resource: 'Organization',
+        resourceId: organization.id,
+        metadata: { via: 'superadmin-bootstrap', slug: organization.slug, email },
+      }).catch(() => {})
     }
 
     return { success: true }

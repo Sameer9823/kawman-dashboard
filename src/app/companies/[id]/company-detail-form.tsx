@@ -1,10 +1,12 @@
 'use client'
 
-import { useActionState, useTransition } from 'react'
+import { useActionState, useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { CompanyDetail } from '@/services/company.service'
 import type { UserOption } from '@/services/user.service'
 import { updateCompanyAction, deleteCompanyAction, type CompanyFormState } from '../actions'
@@ -14,14 +16,22 @@ const initialState: CompanyFormState = {}
 export function CompanyDetailForm({ company, owners }: { company: CompanyDetail; owners: UserOption[] }) {
   const router = useRouter()
   const [deleting, startDelete] = useTransition()
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const boundUpdate = updateCompanyAction.bind(null, company.id)
   const [state, formAction, pending] = useActionState(boundUpdate, initialState)
+  useEffect(() => {
+    if (state.error) toast.error(state.error)
+    if (state.success) toast.success('Company updated')
+  }, [state.error, state.success])
 
   function handleDelete() {
-    if (!window.confirm(`Delete "${company.name}"? This cannot be undone.`)) return
     startDelete(async () => {
-      await deleteCompanyAction(company.id)
-      router.push('/companies')
+      const res = await deleteCompanyAction(company.id)
+      if (res?.error) toast.error(res.error)
+      else if (res?.success) {
+        toast.success('Company deleted')
+        router.push('/companies')
+      }
     })
   }
 
@@ -84,10 +94,20 @@ export function CompanyDetailForm({ company, owners }: { company: CompanyDetail;
 
       <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/[0.06]">
         <span className="text-xs text-white/40">Tracked since {new Date(company.createdAt).toLocaleDateString('en-IN')}</span>
-        <Button type="button" variant="destructive" size="sm" onClick={handleDelete} disabled={deleting}>
+        <Button type="button" variant="destructive" size="sm" onClick={() => setConfirmOpen(true)} disabled={deleting}>
           {deleting ? 'Deleting…' : 'Delete company'}
         </Button>
       </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={`Delete "${company.name}"?`}
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </Card>
   )
 }

@@ -73,7 +73,7 @@ export function FolderAccessDialog({
           <>
             {grants.length === 0 ? (
               <p className="text-xs text-white/40 mb-4">
-                Open to everyone in your organization. Add someone below to restrict it to specific people.
+                Private — only you and Admins can see this folder. Add someone below to grant access.
               </p>
             ) : (
               <ul className="space-y-2 mb-4">

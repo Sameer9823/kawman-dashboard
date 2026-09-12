@@ -65,6 +65,7 @@ export function ContactsTable({ result }: { result: ContactPage }) {
     updateParams({ sort: key, dir })
   }
 
+  const hasActiveFilters = Boolean(searchParams.get('q')?.trim())
   const { contacts, total, page, pageCount } = result
   const rangeStart = total === 0 ? 0 : (page - 1) * result.pageSize + 1
   const rangeEnd = Math.min(page * result.pageSize, total)
@@ -137,7 +138,16 @@ export function ContactsTable({ result }: { result: ContactPage }) {
           </div>
         ))}
         {contacts.length === 0 && (
-          <div className="col-span-full py-10 text-center text-white/40 text-sm">No contacts match your search.</div>
+          <div className="col-span-full py-10 text-center">
+            {hasActiveFilters ? (
+              <span className="text-sm text-white/40">No contacts match your search.</span>
+            ) : (
+              <span className="flex flex-col items-center gap-3">
+                <span className="text-sm text-white/40">No contacts yet.</span>
+                <Link href="/contacts/new" className="inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-500 transition-colors">Create your first contact</Link>
+              </span>
+            )}
+          </div>
         )}
       </div>
 

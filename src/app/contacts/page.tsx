@@ -39,7 +39,7 @@ export default async function ContactsPage({
           title="Contacts"
           subtitle={`${result.total} contacts across your companies`}
           action={
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <ExportCsvButton href="/api/contacts/export" />
               <Button asChild className="gap-1.5">
                 <Link href="/contacts/new">

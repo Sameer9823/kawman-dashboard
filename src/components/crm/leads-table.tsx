@@ -13,6 +13,7 @@ import type { Lead, LeadStatus } from '@/types/crm'
 import type { LeadPage, LeadSortKey } from '@/services/lead.service'
 import type { UserOption } from '@/services/user.service'
 import { bulkDeleteLeadsAction, bulkUpdateLeadStatusAction, bulkReassignLeadsAction } from '@/app/leads/actions'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { SavedViewsMenu } from '@/components/crm/saved-views-menu'
 
 const STATUS_VARIANT: Record<LeadStatus, BadgeVariant> = {
@@ -128,6 +129,7 @@ export function LeadsTable({ result, owners }: { result: LeadPage; owners: UserO
   const rangeStart = total === 0 ? 0 : (page - 1) * result.pageSize + 1
   const rangeEnd = Math.min(page * result.pageSize, total)
   const allSelected = leads.length > 0 && selected.size === leads.length
+  const hasActiveFilters = Boolean(searchParams.get('q')?.trim() || (searchParams.get('status') && searchParams.get('status') !== 'ALL'))
 
   return (
     <Card className="bg-[#0a111c]/80 border-white/[0.08]">
@@ -171,7 +173,7 @@ export function LeadsTable({ result, owners }: { result: LeadPage; owners: UserO
         />
       )}
 
-      <div className="overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-white/40 text-xs uppercase tracking-wide border-b border-white/[0.06]">
@@ -243,13 +245,75 @@ export function LeadsTable({ result, owners }: { result: LeadPage; owners: UserO
             ))}
             {leads.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-10 text-center text-white/40">
-                  No leads match your filters.
+                <td colSpan={9} className="px-4 py-10 text-center">
+                  {hasActiveFilters ? (
+                    <span className="text-white/40">No leads match your filters.</span>
+                  ) : (
+                    <span className="flex flex-col items-center gap-3">
+                      <span className="text-white/40">No leads yet.</span>
+                      <Link
+                        href="/leads/new"
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-500 transition-colors"
+                      >
+                        Create your first lead
+                      </Link>
+                    </span>
+                  )}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile card view */}
+      <div className="md:hidden divide-y divide-white/[0.04]">
+        {leads.map((lead: Lead) => (
+          <div key={lead.id} className="p-4 space-y-2.5">
+            <div className="flex items-start justify-between gap-2">
+              <Link href={`/leads/${lead.id}`} className="text-sm font-medium text-white hover:text-purple-300 truncate">
+                {lead.name}
+              </Link>
+              <Badge variant={STATUS_VARIANT[lead.status]}>{STATUS_LABEL[lead.status]}</Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+              <span className="text-white/35">Company</span><span className="text-white/70 truncate text-right">{lead.company || '—'}</span>
+              <span className="text-white/35">Owner</span><span className="text-white/70 truncate text-right">{lead.owner}</span>
+              <span className="text-white/35">Source</span><span className="text-white/55 text-right">{lead.source}</span>
+              <span className="text-white/35">Score</span><span className="text-white/70 text-right">{lead.score}</span>
+              <span className="text-white/35">Value</span><span className="text-white font-medium text-right">{formatCurrency(lead.value)}</span>
+              <span className="text-white/35">Last activity</span><span className="text-white/45 text-right">{lead.lastActivityAt}</span>
+            </div>
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="checkbox"
+                checked={selected.has(lead.id)}
+                onChange={() => toggleRow(lead.id)}
+                className="h-4 w-4 rounded border-white/20 bg-white/[0.04] accent-purple-600"
+                aria-label={`Select ${lead.name}`}
+              />
+              <span className="text-xs text-white/30">Select</span>
+              <span className="text-xs text-white/40 truncate ml-auto">{lead.email}</span>
+            </div>
+          </div>
+        ))}
+        {leads.length === 0 && (
+          <div className="px-4 py-10 text-center">
+            {hasActiveFilters ? (
+              <span className="text-sm text-white/40">No leads match your filters.</span>
+            ) : (
+              <span className="flex flex-col items-center gap-3">
+                <span className="text-sm text-white/40">No leads yet.</span>
+                <Link
+                  href="/leads/new"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-500 transition-colors"
+                >
+                  Create your first lead
+                </Link>
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {pageCount > 1 && (
@@ -292,6 +356,7 @@ function BulkActionBar({
 }) {
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   function run(action: () => Promise<{ error?: string; updated?: number }>) {
     setError(null)
@@ -352,10 +417,7 @@ function BulkActionBar({
         size="sm"
         disabled={pending}
         className="gap-1.5"
-        onClick={() => {
-          if (!window.confirm(`Delete ${selectedIds.length} lead(s)? This cannot be undone.`)) return
-          run(() => bulkDeleteLeadsAction(selectedIds))
-        }}
+        onClick={() => setConfirmOpen(true)}
       >
         <Trash2 className="h-3.5 w-3.5" />
         Delete
@@ -371,6 +433,16 @@ function BulkActionBar({
       >
         <X className="h-3.5 w-3.5" /> Clear
       </button>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={`Delete ${selectedIds.length} lead(s)?`}
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={pending}
+        onConfirm={() => run(() => bulkDeleteLeadsAction(selectedIds))}
+      />
     </div>
   )
 }

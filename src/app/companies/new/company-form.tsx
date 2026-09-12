@@ -1,9 +1,11 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { createCompanyAction, type CompanyFormState } from '../actions'
 import type { UserOption } from '@/services/user.service'
 
@@ -11,6 +13,14 @@ const initialState: CompanyFormState = {}
 
 export function CompanyForm({ owners }: { owners: UserOption[] }) {
   const [state, formAction, pending] = useActionState(createCompanyAction, initialState)
+  const router = useRouter()
+  useEffect(() => {
+    if (state.error) toast.error(state.error)
+    if (state.success && state.createdId) {
+      toast.success('Company created')
+      router.push(`/companies/${state.createdId}`)
+    }
+  }, [state.error, state.success, state.createdId, router])
 
   return (
     <Card className="bg-[#0a111c]/80 border-white/[0.08] p-6">

@@ -31,7 +31,7 @@ export default async function DealsPage({
           title="Deals & Pipeline"
           subtitle={`${deals.length} deals • ${formatCurrency(totalValue)} total pipeline value — drag cards between stages`}
           action={
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <ExportCsvButton href="/api/deals/export" />
               <Button asChild className="gap-1.5">
                 <Link href="/deals/new">

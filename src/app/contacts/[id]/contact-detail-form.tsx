@@ -1,10 +1,12 @@
 'use client'
 
-import { useActionState, useTransition } from 'react'
+import { useActionState, useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { ContactDetail } from '@/services/contact.service'
 import type { UserOption } from '@/services/user.service'
 import { updateContactAction, deleteContactAction, type ContactFormState } from '../actions'
@@ -22,14 +24,22 @@ export function ContactDetailForm({
 }) {
   const router = useRouter()
   const [deleting, startDelete] = useTransition()
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const boundUpdate = updateContactAction.bind(null, contact.id)
   const [state, formAction, pending] = useActionState(boundUpdate, initialState)
+  useEffect(() => {
+    if (state.error) toast.error(state.error)
+    if (state.success) toast.success('Contact updated')
+  }, [state.error, state.success])
 
   function handleDelete() {
-    if (!window.confirm(`Delete "${contact.name}"? This cannot be undone.`)) return
     startDelete(async () => {
-      await deleteContactAction(contact.id)
-      router.push('/contacts')
+      const res = await deleteContactAction(contact.id)
+      if (res?.error) toast.error(res.error)
+      else if (res?.success) {
+        toast.success('Contact deleted')
+        router.push('/contacts')
+      }
     })
   }
 
@@ -39,19 +49,13 @@ export function ContactDetailForm({
         <Field label="Full name *" error={state.fieldErrors?.name}>
           <Input name="name" defaultValue={contact.name} required />
         </Field>
-        <Field label="Company *" error={state.fieldErrors?.companyId}>
-          <select
-            name="companyId"
-            defaultValue={contact.companyId}
-            required
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
+        <Field label="Company" error={state.fieldErrors?.company}>
+          <Input name="company" defaultValue={contact.company === '—' ? '' : contact.company} list="company-suggestions-detail" />
+          <datalist id="company-suggestions-detail">
             {companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.name} />
             ))}
-          </select>
+          </datalist>
         </Field>
         <Field label="Designation" error={state.fieldErrors?.designation}>
           <Input name="designation" defaultValue={contact.designation === '—' ? '' : contact.designation} />
@@ -96,10 +100,20 @@ export function ContactDetailForm({
         <span className="text-xs text-white/40">
           Last activity {new Date(contact.lastActivityAt).toLocaleDateString('en-IN')}
         </span>
-        <Button type="button" variant="destructive" size="sm" onClick={handleDelete} disabled={deleting}>
+        <Button type="button" variant="destructive" size="sm" onClick={() => setConfirmOpen(true)} disabled={deleting}>
           {deleting ? 'Deleting…' : 'Delete contact'}
         </Button>
       </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={`Delete "${contact.name}"?`}
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </Card>
   )
 }

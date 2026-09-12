@@ -40,7 +40,7 @@ export async function requireApiSession() {
 export async function requirePermission(permission: string) {
   const session = await requireSession()
   if (!(session.user.permissions as string[]).includes(permission)) {
-    redirect('/dashboard?error=forbidden')
+    redirect(`/dashboard?error=forbidden&section=${encodeURIComponent(permission)}`)
   }
   return session
 }

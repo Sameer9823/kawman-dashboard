@@ -29,9 +29,38 @@
   * {
     border-color: var(--color-border);
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
+  }
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+  }
+  /* Native <select> dropdown list — browsers that respect it */
+  select option {
+    background-color: #0A111C;
+    color: #ffffff;
+  }
+  /* Prevent iOS zoom on focus: ensure 16px minimum */
+  input, select, textarea {
+    font-size: 16px;
+  }
+  @media (min-width: 640px) {
+    input, select, textarea {
+      font-size: 14px;
+    }
+  }
+  /* Focus ring consistent */
+  :focus-visible {
+    outline: 2px solid rgba(124, 58, 237, 0.5);
+    outline-offset: 2px;
   }
 }
 
@@ -104,5 +133,41 @@
     background: linear-gradient(#07101B, #07101B) padding-box,
       linear-gradient(135deg, #7c3aed, #ec4899) border-box;
     border: 1px solid transparent;
+  }
+
+  /* react-day-picker — dark theme to match app */
+  .rdp {
+    --rdp-accent-color: #7c3aed;
+    --rdp-background-color: rgba(124, 58, 237, 0.15);
+    color: #ffffff;
+  }
+  .rdp-caption_label, .rdp-head_cell, .rdp-day {
+    color: rgba(255,255,255,0.8);
+  }
+  .rdp-day_selected, .rdp-day_range_start, .rdp-day_range_end {
+    background-color: #7c3aed !important;
+    color: #fff !important;
+  }
+  .rdp-day:hover:not(.rdp-day_selected) {
+    background-color: rgba(255,255,255,0.06) !important;
+  }
+  .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+    background-color: rgba(255,255,255,0.06);
+  }
+
+  /* Ensure dropdowns never overflow viewport on mobile */
+  [data-radix-popper-content-wrapper] {
+    max-width: calc(100vw - 16px);
+  }
+
+  /* Touch targets: minimum 44px on coarse pointers */
+  @media (pointer: coarse) {
+    button, [role="button"], a {
+      min-height: 44px;
+    }
+    /* but not for tiny inline controls */
+    .rdp-day, .rdp-head_cell {
+      min-height: auto;
+    }
   }
 }

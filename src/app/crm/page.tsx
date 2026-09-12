@@ -5,12 +5,26 @@ import { PageHeader } from '@/components/crm/page-header'
 import { Card } from '@/components/ui/card'
 import { PipelineCard } from '@/components/dashboard/pipeline-card'
 import { LeadSourceChart } from '@/components/dashboard/lead-source-chart'
+import { DashboardGate } from '@/components/dashboard/dashboard-gate'
 import { getCrmDashboardData } from '@/services/crm-reports.service'
 import { formatCurrency } from '@/lib/utils'
+import { getSession } from '@/lib/session'
 
 export const metadata = { title: 'CRM Dashboard | Kawman ExAct' }
 
 export default async function CrmDashboardPage() {
+  const session = await getSession()
+  const hasDashboardAccess = ((session?.user.permissions as string[] | undefined) ?? []).includes('dashboard.view')
+  if (!hasDashboardAccess) {
+    return (
+      <MainLayout>
+        <div className="space-y-6 animate-in">
+          <DashboardGate />
+        </div>
+      </MainLayout>
+    )
+  }
+
   const data = await getCrmDashboardData()
 
   const stats = [

@@ -41,6 +41,7 @@ export async function ensureRolesAndPermissionsSeeded() {
       where: { name: { in: permissionKeys as string[] } },
       select: { id: true },
     })
+    const desiredIds = permissions.map((p) => p.id)
 
     await Promise.all(
       permissions.map((permission) =>
@@ -51,5 +52,14 @@ export async function ensureRolesAndPermissionsSeeded() {
         })
       )
     )
+
+    // Remove stale permission links so role updates (e.g. revoking
+    // dashboard.view from non-admin roles) are reflected in the DB
+    // even when seed re-runs on an existing database.
+    if (desiredIds.length > 0) {
+      await prisma.rolePermission.deleteMany({
+        where: { roleId: role.id, permissionId: { notIn: desiredIds } },
+      })
+    }
   }
 }

@@ -132,7 +132,7 @@ export async function getCrmDashboardData(): Promise<CrmDashboardData> {
   const topDeals = topDealsRaw.map((d) => ({
     id: d.id,
     name: d.name,
-    company: d.company.name,
+    company: d.company?.name ?? '—',
     value: Number(d.value),
     stage: d.stage,
   }))

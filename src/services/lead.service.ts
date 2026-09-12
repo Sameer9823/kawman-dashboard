@@ -3,9 +3,10 @@ import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import type { Lead, LeadStatus } from '@/types/crm'
 import { calculateLeadScore, type LeadScoreResult } from '@/lib/lead-scoring'
-import type { Prisma } from '@/generated/prisma'
-import { getRecordScope } from '@/lib/record-scope'
 import type { Session } from '@/lib/auth'
+import type { Prisma } from '@/generated/prisma'
+import { ownerScopeWhere } from '@/lib/record-scope-helpers'
+import { toInitials } from '@/lib/utils'
 
 /**
  * Adds the visibility scope on top of the organizationId filter every
@@ -15,21 +16,7 @@ import type { Session } from '@/lib/auth'
  * not which rows come back. See lib/record-scope.ts.
  */
 function scopeWhere(user: Session['user']): Prisma.LeadWhereInput {
-  const scope = getRecordScope(user)
-  if (scope === 'ALL') return {}
-  if (scope === 'DEPARTMENT' && user.department?.id) {
-    return { owner: { departmentId: user.department.id } }
-  }
-  return { ownerId: user.id }
-}
-
-function toInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+  return ownerScopeWhere<Prisma.LeadWhereInput>(user)
 }
 
 type LeadWithOwner = Awaited<ReturnType<typeof fetchLeads>>[number]

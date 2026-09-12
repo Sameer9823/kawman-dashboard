@@ -43,6 +43,7 @@ import {
   ChevronLeft,
   ChevronRight,
   UserCog,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useUIStore } from '@/stores/ui'
@@ -160,18 +161,27 @@ function NavBadge() {
   )
 }
 
-function NavLink({ item, collapsed }: { item: NavLeaf; collapsed: boolean }) {
+function NavLink({
+  item,
+  collapsed,
+  onNavigate,
+}: {
+  item: NavLeaf
+  collapsed: boolean
+  onNavigate?: () => void
+}) {
   const pathname = usePathname()
   const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
 
   return (
     <Link
       href={item.href}
+      onClick={onNavigate}
       className={cn(
-        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors min-h-[40px]',
         isActive
           ? 'bg-purple-600 text-white shadow-sm shadow-purple-600/30'
-          : 'text-white/65 hover:bg-white/5 hover:text-white'
+          : 'text-white/65 hover:bg-white/5 hover:text-white active:bg-white/10'
       )}
       aria-current={isActive ? 'page' : undefined}
     >
@@ -183,8 +193,10 @@ function NavLink({ item, collapsed }: { item: NavLeaf; collapsed: boolean }) {
 }
 
 export function Sidebar() {
-  const { sidebarCollapsed, toggleSidebar } = useUIStore()
+  const { sidebarCollapsed, toggleSidebar, setMobileDrawerOpen } = useUIStore()
   const { hasPermission, hasAnyPermission } = usePermissions()
+
+  const closeDrawer = React.useCallback(() => setMobileDrawerOpen(false), [setMobileDrawerOpen])
 
   const visibleGroups = NAV_GROUPS.filter(
     (group) => !group.requiresAnyPermission || hasAnyPermission(group.requiresAnyPermission)
@@ -198,13 +210,14 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 h-full bg-[#07101B] border-r border-white/[0.08] transition-all duration-300 flex flex-col',
-        sidebarCollapsed ? 'w-16' : 'w-[220px]'
+        'flex h-full w-full flex-col bg-[#07101B] border-r border-white/[0.08] lg:transition-all lg:duration-300',
+        sidebarCollapsed ? 'lg:w-16' : 'lg:w-[220px]'
       )}
+      aria-label="Main navigation"
     >
       <div className="flex h-16 items-center justify-between px-4 border-b border-white/[0.08] shrink-0">
         {!sidebarCollapsed ? (
-          <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0">
+          <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0" onClick={closeDrawer}>
             <div className="h-8 w-8 shrink-0 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white font-bold text-sm shadow-[0_0_16px_rgba(147,51,234,0.5)]">
               K
             </div>
@@ -215,25 +228,47 @@ export function Sidebar() {
             </span>
           </Link>
         ) : (
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white font-bold text-sm mx-auto">
+          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white font-bold text-sm mx-auto hidden lg:flex">
             K
           </div>
         )}
+        {/* Mobile: X to close */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={closeDrawer}
+          className="lg:hidden text-white/60 hover:text-white h-9 w-9 shrink-0"
+          aria-label="Close menu"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+        {/* Desktop: collapse toggle */}
         {!sidebarCollapsed && (
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="text-white/50 hover:text-white h-7 w-7"
+            className="hidden lg:inline-flex text-white/50 hover:text-white h-7 w-7"
             aria-label="Collapse sidebar"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
         )}
+        {sidebarCollapsed && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="hidden lg:inline-flex text-white/50 hover:text-white h-7 w-7 mx-auto"
+            aria-label="Expand sidebar"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {sidebarCollapsed && (
-        <div className="flex justify-center py-2 border-b border-white/[0.08]">
+        <div className="hidden lg:flex justify-center py-2 border-b border-white/[0.08]">
           <Button
             variant="ghost"
             size="icon"
@@ -247,7 +282,7 @@ export function Sidebar() {
       )}
 
       <nav
-        className="flex-1 overflow-y-auto scrollbar-hide px-3 py-4 space-y-5"
+        className="flex-1 overflow-y-auto scrollbar-hide px-3 py-4 space-y-5 overscroll-contain"
         role="navigation"
         aria-label="Main navigation"
       >
@@ -263,7 +298,7 @@ export function Sidebar() {
             )}
             <div className="space-y-0.5">
               {group.items.map((item) => (
-                <NavLink key={item.href} item={item} collapsed={sidebarCollapsed} />
+                <NavLink key={item.href} item={item} collapsed={sidebarCollapsed} onNavigate={closeDrawer} />
               ))}
             </div>
           </div>
@@ -280,13 +315,14 @@ export function Sidebar() {
             </div>
             <Link
               href="/admin/storage"
-              className="block mt-3 text-center text-xs font-medium text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-md py-1.5 transition-colors"
+              onClick={closeDrawer}
+              className="block mt-3 text-center text-xs font-medium text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-md py-2 transition-colors"
             >
               Manage Storage
             </Link>
           </div>
         ) : (
-          <div className="flex justify-center">
+          <div className="hidden lg:flex justify-center">
             <HardDrive className="h-5 w-5 text-white/40" />
           </div>
         )}

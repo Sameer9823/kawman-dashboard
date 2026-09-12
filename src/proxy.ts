@@ -37,6 +37,7 @@ const SECURITY_HEADERS = {
 // ============================================================
 const PUBLIC_EXACT = new Set([
   '/login',
+  '/superadmin',
   '/forgot-password',
   '/reset-password',
   '/api/health',
@@ -44,6 +45,10 @@ const PUBLIC_EXACT = new Set([
   '/robots.txt',
   '/sitemap.xml',
 ])
+// NOTE: "public" here means "no login required to VIEW the form" — it does
+// NOT mean "usable by anyone". The real gate is inside
+// src/app/superadmin/actions.ts: organization.count() > 0 check +
+// SUPERADMIN_SETUP_TOKEN match. Without both, the form always rejects.
 const PUBLIC_PREFIXES = ['/api/auth', '/_next']
 
 // PUBLIC_PATHS / AUTH_ONLY_PATHS / AUTH_API_ROUTES removed — see PUBLIC_EXACT/PREFIXES and isAuth* helpers above.

@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Download } from 'lucide-react'
 import { prisma } from '@/lib/db'
-import { requireSession } from '@/lib/session'
+import { requirePermission } from '@/lib/session'
 
 export const metadata = { title: 'Audit Logs | Kawman ExAct Admin' }
 
@@ -34,14 +34,7 @@ export default async function AdminAuditLogsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
-  const session = await requireSession()
-  if (!(session.user.permissions as string[]).includes('audit_logs.view')) {
-    return (
-      <MainLayout>
-        <PageHeader title="Audit Logs" subtitle="You don't have permission to view this." />
-      </MainLayout>
-    )
-  }
+  const session = await requirePermission('audit_logs.view')
 
   const params = await searchParams
   const from = first(params.from)

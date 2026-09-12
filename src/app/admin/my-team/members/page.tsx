@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { MainLayout } from '@/components/layout'
+import { requirePermission } from '@/lib/session'
 import { PageHeader } from '@/components/crm/page-header'
 import { Badge } from '@/components/ui/badge'
 import { getTeamMembers } from '@/services/team.service'
@@ -15,6 +16,8 @@ const STATUS_VARIANT: Record<string, 'success' | 'neutral' | 'danger' | 'warning
 }
 
 export default async function TeamMembersPage() {
+  await requirePermission('team.view_all')
+
   const members = await getTeamMembers()
 
   return (

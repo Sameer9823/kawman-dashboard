@@ -1,12 +1,12 @@
 import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { prisma } from '@/lib/db'
-import { requireSession } from '@/lib/session'
+import { requirePermission } from '@/lib/session'
 
 export const metadata = { title: 'Storage | Kawman ExAct Admin' }
 
 export default async function AdminStoragePage() {
-  const session = await requireSession()
+  const session = await requirePermission('files.manage')
   const [agg, byUploader] = await Promise.all([
     prisma.file.aggregate({ where: { organizationId: session.user.organizationId }, _sum: { fileSize: true }, _count: true }),
     prisma.file.groupBy({

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { MainLayout } from '@/components/layout'
+import { requirePermission } from '@/lib/session'
 import { PageHeader } from '@/components/crm/page-header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +18,8 @@ const STATUS_VARIANT: Record<string, 'success' | 'neutral' | 'danger' | 'warning
 }
 
 export default async function AdminUsersPage() {
+  await requirePermission('users.view')
+
   const users = await getOrgUsers()
 
   return (

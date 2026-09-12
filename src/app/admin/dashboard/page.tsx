@@ -3,12 +3,12 @@ import { Users, Building2, ShieldCheck, ScrollText } from 'lucide-react'
 import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { prisma } from '@/lib/db'
-import { requireSession } from '@/lib/session'
+import { requirePermission } from '@/lib/session'
 
 export const metadata = { title: 'Admin Dashboard | Kawman ExAct' }
 
 export default async function AdminDashboardPage() {
-  const session = await requireSession()
+  const session = await requirePermission('organizations.view')
   const organizationId = session.user.organizationId
 
   const [userCount, deptCount, teamCount, roleBreakdown, recentLogs] = await Promise.all([

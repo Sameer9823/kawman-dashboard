@@ -1,4 +1,5 @@
 import { MainLayout } from '@/components/layout'
+import { requirePermission } from '@/lib/session'
 import { PageHeader } from '@/components/crm/page-header'
 import { getDepartments, getTeams } from '@/services/org-structure.service'
 import { NewUserForm } from './user-form'
@@ -6,6 +7,8 @@ import { NewUserForm } from './user-form'
 export const metadata = { title: 'New User | Kawman ExAct Admin' }
 
 export default async function NewUserPage() {
+  await requirePermission('users.create')
+
   const [departments, teams] = await Promise.all([getDepartments(), getTeams()])
   return (
     <MainLayout>

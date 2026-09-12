@@ -3,14 +3,15 @@ import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { getOrgUserById } from '@/services/user.service'
 import { getDepartments, getTeams } from '@/services/org-structure.service'
-import { requireSession } from '@/lib/session'
+import { requirePermission } from '@/lib/session'
 import { UserDetailForm } from './user-detail-form'
 
 export const metadata = { title: 'Edit User | Kawman ExAct Admin' }
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await requirePermission('users.view')
+
   const { id } = await params
-  const session = await requireSession()
   const [user, departments, teams] = await Promise.all([getOrgUserById(id), getDepartments(), getTeams()])
   if (!user) notFound()
 

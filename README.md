@@ -1,5 +1,5 @@
-# Kawman ExAct — Enterprise Workspace Platform
 
+<<<<<<< HEAD
 Next.js 16.3.3 (App Router) + TypeScript + Tailwind v4 + Prisma 7 + Neon Postgres + better-auth. Full enterprise workspace: CRM, field sales, document management, meetings, AI intelligence, and team management.
 
 ## Status
@@ -162,3 +162,5 @@ Nil `TODO` in `src/` (only `src/generated/prisma` vendor TODOs).
 
 - Set `DATABASE_URL` (pooled) + `DIRECT_URL` (direct) + `BETTER_AUTH_SECRET` + `BETTER_AUTH_URL`/`NEXT_PUBLIC_APP_URL` in your host (Vercel/Neon). Run `prisma migrate deploy` + `prisma generate` in CI (`postinstall: prisma generate` if you gitignore `src/generated/prisma`).
 - Optional: `OPENAI_API_KEY` or `GOOGLE_GENERATIVE_AI_API_KEY`, `CLOUDINARY_*`, `NEXT_PUBLIC_MAPBOX_TOKEN`, `REDIS_URL`, `RESEND_API_KEY`/`EMAIL_FROM`.
+=======
+>>>>>>> 04c218039c99d99ed7a6873dab2b1edd0e65d136

@@ -1,5 +1,8 @@
-import 'server-only'
-
+// Intentionally no `import 'server-only'` here — this module is imported
+// from prisma/seed.ts via `tsx` outside the Next.js build, where the
+// `server-only` package's `react-server` export isn't resolved and the
+// default entry throws. All callers are server-side regardless (db.ts,
+// instrumentation.ts, seed); see rbac-seed.ts for the same note.
 /**
  * Validates required env vars at startup.
  * Call `assertEnv()` in instrumentation.ts so production crashes fast

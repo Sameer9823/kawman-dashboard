@@ -37,7 +37,6 @@ const SECURITY_HEADERS = {
 // ============================================================
 const PUBLIC_EXACT = new Set([
   '/login',
-  '/signup',
   '/forgot-password',
   '/reset-password',
   '/api/health',
@@ -56,7 +55,7 @@ function isPublicPath(pathname: string): boolean {
 }
 
 function isAuthOnlyPath(pathname: string): boolean {
-  return pathname === '/login' || pathname.startsWith('/login/') || pathname === '/signup' || pathname.startsWith('/signup/')
+  return pathname === '/login' || pathname.startsWith('/login/')
 }
 
 function isAuthApiRoute(pathname: string): boolean {

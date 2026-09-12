@@ -107,10 +107,7 @@ function LoginForm() {
             </form>
 
             <p className="mt-6 text-center text-sm text-white/50">
-              Don&apos;t have a workspace yet?{' '}
-              <Link href="/signup" className="text-purple-400 hover:underline">
-                Create one
-              </Link>
+              Need an account? Contact your administrator.
             </p>
           </CardContent>
         </Card>

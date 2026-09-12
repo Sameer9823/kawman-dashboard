@@ -41,7 +41,7 @@ export default async function CompaniesPage({
           title="Companies"
           subtitle={`${result.total} companies tracked`}
           action={
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <ExportCsvButton href="/api/companies/export" />
               <Button asChild className="gap-1.5">
                 <Link href="/companies/new">

@@ -47,14 +47,14 @@ export default async function DashboardPage() {
         </Suspense>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <h1 className="text-[20px] sm:text-2xl font-bold text-white flex flex-wrap items-center gap-2 leading-tight">
               Welcome back, {metrics.userName}! <span aria-hidden="true">👋</span>
             </h1>
             <p className="text-white/50 text-sm mt-1">
               Here&apos;s what&apos;s happening in your workspace today.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Link href="/dashboard/daily-report">
               <Button variant="outline" className="gap-1.5"><ClipboardCheck className="h-4 w-4" /> Submit today&apos;s report</Button>
             </Link>

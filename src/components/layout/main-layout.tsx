@@ -33,11 +33,11 @@ export function MainLayout({ children }: MainLayoutProps) {
       <Header />
       <main
         className={cn(
-          'pt-16 min-h-screen flex flex-col transition-all duration-300',
+          'pt-16 min-h-screen flex flex-col min-w-0 transition-all duration-300',
           sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-[220px]'
         )}
       >
-        <div className="flex-1 p-4 sm:p-6">{children}</div>
+        <div className="flex-1 p-4 sm:p-6 overflow-x-hidden">{children}</div>
         <Footer />
       </main>
       <CommandPalette />

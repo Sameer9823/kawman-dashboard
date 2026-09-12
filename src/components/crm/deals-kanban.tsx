@@ -132,7 +132,7 @@ export function DealsKanban({ deals: initialDeals }: { deals: Deal[] }) {
           )}
         </div>
       )}
-      <div className="flex gap-4 overflow-x-auto pb-2">
+      <div className="flex gap-4 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory [-webkit-overflow-scrolling:touch]">
       {STAGES.map((stage) => {
         const stageDeals = byStage.get(stage.id) ?? []
         const stageTotal = stageDeals.reduce((sum, d) => sum + d.value, 0)

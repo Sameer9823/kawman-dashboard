@@ -41,6 +41,7 @@ export function ChatPanel({
   const [error, setError] = React.useState<string | null>(null)
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const idCounter = React.useRef(0)
+  const [mobileListOpen, setMobileListOpen] = React.useState(false)
 
   React.useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
@@ -146,7 +147,32 @@ export function ChatPanel({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4 h-[calc(100vh-9.5rem)]">
-      {/* Conversation list */}
+      {/* Conversation list — desktop sidebar + mobile sheet */}
+      {mobileListOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setMobileListOpen(false)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="absolute left-0 top-0 h-full w-[300px] max-w-[85vw] bg-[#0A111C] border-r border-white/10 flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="p-3 border-b border-white/10 flex items-center justify-between">
+              <span className="text-sm font-medium text-white">Conversations</span>
+              <button onClick={() => setMobileListOpen(false)} className="h-8 w-8 rounded-lg flex items-center justify-center text-white/50 hover:bg-white/10 hover:text-white">✕</button>
+            </div>
+            <div className="p-3 border-b border-white/10">
+              <Button size="sm" variant="secondary" className="w-full gap-1.5" onClick={() => { newChat(); setMobileListOpen(false) }}>
+                <Plus className="h-3.5 w-3.5" /> New chat
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+              {conversations.length === 0 && <p className="text-white/40 text-xs px-2 py-4 text-center">No conversations yet</p>}
+              {conversations.map((c) => (
+                <button key={c.id} onClick={() => { loadConversation(c.id); setMobileListOpen(false) }} className={cn('w-full text-left px-3 py-2 rounded-lg text-sm group flex items-start justify-between gap-2', activeId === c.id ? 'bg-purple-500/15 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white')}>
+                  <span className="truncate"><span className="block truncate font-medium">{c.title || 'Untitled chat'}</span>{c.lastMessagePreview && <span className="block truncate text-xs text-white/35">{c.lastMessagePreview}</span>}</span>
+                  <Trash2 className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-60 hover:!opacity-100 mt-0.5" onClick={(e) => removeConversation(c.id, e)} />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="hidden lg:flex flex-col rounded-xl border border-white/10 bg-white/5 overflow-hidden">
         <div className="p-3 border-b border-white/10">
           <Button size="sm" variant="secondary" className="w-full gap-1.5" onClick={newChat}>
@@ -183,7 +209,13 @@ export function ChatPanel({
       </div>
 
       {/* Chat area */}
-      <div className="flex flex-col rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+      <div className="flex flex-col rounded-xl border border-white/10 bg-white/5 overflow-hidden min-h-0">
+        <div className="flex lg:hidden items-center gap-2 p-2 border-b border-white/10 shrink-0">
+          <Button size="sm" variant="ghost" className="gap-1.5 text-white/70" onClick={() => setMobileListOpen(true)}>
+            <Bot className="h-4 w-4" /> Chats {conversations.length > 0 && <span className="text-white/40">· {conversations.length}</span>}
+          </Button>
+          <Button size="sm" variant="secondary" className="ml-auto gap-1.5" onClick={newChat}><Plus className="h-3.5 w-3.5" /> New chat</Button>
+        </div>
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
           {messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-center gap-4 py-10">

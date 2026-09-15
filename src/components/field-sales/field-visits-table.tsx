@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Search, MapPin, Navigation2, Loader2, Building2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, MapPin, Navigation2, Loader2, Building2, ChevronLeft, ChevronRight, Camera, ImageIcon, X } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge, type BadgeVariant } from '@/components/ui/badge'
@@ -33,37 +33,158 @@ const STATUS_VARIANT: Record<VisitStatus, BadgeVariant> = {
 function CheckInButton({ visitId }: { visitId: string }) {
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const [open, setOpen] = useState(false)
+  const [loc, setLoc] = useState<{ lat: number; lng: number; acc?: number } | null>(null)
+  const [locError, setLocError] = useState<string | null>(null)
+  const [locLoading, setLocLoading] = useState(false)
+  const [notes, setNotes] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
+  const [photo, setPhoto] = useState<File | null>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+  const previewUrlRef = useRef<string | null>(null)
 
-  function handleCheckIn() {
-    setError(null)
+  function captureLocation() {
+    setLocError(null)
+    setLocLoading(true)
     if (!navigator.geolocation) {
-      setError('Geolocation not supported')
+      setLocError('Geolocation not supported on this device.')
+      setLocLoading(false)
       return
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        startTransition(async () => {
-          const result = await checkInAction(visitId, {
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-            accuracy: pos.coords.accuracy,
-          })
-          if (result.error) setError(result.error)
-        })
+        setLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy })
+        setLocLoading(false)
       },
-      () => setError('Could not get your location'),
-      { enableHighAccuracy: true, timeout: 10000 }
+      (err) => {
+        setLocError(err.message || 'Could not get your location. Enable location and try again.')
+        setLocLoading(false)
+      },
+      { enableHighAccuracy: true, timeout: 15000 }
     )
   }
 
+  useEffect(() => {
+    if (open && !loc && !locLoading) captureLocation()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]
+    if (!f) return
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+    const url = URL.createObjectURL(f)
+    previewUrlRef.current = url
+    setPhoto(f)
+    setPreview(url)
+  }
+
+  function clearPhoto() {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+    previewUrlRef.current = null
+    setPhoto(null)
+    setPreview(null)
+    if (fileRef.current) fileRef.current.value = ''
+    if (cameraRef.current) cameraRef.current.value = ''
+  }
+
+  useEffect(() => () => { if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current) }, [])
+
+  function submit() {
+    setError(null)
+    if (!loc) {
+      setError('Location not captured yet. Tap "Use my location" and allow the browser prompt.')
+      return
+    }
+    startTransition(async () => {
+      const res = await checkInAction(visitId, { latitude: loc.lat, longitude: loc.lng, accuracy: loc.acc, notes: notes || undefined }, photo)
+      if (res.error) setError(res.error)
+      else {
+        setSuccess(true)
+        setTimeout(() => setOpen(false), 800)
+      }
+    })
+  }
+
+  if (success) {
+    return <span className="text-xs text-emerald-400 font-medium">Checked in ✓</span>
+  }
+
   return (
-    <div className="flex flex-col items-end gap-1">
-      <Button size="sm" variant="secondary" className="gap-1.5 h-7 text-xs" disabled={pending} onClick={handleCheckIn}>
-        {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Navigation2 className="h-3 w-3" />}
-        Check in
+    <>
+      <Button size="sm" variant="secondary" className="gap-1.5 h-7 text-xs" onClick={() => setOpen(true)}>
+        <Navigation2 className="h-3 w-3" /> Check in
       </Button>
-      {error && <span className="text-[10px] text-red-400">{error}</span>}
-    </div>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setOpen(false)}>
+          <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#0d1622] p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-semibold">Check in</h3>
+              <button onClick={() => setOpen(false)} className="text-white/40 hover:text-white p-1"><X className="h-4 w-4" /></button>
+            </div>
+
+            <div className="space-y-3">
+              {/* Location */}
+              <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-3">
+                <p className="text-xs font-medium text-white/70 mb-1.5">Location (required)</p>
+                {loc ? (
+                  <p className="text-xs text-emerald-300 flex items-center gap-1.5"><MapPin className="h-3 w-3" />{loc.lat.toFixed(6)}, {loc.lng.toFixed(6)}{loc.acc ? ` · ±${Math.round(loc.acc)}m` : ''}</p>
+                ) : locLoading ? (
+                  <p className="text-xs text-white/40 flex items-center gap-1.5"><Loader2 className="h-3 w-3 animate-spin" /> Capturing location… allow the browser prompt</p>
+                ) : (
+                  <p className="text-xs text-amber-300">{locError ?? 'Location not captured.'}</p>
+                )}
+                <Button size="sm" variant="outline" className="mt-2 h-7 text-xs border-white/10" onClick={captureLocation} disabled={locLoading}>
+                  {locLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <MapPin className="h-3 w-3" />} Use my location
+                </Button>
+                <p className="text-[11px] text-white/30 mt-1.5">Enable location in your browser/device. The visit record will be updated with this location.</p>
+              </div>
+
+              {/* Photo — camera or gallery */}
+              <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-3">
+                <p className="text-xs font-medium text-white/70 mb-2">Photo (optional but recommended)</p>
+                <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFile} />
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
+                {preview ? (
+                  <div className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={preview} alt="Preview" className="w-full h-40 object-cover rounded-lg border border-white/10" />
+                    <button onClick={clearPhoto} className="absolute top-1.5 right-1.5 h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80"><X className="h-3.5 w-3.5" /></button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button type="button" size="sm" variant="secondary" className="flex-1 gap-1.5 h-8 text-xs" onClick={() => cameraRef.current?.click()}>
+                      <Camera className="h-3.5 w-3.5" /> Camera
+                    </Button>
+                    <Button type="button" size="sm" variant="outline" className="flex-1 gap-1.5 h-8 text-xs border-white/10" onClick={() => fileRef.current?.click()}>
+                      <ImageIcon className="h-3.5 w-3.5" /> Gallery
+                    </Button>
+                  </div>
+                )}
+                <p className="text-[11px] text-white/30 mt-1.5">Camera uses device camera when available; gallery lets you pick an existing image. JPG/PNG/WEBP, 5MB.</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs text-white/60">Notes (optional)</label>
+                <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="On-site notes…" className="h-8 text-sm" />
+              </div>
+
+              {error && <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</p>}
+
+              <div className="flex justify-end gap-2 pt-1">
+                <Button variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={pending}>Cancel</Button>
+                <Button size="sm" onClick={submit} disabled={pending || !loc} className="gap-1.5">
+                  {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Navigation2 className="h-3 w-3" />} Confirm check-in
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 

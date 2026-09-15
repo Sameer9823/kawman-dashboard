@@ -1,7 +1,7 @@
 import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
-import type { FieldVisit, CheckIn, GeoFence, VisitReport, LiveMapVisit, VisitStatus } from '@/types/field-sales'
+import type { FieldVisit, CheckIn, GeoFence, VisitReport, LiveMapVisit, VisitStatus, ActiveUserPin } from '@/types/field-sales'
 
 function initials(name: string): string {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -215,6 +215,55 @@ export async function getLiveMapVisits(): Promise<LiveMapVisit[]> {
     }))
 }
 
+export async function getActiveUsersForMap(): Promise<ActiveUserPin[]> {
+  const session = await requireApiSession()
+  const organizationId = session.user.organizationId
+  const cutoff = new Date(Date.now() - 5 * 60 * 1000) // 5 min heartbeat window
+
+  // Users with a recent session heartbeat in this org
+  const recentSessions = await prisma.session.findMany({
+    where: { user: { organizationId }, lastSeenAt: { gte: cutoff } },
+    select: { userId: true, lastSeenAt: true, user: { select: { name: true } } },
+    orderBy: { lastSeenAt: 'desc' },
+    take: 100,
+  })
+  // Dedup by user (keep most recent lastSeenAt)
+  const byUser = new Map<string, { lastSeenAt: Date; name: string | null }>()
+  for (const s of recentSessions) {
+    if (!byUser.has(s.userId)) byUser.set(s.userId, { lastSeenAt: s.lastSeenAt ?? new Date(), name: s.user.name })
+  }
+  if (byUser.size === 0) return []
+
+  const userIds = [...byUser.keys()]
+  // Last known location per user from their most recent check-in
+  const lastCheckIns = await prisma.checkIn.findMany({
+    where: { userId: { in: userIds }, visit: { organizationId } },
+    include: { visit: { select: { title: true, company: { select: { name: true } } } } },
+    orderBy: { createdAt: 'desc' },
+  })
+  const locByUser = new Map<string, typeof lastCheckIns[number]>()
+  for (const c of lastCheckIns) if (!locByUser.has(c.userId)) locByUser.set(c.userId, c)
+
+  const pins: ActiveUserPin[] = []
+  for (const [userId, meta] of byUser) {
+    const c = locByUser.get(userId)
+    if (!c) continue // no location yet — not mappable
+    const nm = meta.name ?? 'Unknown'
+    pins.push({
+      id: userId,
+      name: nm,
+      initials: nm.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2),
+      latitude: Number(c.latitude),
+      longitude: Number(c.longitude),
+      lastSeenAt: meta.lastSeenAt.toISOString(),
+      lastCheckInAt: c.createdAt.toISOString(),
+      companyName: c.visit.company?.name ?? null,
+      visitTitle: c.visit.title,
+    })
+  }
+  return pins
+}
+
 export async function getActiveGeoFencesForMap(): Promise<GeoFence[]> {
   const session = await requireApiSession()
   const rows = await prisma.geoFence.findMany({
@@ -258,9 +307,9 @@ export async function getCheckIns(): Promise<CheckIn[]> {
 }
 
 /**
- * Records a check-in against a visit. If the visit's company has an active
- * geofence, computes distance-from-customer and auto-verifies when inside
- * the fence radius (mirrors what a real mobile geofencing flow would do).
+ * Records a check-in against a visit. Photo is uploaded by the caller
+ * (actions.ts) and passed as photoUrl. Location is always captured from
+ * the device at check-in time and written back to the visit.
  */
 export async function createCheckIn(input: {
   visitId: string
@@ -268,27 +317,17 @@ export async function createCheckIn(input: {
   longitude: number
   accuracy?: number
   notes?: string
+  photoUrl?: string | null
 }) {
   const session = await requireApiSession()
   const visit = await prisma.fieldVisit.findFirst({
     where: { id: input.visitId, organizationId: session.user.organizationId },
-    select: { id: true, companyId: true },
+    select: { id: true },
   })
   if (!visit) throw new Error('Visit not found')
 
-  let distanceFromCustomer: number | null = null
-  let verificationStatus = 'PENDING'
-
-  if (visit.companyId) {
-    const fence = await prisma.geoFence.findFirst({
-      where: { organizationId: session.user.organizationId, companyId: visit.companyId, isActive: true },
-    })
-    if (fence) {
-      const d = distanceMeters(input.latitude, input.longitude, Number(fence.latitude), Number(fence.longitude))
-      distanceFromCustomer = d
-      verificationStatus = d <= fence.radius ? 'VERIFIED' : 'OUT_OF_RANGE'
-    }
-  }
+  // Geo-fencing is retired — every on-site photo check-in is VERIFIED.
+  const verificationStatus = 'VERIFIED'
 
   const checkIn = await prisma.checkIn.create({
     data: {
@@ -297,8 +336,9 @@ export async function createCheckIn(input: {
       latitude: input.latitude,
       longitude: input.longitude,
       accuracy: input.accuracy ?? null,
-      distanceFromCustomer,
+      distanceFromCustomer: null,
       verificationStatus,
+      photoUrl: input.photoUrl ?? null,
       notes: input.notes || null,
     },
   })
@@ -308,7 +348,7 @@ export async function createCheckIn(input: {
     data: { status: 'CHECKED_IN', latitude: input.latitude, longitude: input.longitude },
   })
 
-  return { id: checkIn.id, verificationStatus, distanceFromCustomer }
+  return { id: checkIn.id, verificationStatus, distanceFromCustomer: null }
 }
 
 // ============================================================

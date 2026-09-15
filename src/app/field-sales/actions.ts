@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
+import { isCloudinaryConfigured, uploadToCloudinary } from '@/lib/cloudinary'
 import { findOrCreateCompanyByName } from '@/services/company.service'
 import { findOrCreateContactByName } from '@/services/contact.service'
 import { createCheckIn as createCheckInRow } from '@/services/field-visit.service'
@@ -73,7 +74,7 @@ export async function createFieldVisitAction(_prev: VisitFormState, formData: Fo
     : null
   const contactId = contact?.id ?? null
 
-  await prisma.fieldVisit.create({
+  const visit = await prisma.fieldVisit.create({
     data: {
       title: data.title,
       purpose: data.purpose,
@@ -89,8 +90,49 @@ export async function createFieldVisitAction(_prev: VisitFormState, formData: Fo
     },
   })
 
+  // Optional photo attached at creation — upload and record as an initial check-in
+  // so the Live Map + Check-ins immediately show the visit with proof.
+  try {
+    const rawPhoto = formData.get('photo')
+    const photo = rawPhoto instanceof File && rawPhoto.size > 0 ? rawPhoto : null
+    if (photo) {
+      const allowed = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+      if (allowed.has(photo.type) && photo.size <= 5 * 1024 * 1024 && isCloudinaryConfigured()) {
+        const buf = Buffer.from(await photo.arrayBuffer())
+        const safe = photo.name.replace(/[\r\n]/g, '').slice(0, 80) || 'visit'
+        const up = await uploadToCloudinary(buf, {
+          organizationId: session.user.organizationId,
+          fileName: `visit-${visit.id}-${Date.now()}-${safe}`,
+          mimeType: photo.type,
+        })
+        const hasLoc = data.latitude != null && data.longitude != null
+        await prisma.checkIn.create({
+          data: {
+            visitId: visit.id,
+            userId: session.user.id,
+            latitude: data.latitude ?? 0,
+            longitude: data.longitude ?? 0,
+            accuracy: null,
+            distanceFromCustomer: null,
+            verificationStatus: hasLoc ? 'VERIFIED' : 'PENDING',
+            photoUrl: up.secureUrl,
+            notes: hasLoc ? null : 'Photo attached at visit creation (no location).',
+          },
+        })
+        // If we had a live location, reflect it on the visit
+        if (hasLoc) {
+          await prisma.fieldVisit.update({ where: { id: visit.id }, data: { latitude: data.latitude, longitude: data.longitude } })
+        }
+      }
+    }
+  } catch (e) {
+    // Non-fatal — visit is already created. Log and continue to redirect.
+    console.error('[createFieldVisitAction] photo upload failed:', e)
+  }
+
   revalidatePath('/field-sales')
   revalidatePath('/field-sales/visits')
+  revalidatePath('/field-sales/checkins')
   revalidatePath('/field-sales/live-map')
   redirect('/field-sales')
 }
@@ -124,12 +166,31 @@ export interface CheckInState {
 
 export async function checkInAction(
   visitId: string,
-  coords: { latitude: number; longitude: number; accuracy?: number }
+  coords: { latitude: number; longitude: number; accuracy?: number; notes?: string },
+  photo?: File | null
 ): Promise<CheckInState> {
   try {
     await validateCsrf()
     await assertPermission(PERMISSIONS['field_visits.update'].name)
-    const result = await createCheckInRow({ visitId, ...coords })
+
+    let photoUrl: string | null = null
+    if (photo && photo.size > 0) {
+      const allowed = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+      if (!allowed.has(photo.type)) return { error: 'Photo must be JPG, PNG, WEBP or GIF.' }
+      if (photo.size > 5 * 1024 * 1024) return { error: 'Photo must be under 5MB.' }
+      if (!isCloudinaryConfigured()) return { error: 'Image storage is not configured (CLOUDINARY_*).' }
+      const session = await requireApiSession()
+      const buf = Buffer.from(await photo.arrayBuffer())
+      const safe = photo.name.replace(/[\r\n]/g, '').slice(0, 80) || 'checkin'
+      const up = await uploadToCloudinary(buf, {
+        organizationId: session.user.organizationId,
+        fileName: `checkin-${visitId}-${Date.now()}-${safe}`,
+        mimeType: photo.type,
+      })
+      photoUrl = up.secureUrl
+    }
+
+    const result = await createCheckInRow({ visitId, ...coords, notes: coords.notes, photoUrl })
     revalidatePath('/field-sales')
     revalidatePath('/field-sales/visits')
     revalidatePath('/field-sales/checkins')
@@ -138,6 +199,21 @@ export async function checkInAction(
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Check-in failed' }
   }
+}
+
+/** Form-based check-in so file uploads survive Server Actions (photo via multipart). */
+export async function checkInWithPhotoAction(_prev: CheckInState, formData: FormData): Promise<CheckInState> {
+  const visitId = String(formData.get('visitId') ?? '')
+  const lat = Number(formData.get('latitude'))
+  const lng = Number(formData.get('longitude'))
+  const accRaw = formData.get('accuracy')
+  const accuracy = accRaw != null && String(accRaw) !== '' ? Number(accRaw) : undefined
+  const notes = String(formData.get('notes') ?? '') || undefined
+  const raw = formData.get('photo')
+  const photo = raw instanceof File && raw.size > 0 ? raw : null
+  if (!visitId) return { error: 'Missing visit.' }
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return { error: 'Location not captured. Enable location and try again.' }
+  return checkInAction(visitId, { latitude: lat, longitude: lng, accuracy, notes }, photo)
 }
 
 // ============================================================

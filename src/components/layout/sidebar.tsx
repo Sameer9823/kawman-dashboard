@@ -30,7 +30,6 @@ import {
   Sparkles,
   Navigation,
   UserCheck,
-  ShieldCheck,
   ClipboardCheck,
   Users,
   Briefcase,
@@ -119,7 +118,6 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { name: 'Live Map', href: '/field-sales/live-map', icon: Navigation },
       { name: "Today's Visits", href: '/field-sales/visits', icon: MapPin },
-      { name: 'Geo-Fencing', href: '/field-sales/geofencing', icon: ShieldCheck },
       { name: 'Check-ins', href: '/field-sales/checkins', icon: UserCheck },
       { name: 'Visit Reports', href: '/field-sales/reports', icon: ClipboardCheck },
     ],

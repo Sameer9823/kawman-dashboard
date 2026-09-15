@@ -16,8 +16,6 @@ const COLUMNS: ReportColumn[] = [
   { key: 'actor', header: 'Actor' },
   { key: 'actorEmail', header: 'Actor Email' },
   { key: 'resource', header: 'Resource' },
-  { key: 'resourceId', header: 'Resource ID' },
-  { key: 'metadata', header: 'Metadata' },
 ]
 
 export function buildAuditLogReport(opts: {

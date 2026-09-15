@@ -1,5 +1,4 @@
 
-<<<<<<< HEAD
 Next.js 16.3.3 (App Router) + TypeScript + Tailwind v4 + Prisma 7 + Neon Postgres + better-auth. Full enterprise workspace: CRM, field sales, document management, meetings, AI intelligence, and team management.
 
 ## Status
@@ -16,7 +15,7 @@ All routes pass `tsc --noEmit`, `eslint`, and `next build` (74+ static/dynamic r
 - **Meetings** — Schedule, videos, MOM, transcription (`os.tmpdir()` + `pipeline` streaming, no `src/` temps), recordings (`api/meetings/[id]/upload-recording`: `meetings.create|update` + `checkRateLimit` + `isCloudinaryConfigured` + `50MB` cap).
 - **My Team** (new) — `DailyReport` (`@@unique([userId,date])`, `DailyReportStatus: SUBMITTED/MISSED/DRAFT`, stats: `tasksCompletedCount`, `crmRecordsUpdatedCount`, `leadsWorkedOnCount`, `filesUploadedCount`, `activeWorkingTimeMinutes`), `AIReport.dailyReportId` (`@unique`), reused `Activity`/`Session`. Services: `team.service.ts` (`getTeamDashboardMetrics`, `getTeamMembers`), `daily-report.service.ts` (`getTodayReportDraft`, `submitDailyReport`, `listDailyReports`, `getEmployeeProfile`), `ai.service.ts` (`generateEmployeeDailySummary`, `generateTeamManagementSummary` via existing `AIReport` + `scopeFilterForAI`). Actions: `admin/my-team/actions.ts` (`'use server'`, Zod, `validateCsrf` inside `try`, `assertPermission`, `logAudit`, `revalidatePath`). Routes: `api/ai/employee-summary` (`isAIConfigured` 503, `requireApiSession` 401, `checkRateLimit 10/60` 429) + `api/presence/heartbeat` (`lastSeenAt`). UI: `admin/my-team` (stat cards, productivity recharts chart, recent activity, `TeamSummaryPanel`, `TeamDateFilter`), `admin/my-team/[userId]` (profile header + 8 tabs), `admin/my-team/members`, `admin/my-team/reports` (paginated, CSV export), `dashboard/daily-report` (pre-filled form), `useHeartbeat` (60s + `visibilitychange`) wired in `MainLayout`. Sidebar gated `requiresAnyPermission: ['team.view','team.view_all']`.
 - **AI** — `lib/ai.ts` (`isAIConfigured`, `REPORT_TYPES`), `ai.service.ts` (`buildOrgContext` scoped, `generateReport`, SSE `ReadableStream`), `ai/chat`, `ai/reports`, `ai/summary`, `ai/data-analysis`.
-- **Admin** — Users (create with `hashPassword` + `createLocalAccountIssuer('credential')` + `UserRole`), Roles & Permissions, Organizations, Departments, Teams, Integrations, Storage, Activity/Audit Logs, Settings. All mutations via colocated Server Actions (not REST) per Phase 0 convention.
+- **Admin** — Users (create with `hashPassword` + `createLocalAccountIssuer('credential')` + `UserRole`), Roles & Permissions, Organizations, Departments, Teams, Integrations, Storage, Activity Logs, Settings. All mutations via colocated Server Actions (not REST) per Phase 0 convention.
 
 ## Tech stack
 
@@ -41,7 +40,7 @@ dashboard/
   src/
     app/
       (auth) /login /signup /forgot-password /reset-password
-      admin/               # dashboard, users, roles, organizations, departments, teams, integrations, storage, activity, audit-logs, settings, my-team/*
+      admin/               # dashboard, users, roles, organizations, departments, teams, integrations, storage, activity, settings, my-team/*
       ai/                  # chat, reports, summary, data-analysis
       crm / leads / companies / contacts / deals / follow-ups / calendar
       field-sales/ / files/* / meetings/* / reports/sales / dashboard (+ daily-report) / settings/profile
@@ -162,5 +161,3 @@ Nil `TODO` in `src/` (only `src/generated/prisma` vendor TODOs).
 
 - Set `DATABASE_URL` (pooled) + `DIRECT_URL` (direct) + `BETTER_AUTH_SECRET` + `BETTER_AUTH_URL`/`NEXT_PUBLIC_APP_URL` in your host (Vercel/Neon). Run `prisma migrate deploy` + `prisma generate` in CI (`postinstall: prisma generate` if you gitignore `src/generated/prisma`).
 - Optional: `OPENAI_API_KEY` or `GOOGLE_GENERATIVE_AI_API_KEY`, `CLOUDINARY_*`, `NEXT_PUBLIC_MAPBOX_TOKEN`, `REDIS_URL`, `RESEND_API_KEY`/`EMAIL_FROM`.
-=======
->>>>>>> 04c218039c99d99ed7a6873dab2b1edd0e65d136

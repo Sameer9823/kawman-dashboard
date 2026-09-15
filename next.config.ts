@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  async redirects() {
+    return [{ source: "/admin/audit-logs/:path*", destination: "/admin/activity", permanent: false }]
+  },
 };
 
 export default nextConfig;

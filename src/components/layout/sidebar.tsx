@@ -38,7 +38,6 @@ import {
   Plug,
   HardDrive,
   History,
-  ScrollText,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -147,7 +146,6 @@ const NAV_GROUPS: NavGroup[] = [
       { name: 'Teams', href: '/admin/teams', icon: Users, permission: 'organizations.view' },
       { name: 'Storage', href: '/admin/storage', icon: HardDrive, permission: 'files.manage' },
       { name: 'Activity Logs', href: '/admin/activity', icon: History, permission: 'audit_logs.view' },
-      { name: 'Audit Logs', href: '/admin/audit-logs', icon: ScrollText, permission: 'audit_logs.view' },
       { name: 'System Settings', href: '/admin/settings', icon: Settings, permission: 'settings.manage' },
     ],
   },
@@ -192,9 +190,30 @@ function NavLink({
   )
 }
 
+type StorageUsage = { usedGb: number; totalGb: number; pct: number; fileCount: number }
+
+function formatStorageGb(gb: number): string {
+  if (gb >= 1) return `${gb.toFixed(2)} GB`
+  return `${(gb * 1024).toFixed(1)} MB`
+}
+
 export function Sidebar() {
   const { sidebarCollapsed, toggleSidebar, setMobileDrawerOpen } = useUIStore()
   const { hasPermission, hasAnyPermission } = usePermissions()
+  const [storage, setStorage] = React.useState<StorageUsage | null>(null)
+
+  React.useEffect(() => {
+    let cancelled = false
+    fetch('/api/storage/usage', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: StorageUsage | null) => {
+        if (!cancelled && data) setStorage(data)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const closeDrawer = React.useCallback(() => setMobileDrawerOpen(false), [setMobileDrawerOpen])
 
@@ -309,9 +328,11 @@ export function Sidebar() {
         {!sidebarCollapsed ? (
           <div className="rounded-lg bg-white/[0.03] p-3">
             <p className="text-xs text-white/50">Storage Used</p>
-            <p className="text-sm font-medium text-white mt-0.5">128.5 GB of 1 TB</p>
+            <p className="text-sm font-medium text-white mt-0.5">
+              {storage ? `${formatStorageGb(storage.usedGb)} of ${storage.totalGb} GB` : '— of 100 GB'}
+            </p>
             <div className="mt-2 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
-              <div className="h-full rounded-full bg-purple-500" style={{ width: '12.5%' }} />
+              <div className="h-full rounded-full bg-purple-500" style={{ width: `${storage ? storage.pct : 0}%` }} />
             </div>
             <Link
               href="/admin/storage"

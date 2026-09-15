@@ -1,0 +1,1 @@
+/** @deprecated Prefer the universal engine: import { buildAiReport } from '@/lib/report-engine/builders/ai-report' and POST to /api/reports/export (Puppeteer HTML→PDF). This jsPDF shim is retained only for backwards compat and will be removed once no callers remain. */

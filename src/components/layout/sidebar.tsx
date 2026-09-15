@@ -26,11 +26,10 @@ import {
   BarChart3,
   Video,
   FileText,
-  CalendarPlus,
   Calendar,
+  Sparkles,
   Navigation,
   UserCheck,
-  ShieldCheck,
   ClipboardCheck,
   Users,
   Briefcase,
@@ -38,7 +37,6 @@ import {
   Plug,
   HardDrive,
   History,
-  ScrollText,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -111,7 +109,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { name: 'Meeting Videos', href: '/meetings/videos', icon: Video },
       { name: 'MOM & Insights', href: '/meetings/mom', icon: FileText },
-      { name: 'Schedule Meeting', href: '/meetings/new', icon: CalendarPlus },
+      { name: 'New Meeting (MOM)', href: '/meetings/new', icon: Sparkles },
     ],
   },
   {
@@ -120,7 +118,6 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { name: 'Live Map', href: '/field-sales/live-map', icon: Navigation },
       { name: "Today's Visits", href: '/field-sales/visits', icon: MapPin },
-      { name: 'Geo-Fencing', href: '/field-sales/geofencing', icon: ShieldCheck },
       { name: 'Check-ins', href: '/field-sales/checkins', icon: UserCheck },
       { name: 'Visit Reports', href: '/field-sales/reports', icon: ClipboardCheck },
     ],
@@ -147,7 +144,6 @@ const NAV_GROUPS: NavGroup[] = [
       { name: 'Teams', href: '/admin/teams', icon: Users, permission: 'organizations.view' },
       { name: 'Storage', href: '/admin/storage', icon: HardDrive, permission: 'files.manage' },
       { name: 'Activity Logs', href: '/admin/activity', icon: History, permission: 'audit_logs.view' },
-      { name: 'Audit Logs', href: '/admin/audit-logs', icon: ScrollText, permission: 'audit_logs.view' },
       { name: 'System Settings', href: '/admin/settings', icon: Settings, permission: 'settings.manage' },
     ],
   },
@@ -192,9 +188,46 @@ function NavLink({
   )
 }
 
+type StorageUsage = { usedGb: number; totalGb: number; pct: number; fileCount: number }
+
+function formatStorageGb(gb: number): string {
+  if (gb >= 1) return `${gb.toFixed(2)} GB`
+  return `${(gb * 1024).toFixed(1)} MB`
+}
+
 export function Sidebar() {
   const { sidebarCollapsed, toggleSidebar, setMobileDrawerOpen } = useUIStore()
   const { hasPermission, hasAnyPermission } = usePermissions()
+  const pathname = usePathname()
+  const [storage, setStorage] = React.useState<StorageUsage | null>(null)
+
+  const refreshStorage = React.useCallback(async () => {
+    try {
+      const r = await fetch('/api/storage/usage', { cache: 'no-store' })
+      if (!r.ok) return
+      const data: StorageUsage = await r.json()
+      setStorage(data)
+    } catch {}
+  }, [])
+
+  React.useEffect(() => {
+    refreshStorage()
+    const onRefresh = () => refreshStorage()
+    window.addEventListener('storage:refresh', onRefresh)
+    window.addEventListener('focus', onRefresh)
+    document.addEventListener('visibilitychange', onRefresh)
+    const id = window.setInterval(refreshStorage, 30_000)
+    return () => {
+      window.removeEventListener('storage:refresh', onRefresh)
+      window.removeEventListener('focus', onRefresh)
+      document.removeEventListener('visibilitychange', onRefresh)
+      window.clearInterval(id)
+    }
+  }, [refreshStorage])
+
+  React.useEffect(() => {
+    refreshStorage()
+  }, [pathname, refreshStorage])
 
   const closeDrawer = React.useCallback(() => setMobileDrawerOpen(false), [setMobileDrawerOpen])
 
@@ -309,9 +342,11 @@ export function Sidebar() {
         {!sidebarCollapsed ? (
           <div className="rounded-lg bg-white/[0.03] p-3">
             <p className="text-xs text-white/50">Storage Used</p>
-            <p className="text-sm font-medium text-white mt-0.5">128.5 GB of 1 TB</p>
+            <p className="text-sm font-medium text-white mt-0.5">
+              {storage ? `${formatStorageGb(storage.usedGb)} of ${storage.totalGb} GB` : '— of 100 GB'}
+            </p>
             <div className="mt-2 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
-              <div className="h-full rounded-full bg-purple-500" style={{ width: '12.5%' }} />
+              <div className="h-full rounded-full bg-purple-500" style={{ width: `${storage ? storage.pct : 0}%` }} />
             </div>
             <Link
               href="/admin/storage"

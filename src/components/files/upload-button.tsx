@@ -25,6 +25,7 @@ export function UploadButton({ folderId, cloudinaryConfigured = true }: { folder
         if (!res.ok) throw new Error(data.error || `Failed to upload ${file.name}`)
       }
       router.refresh()
+      window.dispatchEvent(new Event('storage:refresh'))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed')
     } finally {

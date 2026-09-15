@@ -2,7 +2,7 @@ import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { PaginatedMeetingsTable } from '@/components/meetings/meetings-table-paginated'
 import { Button } from '@/components/ui/button'
-import { CalendarPlus } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { getMeetingsPage, type MeetingSortKey } from '@/services/meeting.service'
 import type { MeetingStatus } from '@/types/meetings'
@@ -44,8 +44,8 @@ export default async function MeetingsPage({
           action={
             <Button asChild className="gap-1.5">
               <Link href="/meetings/new">
-                <CalendarPlus className="h-4 w-4" />
-                Schedule Meeting
+                <Sparkles className="h-4 w-4" />
+                New Meeting (MOM)
               </Link>
             </Button>
           }

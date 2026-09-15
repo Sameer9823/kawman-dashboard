@@ -1,15 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Video upload for /meetings/new can be large, but the upload itself
-  // goes to Cloudinary via an API route that streams the buffer — the
-  // Server Action only receives the returned Cloudinary URL, so a
-  // conservative limit is safe and prevents OOM from forged multipart
-  // bodies against any other Server Action.
+  // /meetings/new uploads meeting video (up to 500MB) directly via a
+  // Server Action to Cloudinary — so the action must accept large
+  // multipart bodies. All other actions are small form posts.
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      bodySizeLimit: "500mb",
     },
+    // Proxy runs before the Server Action; its own 10MB default truncates
+    // the multipart stream before bodySizeLimit is ever checked (hence the
+    // "Request body exceeded 10MB" + "Unexpected end of form" loop).
+    proxyClientMaxBodySize: "500mb",
+  },
+  async redirects() {
+    return [{ source: "/admin/audit-logs/:path*", destination: "/admin/activity", permanent: false }]
   },
 };
 

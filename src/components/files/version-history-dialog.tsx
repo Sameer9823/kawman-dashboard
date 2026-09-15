@@ -45,7 +45,7 @@ export function VersionHistoryDialog({
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to upload new version')
       load()
-      router.refresh()
+      router.refresh(); window.dispatchEvent(new Event('storage:refresh'))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed')
     } finally {
@@ -62,7 +62,7 @@ export function VersionHistoryDialog({
       if (result.error) setError(result.error)
       else {
         load()
-        router.refresh()
+        router.refresh(); window.dispatchEvent(new Event('storage:refresh'))
       }
     })
   }

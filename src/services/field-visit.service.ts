@@ -1,7 +1,7 @@
 import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
-import type { FieldVisit, CheckIn, GeoFence, VisitReport, LiveMapVisit, VisitStatus } from '@/types/field-sales'
+import type { FieldVisit, CheckIn, GeoFence, VisitReport, LiveMapVisit, VisitStatus, ActiveUserPin } from '@/types/field-sales'
 
 function initials(name: string): string {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -215,6 +215,131 @@ export async function getLiveMapVisits(): Promise<LiveMapVisit[]> {
     }))
 }
 
+export async function getActiveUsersForMap(): Promise<ActiveUserPin[]> {
+  const session = await requireApiSession()
+  const organizationId = session.user.organizationId
+  const now = Date.now()
+  const heartbeatCutoff = new Date(now - 5 * 60 * 1000) // 5 min heartbeat window — Session.lastSeenAt gate
+  const liveCutoff = new Date(now - 10 * 60 * 1000) // 10 min — beyond this live location is stale
+
+  // 1) Gate by Session.lastSeenAt — active presence per spec
+  const recentSessions = await prisma.session.findMany({
+    where: { user: { organizationId }, lastSeenAt: { gte: heartbeatCutoff } },
+    select: { userId: true, lastSeenAt: true, user: { select: { name: true } } },
+    orderBy: { lastSeenAt: 'desc' },
+    take: 100,
+  })
+  const byUser = new Map<string, { lastSeenAt: Date; name: string | null }>()
+  for (const s of recentSessions) {
+    if (!byUser.has(s.userId)) byUser.set(s.userId, { lastSeenAt: s.lastSeenAt ?? new Date(), name: s.user.name })
+  }
+
+  // Also include users who are actively streaming even if heartbeat is slightly stale (race)
+  // — any UserLiveLocation in this org touched in last 10 min and still isTracking
+  let liveExtras: typeof recentSessions = []
+  try {
+    const extraLocs = await prisma.userLiveLocation.findMany({
+      where: { organizationId, updatedAt: { gte: liveCutoff }, isTracking: true },
+      select: { userId: true, updatedAt: true, user: { select: { name: true } } },
+      take: 100,
+    })
+    for (const e of extraLocs) {
+      if (!byUser.has(e.userId)) {
+        byUser.set(e.userId, { lastSeenAt: e.updatedAt, name: e.user.name })
+      }
+    }
+  } catch {}
+
+  if (byUser.size === 0) return []
+
+  const userIds = [...byUser.keys()]
+
+  // 2) Primary: live tracking table — current rep locations per spec
+  let liveRows: Awaited<ReturnType<typeof prisma.userLiveLocation.findMany<{ include: { user: { select: { name: true } } } }>>> = []
+  try {
+    liveRows = await prisma.userLiveLocation.findMany({
+      where: { userId: { in: userIds } },
+      include: { user: { select: { name: true } } },
+    })
+  } catch {}
+  const liveByUser = new Map<string, (typeof liveRows)[number]>()
+  for (const r of liveRows) liveByUser.set(r.userId, r)
+
+  // 3) Fallback: last check-in location (keeps map useful before first live ping)
+  const lastCheckIns = await prisma.checkIn.findMany({
+    where: { userId: { in: userIds }, visit: { organizationId } },
+    include: { user: { select: { name: true } }, visit: { select: { title: true, company: { select: { name: true } } } } },
+    orderBy: { createdAt: 'desc' },
+  })
+  const checkInByUser = new Map<string, typeof lastCheckIns[number]>()
+  for (const c of lastCheckIns) if (!checkInByUser.has(c.userId)) checkInByUser.set(c.userId, c)
+
+  const pins: ActiveUserPin[] = []
+  for (const [userId, meta] of byUser) {
+    const live = liveByUser.get(userId)
+    const fallback = checkInByUser.get(userId)
+    const nm = meta.name ?? (live as unknown as { user?: { name: string | null } })?.user?.name ?? fallback?.user?.name ?? 'Unknown'
+    const initialsVal = nm.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || 'U'
+
+    // Prefer live location if fresh and tracking
+    if (live) {
+      const liveAge = now - new Date(live.updatedAt).getTime()
+      const isStale = liveAge > 2 * 60 * 1000 || !live.isTracking // 2 min without update or explicitly stopped
+      // Still show if live exists even when stale (dimmed), unless very old (>10 min and no fallback? still show stale)
+      pins.push({
+        id: userId,
+        name: nm,
+        initials: initialsVal,
+        latitude: Number(live.latitude),
+        longitude: Number(live.longitude),
+        lastSeenAt: meta.lastSeenAt.toISOString(),
+        lastCheckInAt: fallback?.createdAt?.toISOString() ?? null,
+        companyName: fallback?.visit?.company?.name ?? null,
+        visitTitle: fallback?.visit?.title ?? null,
+        accuracy: live.accuracy != null ? Number(live.accuracy) : null,
+        heading: live.heading != null ? Number(live.heading) : null,
+        speed: live.speed != null ? Number(live.speed) : null,
+        updatedAt: new Date(live.updatedAt).toISOString(),
+        isTracking: Boolean(live.isTracking) && !isStale,
+        isStale,
+      })
+      continue
+    }
+
+    // No live row — fall back to last check-in so existing visits/check-ins still appear
+    if (!fallback) continue
+    const checkInAge = now - new Date(fallback.createdAt).getTime()
+    const isStale = checkInAge > 10 * 60 * 1000
+    pins.push({
+      id: userId,
+      name: nm,
+      initials: initialsVal,
+      latitude: Number(fallback.latitude),
+      longitude: Number(fallback.longitude),
+      lastSeenAt: meta.lastSeenAt.toISOString(),
+      lastCheckInAt: fallback.createdAt.toISOString(),
+      companyName: fallback.visit.company?.name ?? null,
+      visitTitle: fallback.visit.title,
+      accuracy: fallback.accuracy != null ? Number(fallback.accuracy) : null,
+      heading: null,
+      speed: null,
+      updatedAt: fallback.createdAt.toISOString(),
+      isTracking: false,
+      isStale,
+    })
+  }
+
+  // Most recently updated first — active trackers on top
+  pins.sort((a, b) => {
+    if (a.isTracking !== b.isTracking) return a.isTracking ? -1 : 1
+    if (a.isStale !== b.isStale) return a.isStale ? 1 : -1
+    const at = a.updatedAt ? new Date(a.updatedAt).getTime() : 0
+    const bt = b.updatedAt ? new Date(b.updatedAt).getTime() : 0
+    return bt - at
+  })
+  return pins
+}
+
 export async function getActiveGeoFencesForMap(): Promise<GeoFence[]> {
   const session = await requireApiSession()
   const rows = await prisma.geoFence.findMany({
@@ -258,9 +383,9 @@ export async function getCheckIns(): Promise<CheckIn[]> {
 }
 
 /**
- * Records a check-in against a visit. If the visit's company has an active
- * geofence, computes distance-from-customer and auto-verifies when inside
- * the fence radius (mirrors what a real mobile geofencing flow would do).
+ * Records a check-in against a visit. Photo is uploaded by the caller
+ * (actions.ts) and passed as photoUrl. Location is always captured from
+ * the device at check-in time and written back to the visit.
  */
 export async function createCheckIn(input: {
   visitId: string
@@ -268,27 +393,17 @@ export async function createCheckIn(input: {
   longitude: number
   accuracy?: number
   notes?: string
+  photoUrl?: string | null
 }) {
   const session = await requireApiSession()
   const visit = await prisma.fieldVisit.findFirst({
     where: { id: input.visitId, organizationId: session.user.organizationId },
-    select: { id: true, companyId: true },
+    select: { id: true },
   })
   if (!visit) throw new Error('Visit not found')
 
-  let distanceFromCustomer: number | null = null
-  let verificationStatus = 'PENDING'
-
-  if (visit.companyId) {
-    const fence = await prisma.geoFence.findFirst({
-      where: { organizationId: session.user.organizationId, companyId: visit.companyId, isActive: true },
-    })
-    if (fence) {
-      const d = distanceMeters(input.latitude, input.longitude, Number(fence.latitude), Number(fence.longitude))
-      distanceFromCustomer = d
-      verificationStatus = d <= fence.radius ? 'VERIFIED' : 'OUT_OF_RANGE'
-    }
-  }
+  // Geo-fencing is retired — every on-site photo check-in is VERIFIED.
+  const verificationStatus = 'VERIFIED'
 
   const checkIn = await prisma.checkIn.create({
     data: {
@@ -297,8 +412,9 @@ export async function createCheckIn(input: {
       latitude: input.latitude,
       longitude: input.longitude,
       accuracy: input.accuracy ?? null,
-      distanceFromCustomer,
+      distanceFromCustomer: null,
       verificationStatus,
+      photoUrl: input.photoUrl ?? null,
       notes: input.notes || null,
     },
   })
@@ -308,7 +424,7 @@ export async function createCheckIn(input: {
     data: { status: 'CHECKED_IN', latitude: input.latitude, longitude: input.longitude },
   })
 
-  return { id: checkIn.id, verificationStatus, distanceFromCustomer }
+  return { id: checkIn.id, verificationStatus, distanceFromCustomer: null }
 }
 
 // ============================================================

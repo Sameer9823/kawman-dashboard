@@ -12,6 +12,7 @@ import { TranscriptPanel } from '@/components/meetings/transcript-panel'
 import { RecordingPanel } from '@/components/meetings/recording-panel'
 import { MomPanel } from '@/components/meetings/mom-panel'
 import { MeetingStatusSelect } from './meeting-status-select'
+import { MeetingHeaderActions } from '@/components/meetings/meeting-header-actions'
 import { retryMeetingVideoProcessingAction } from '../actions'
 
 export const metadata = { title: 'Meeting | Kawman ExAct' }
@@ -39,7 +40,8 @@ export default async function MeetingDetailPage({ params }: { params: Promise<{ 
           title={meeting.title}
           subtitle={`Created by ${meeting.createdBy}`}
           action={
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <MeetingHeaderActions meetingId={meeting.id} title={meeting.title} />
               <MeetingStatusSelect meetingId={meeting.id} status={meeting.status} />
               {isFailed && (
                 <Button

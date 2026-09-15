@@ -55,9 +55,9 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid file type. Please upload a video file.' }, { status: 400 })
     }
 
-    const maxSize = 50 * 1024 * 1024 // 50 MB — Cloudinary handles larger via chunked upload, but cap API payload
+    const maxSize = 500 * 1024 * 1024 // 500 MB — matches serverActions/proxyClientMaxBodySize for /meetings/new
     if (file.size > maxSize) {
-      return NextResponse.json({ error: 'File too large. Maximum size is 50 MB.' }, { status: 400 })
+      return NextResponse.json({ error: 'File too large. Maximum size is 500 MB.' }, { status: 400 })
     }
 
     const buffer = Buffer.from(await file.arrayBuffer())
@@ -115,7 +115,10 @@ async function triggerTranscriptionAndMoM(meetingId: string, recordingId: string
 
       await generateMeetingSummary(meetingId)
     }
+    // Pipeline done (generateMeetingSummary flips PROCESSING -> COMPLETED internally) — ensure final state.
+    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'COMPLETED' } }).catch(() => {})
   } catch (error) {
     console.error('Transcription/MoM generation failed:', error)
+    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'FAILED' } }).catch(() => {})
   }
 }

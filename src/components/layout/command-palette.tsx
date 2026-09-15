@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { useShallow } from 'zustand/react/shallow'
-import { Search, User, Building2, Contact as ContactIcon, Handshake, CalendarClock, FileText, Loader2 } from 'lucide-react'
+import { Search, User, Building2, Contact as ContactIcon, Handshake, CalendarClock, FileText, Loader2, AlertCircle, LogIn } from 'lucide-react'
 import { useUIStore } from '@/stores/ui'
 import type { SearchResult, SearchResultType } from '@/services/search.service'
 
@@ -28,11 +28,32 @@ const TYPE_LABEL: Record<SearchResultType, string> = {
 
 const GROUP_ORDER: SearchResultType[] = ['lead', 'company', 'contact', 'deal', 'meeting', 'file']
 
-async function fetchResults(query: string): Promise<SearchResult[]> {
-  if (query.trim().length < 2) return []
+type FetchState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'ok'; results: SearchResult[] }
+  | { status: 'unauthenticated' }
+  | { status: 'rate_limited'; retryAfter?: string }
+  | { status: 'error'; message: string }
+
+async function fetchResults(query: string): Promise<FetchState> {
+  if (query.trim().length < 2) return { status: 'idle' }
   const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
-  if (!res.ok) return []
-  return res.json()
+  if (res.status === 401) return { status: 'unauthenticated' }
+  if (res.status === 429) {
+    const retryAfter = res.headers.get('Retry-After') ?? undefined
+    return { status: 'rate_limited', retryAfter }
+  }
+  if (!res.ok) {
+    let msg = `Search failed (${res.status}).`
+    try {
+      const body = (await res.json()) as { error?: string }
+      if (body?.error) msg = body.error
+    } catch {}
+    return { status: 'error', message: msg }
+  }
+  const data = (await res.json()) as SearchResult[]
+  return { status: 'ok', results: Array.isArray(data) ? data : [] }
 }
 
 /**
@@ -43,9 +64,6 @@ async function fetchResults(query: string): Promise<SearchResult[]> {
  */
 export function CommandPalette() {
   const router = useRouter()
-  // Selector (via useShallow) instead of a bare useUIStore() call — this
-  // component now only re-renders when commandPaletteOpen actually
-  // changes, not on every unrelated UI-store update (theme, sidebar, etc).
   const { commandPaletteOpen, setCommandPaletteOpen } = useUIStore(
     useShallow((s) => ({
       commandPaletteOpen: s.commandPaletteOpen,
@@ -56,15 +74,18 @@ export function CommandPalette() {
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const { data: results = [], isFetching } = useQuery({
+  const { data: state = { status: 'idle' } as FetchState, isFetching } = useQuery<FetchState>({
     queryKey: ['global-search', query],
     queryFn: () => fetchResults(query),
     enabled: commandPaletteOpen && query.trim().length >= 2,
+    // Don't silently cache an unauthenticated response — next successful login should refetch.
+    gcTime: 0,
   })
 
-  // Reset the query/selection whenever the palette transitions from
-  // closed -> open. Track previous open state with a ref to avoid
-  // setState in effect (which triggers react-hooks/set-state-in-effect lint).
+  const results = state.status === 'ok' ? state.results : []
+  const fetchError = state.status === 'unauthenticated' || state.status === 'rate_limited' || state.status === 'error' ? state : null
+
+  // Reset the query/selection whenever the palette transitions from closed -> open.
   const wasOpenRef = useRef(commandPaletteOpen)
   useEffect(() => {
     const wasOpen = wasOpenRef.current
@@ -75,16 +96,10 @@ export function CommandPalette() {
     }
   }, [commandPaletteOpen])
 
-  // Focusing the input is a genuine side effect (imperative DOM access
-  // after the dialog paints), so this one does belong in an effect.
-  // Only focus when the palette transitions from closed -> open, not on
-  // every render while open. Track previous open state with a ref.
   const wasOpenForFocusRef = useRef(commandPaletteOpen)
   useEffect(() => {
     const wasOpen = wasOpenForFocusRef.current
     wasOpenForFocusRef.current = commandPaletteOpen
-
-    // Only focus on closed -> open transition
     if (!wasOpen && commandPaletteOpen) {
       const frame = requestAnimationFrame(() => {
         inputRef.current?.focus()
@@ -93,10 +108,6 @@ export function CommandPalette() {
     }
   }, [commandPaletteOpen])
 
-  // Derived (not stored) — clamp the selection to the current result
-  // count while rendering. No effect needed, so there's nothing here
-  // that can trigger another render, which is what was causing the
-  // "Maximum update depth exceeded" loop.
   const safeActiveIndex = results.length === 0 ? 0 : Math.min(activeIndex, results.length - 1)
 
   function close() {
@@ -130,8 +141,6 @@ export function CommandPalette() {
     items: results.filter((r) => r.type === type),
   })).filter((g) => g.items.length > 0)
 
-  // Precompute each item's position in the flattened list so the render
-  // loop below never mutates a variable while rendering.
   const flatIndexById = new Map<string, number>()
   let cursor = 0
   for (const group of grouped) {
@@ -167,11 +176,44 @@ export function CommandPalette() {
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto py-2">
-          {query.trim().length < 2 && (
+          {query.trim().length < 2 && !fetchError && (
             <p className="px-4 py-8 text-center text-sm text-white/30">Type at least 2 characters to search.</p>
           )}
 
-          {query.trim().length >= 2 && !isFetching && results.length === 0 && (
+          {fetchError?.status === 'unauthenticated' && (
+            <div className="px-4 py-6 text-center">
+              <p className="text-sm text-red-300 flex items-center justify-center gap-2">
+                <AlertCircle className="h-4 w-4" /> Not signed in — please log in.
+              </p>
+              <a href="/login" className="inline-flex items-center gap-1.5 mt-3 text-sm text-purple-300 hover:text-purple-200 font-medium">
+                <LogIn className="h-4 w-4" /> Go to login
+              </a>
+            </div>
+          )}
+
+          {fetchError?.status === 'rate_limited' && (
+            <div className="px-4 py-6 text-center">
+              <p className="text-sm text-amber-300 flex items-center justify-center gap-2">
+                <AlertCircle className="h-4 w-4" /> Too many searches — slow down.
+              </p>
+              {fetchError.retryAfter && (
+                <p className="text-xs text-white/40 mt-1">Retry after {fetchError.retryAfter}s.</p>
+              )}
+            </div>
+          )}
+
+          {fetchError?.status === 'error' && (
+            <div className="px-4 py-6 text-center">
+              <p className="text-sm text-red-300 flex items-center justify-center gap-2">
+                <AlertCircle className="h-4 w-4" /> {fetchError.message}
+              </p>
+              <button onClick={() => setQuery((q) => q + ' ')} className="mt-3 text-sm text-purple-300 hover:text-purple-200 font-medium">
+                Retry
+              </button>
+            </div>
+          )}
+
+          {!fetchError && query.trim().length >= 2 && !isFetching && results.length === 0 && (
             <p className="px-4 py-8 text-center text-sm text-white/30">No results for &ldquo;{query}&rdquo;.</p>
           )}
 

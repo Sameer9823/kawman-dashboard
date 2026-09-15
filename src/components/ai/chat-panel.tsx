@@ -3,8 +3,11 @@
 import * as React from 'react'
 import { Send, Plus, Trash2, Bot, User as UserIcon, Sparkles, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { Markdown } from './markdown'
+import { AiUpload, type UploadedFileInfo } from './ai-upload'
+import { AiCharts } from './ai-charts'
 import { cn } from '@/lib/utils'
 
 interface ConversationSummary {
@@ -18,6 +21,7 @@ interface ChatMessage {
   id: string
   role: 'user' | 'assistant' | 'system'
   content: string
+  charts?: UploadedFileInfo['charts']
 }
 
 const SUGGESTIONS = [
@@ -42,10 +46,39 @@ export function ChatPanel({
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const idCounter = React.useRef(0)
   const [mobileListOpen, setMobileListOpen] = React.useState(false)
+  const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null)
+  const [deleting, setDeleting] = React.useState(false)
+
+  // Upload state — PDF / image / sheets turn into docContext + vision
+  const [uploaded, setUploaded] = React.useState<UploadedFileInfo[]>([])
+  const [uploading, setUploading] = React.useState(false)
+  const [uploadError, setUploadError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages])
+
+  async function handleFilesSelected(list: FileList) {
+    setUploadError(null)
+    if (uploaded.length + list.length > 3) {
+      setUploadError('You can attach up to 3 files at a time.')
+      return
+    }
+    const form = new FormData()
+    for (let i = 0; i < list.length; i++) form.append('files', list[i])
+    setUploading(true)
+    try {
+      const res = await fetch('/api/ai/upload', { method: 'POST', body: form })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error((data as { error?: string }).error || 'Upload failed')
+      const incoming = (data as { files: UploadedFileInfo[] }).files ?? []
+      setUploaded((prev) => [...prev, ...incoming].slice(0, 3))
+    } catch (e) {
+      setUploadError(e instanceof Error ? e.message : 'Upload failed')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   async function loadConversation(id: string) {
     setActiveId(id)
@@ -60,23 +93,43 @@ export function ChatPanel({
     setActiveId(null)
     setMessages([])
     setError(null)
+    setUploaded([])
+    setUploadError(null)
   }
 
-  async function removeConversation(id: string, e: React.MouseEvent) {
-    e.stopPropagation()
-    await fetch(`/api/ai/conversations/${id}`, { method: 'DELETE' })
-    setConversations((prev) => prev.filter((c) => c.id !== id))
-    if (activeId === id) newChat()
+  async function confirmRemoveConversation() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await fetch(`/api/ai/conversations/${deleteTarget}`, { method: 'DELETE' })
+      setConversations((prev) => prev.filter((c) => c.id !== deleteTarget))
+      if (activeId === deleteTarget) newChat()
+    } finally {
+      setDeleting(false)
+      setDeleteTarget(null)
+    }
   }
 
   async function send(text?: string) {
     const content = (text ?? input).trim()
-    if (!content || streaming) return
+    if ((!content && !uploaded.length) || streaming) return
     setInput('')
     setError(null)
 
+    // Snapshot uploads for this turn (keeps charts + docContext together)
+    const turnFiles = [...uploaded]
+    const docContext = turnFiles.map((f) => f.snippet).join('\n\n').slice(0, 18_000) || undefined
+    const images = turnFiles
+      .filter((f) => f.kind === 'image' && f.imageBase64)
+      .map((f) => ({ base64: f.imageBase64!, mimeType: f.mimeType }))
+    const turnCharts = turnFiles.flatMap((f) => f.charts ?? [])
+
+    // Clear uploader immediately so next turn starts fresh
+    setUploaded([])
+    setUploadError(null)
+
     const localId = ++idCounter.current
-    const userMsg: ChatMessage = { id: `local-${localId}-user`, role: 'user', content }
+    const userMsg: ChatMessage = { id: `local-${localId}-user`, role: 'user', content: content || '(attached files)', charts: turnCharts.length ? turnCharts : undefined }
     const assistantMsg: ChatMessage = { id: `local-${localId}-assistant`, role: 'assistant', content: '' }
     setMessages((prev) => [...prev, userMsg, assistantMsg])
     setStreaming(true)
@@ -85,12 +138,17 @@ export function ChatPanel({
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: content, conversationId: activeId ?? undefined }),
+        body: JSON.stringify({
+          message: content || 'Analyse the attached files and give me insights. If the upload is a spreadsheet, summarise the data and highlight key numbers.',
+          conversationId: activeId ?? undefined,
+          docContext,
+          images: images.length ? images : undefined,
+        }),
       })
 
       if (!res.ok || !res.body) {
         const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'AI request failed')
+        throw new Error((data as { error?: string }).error || 'AI request failed')
       }
 
       const reader = res.body.getReader()
@@ -127,6 +185,8 @@ export function ChatPanel({
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setMessages((prev) => prev.filter((m) => m.id !== assistantMsg.id))
+      // restore files on failure so user doesn't lose upload
+      if (turnFiles.length) setUploaded(turnFiles)
     } finally {
       setStreaming(false)
     }
@@ -166,7 +226,7 @@ export function ChatPanel({
               {conversations.map((c) => (
                 <button key={c.id} onClick={() => { loadConversation(c.id); setMobileListOpen(false) }} className={cn('w-full text-left px-3 py-2 rounded-lg text-sm group flex items-start justify-between gap-2', activeId === c.id ? 'bg-purple-500/15 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white')}>
                   <span className="truncate"><span className="block truncate font-medium">{c.title || 'Untitled chat'}</span>{c.lastMessagePreview && <span className="block truncate text-xs text-white/35">{c.lastMessagePreview}</span>}</span>
-                  <Trash2 className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-60 hover:!opacity-100 mt-0.5" onClick={(e) => removeConversation(c.id, e)} />
+                  <Trash2 className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-60 hover:!opacity-100 mt-0.5" onClick={(e) => { e.stopPropagation(); setDeleteTarget(c.id) }} />
                 </button>
               ))}
             </div>
@@ -201,7 +261,7 @@ export function ChatPanel({
               </span>
               <Trash2
                 className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-60 hover:!opacity-100 mt-0.5"
-                onClick={(e) => removeConversation(c.id, e)}
+                onClick={(e) => { e.stopPropagation(); setDeleteTarget(c.id) }}
               />
             </button>
           ))}
@@ -224,7 +284,7 @@ export function ChatPanel({
               </div>
               <div>
                 <p className="text-white font-medium">Ask about your pipeline, leads, or deals</p>
-                <p className="text-white/40 text-sm mt-1">Answers are grounded in your live CRM data.</p>
+                <p className="text-white/40 text-sm mt-1">Grounded in your live CRM data. Attach a PDF, image, or Excel sheet for file-aware insights.</p>
               </div>
               <div className="flex flex-col gap-2 w-full max-w-sm">
                 {SUGGESTIONS.map((s) => (
@@ -256,7 +316,7 @@ export function ChatPanel({
               </div>
               <div
                 className={cn(
-                  'rounded-xl px-4 py-2.5 max-w-[85%] text-sm text-white/85',
+                  'rounded-xl px-4 py-2.5 max-w-[85%] text-sm text-white/85 space-y-2',
                   m.role === 'user' ? 'bg-purple-600/20 border border-purple-500/20' : 'bg-white/[0.04] border border-white/10'
                 )}
               >
@@ -269,6 +329,11 @@ export function ChatPanel({
                     <span className="h-1.5 w-1.5 rounded-full bg-white/40 animate-bounce" />
                   </span>
                 )}
+                {m.charts?.length ? (
+                  <div className="pt-1">
+                    <AiCharts charts={m.charts} />
+                  </div>
+                ) : null}
               </div>
             </div>
           ))}
@@ -279,26 +344,51 @@ export function ChatPanel({
               {error}
             </div>
           )}
+          {uploadError && (
+            <div className="flex items-center gap-2 text-sm text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              {uploadError}
+            </div>
+          )}
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            send()
-          }}
-          className="border-t border-white/10 p-3 flex gap-2"
-        >
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about leads, deals, or your pipeline..."
+        <div className="border-t border-white/10 p-3 space-y-2 bg-black/10">
+          <AiUpload
+            files={uploaded}
+            uploading={uploading}
             disabled={streaming}
+            onFilesSelected={handleFilesSelected}
+            onRemove={(idx) => setUploaded((prev) => prev.filter((_, i) => i !== idx))}
           />
-          <Button type="submit" size="icon" disabled={streaming || !input.trim()}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </form>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              send()
+            }}
+            className="flex gap-2"
+          >
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={uploaded.length ? 'Add a message about these files…' : 'Ask about leads, deals, or your pipeline...'}
+              disabled={streaming}
+            />
+            <Button type="submit" size="icon" disabled={streaming || (!input.trim() && !uploaded.length)}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
+        </div>
       </div>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title="Delete conversation?"
+        description="This conversation and all its messages will be permanently deleted."
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={deleting}
+        onConfirm={confirmRemoveConversation}
+      />
     </div>
   )
 }

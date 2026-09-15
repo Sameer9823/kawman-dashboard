@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server'
 import { getReport } from '@/services/ai.service'
 
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  try {
+    const { deleteReport } = await import('@/services/ai.service')
+    await deleteReport(id)
+    return NextResponse.json({ ok: true })
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Failed to delete'
+    const status = msg === 'Report not found' ? 404 : 401
+    return NextResponse.json({ error: msg }, { status })
+  }
+}
+
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   try {

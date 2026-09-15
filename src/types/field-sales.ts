@@ -45,6 +45,7 @@ export interface CheckIn {
   createdAt: string
 }
 
+/** @deprecated Geo-fencing is retired — kept for backwards compat only */
 export interface GeoFence {
   id: string
   name: string
@@ -82,4 +83,28 @@ export interface LiveMapVisit {
   longitude: number
   companyName: string | null
   address: string | null
+}
+
+export interface ActiveUserPin {
+  id: string
+  name: string
+  initials: string
+  latitude: number
+  longitude: number
+  lastSeenAt: string
+  lastCheckInAt: string | null
+  companyName: string | null
+  visitTitle: string | null
+  /** Live-tracking fields (from UserLiveLocation) — null when only check-in location is available */
+  accuracy: number | null
+  heading: number | null
+  speed: number | null
+  updatedAt: string | null
+  isTracking: boolean
+  isStale: boolean
+}
+
+export interface LiveMapData {
+  visits: LiveMapVisit[]
+  activeUsers: ActiveUserPin[]
 }

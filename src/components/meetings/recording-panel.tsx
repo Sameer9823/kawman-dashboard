@@ -23,6 +23,7 @@ export function RecordingPanel({ meetingId, recordings }: { meetingId: string; r
       else {
         setUrl('')
         setShowForm(false)
+        window.dispatchEvent(new Event('storage:refresh'))
       }
     })
   }
@@ -53,6 +54,7 @@ export function RecordingPanel({ meetingId, recordings }: { meetingId: string; r
           setShowUpload(false)
           setUploadProgress(null)
           e.target.value = ''
+          window.dispatchEvent(new Event('storage:refresh'))
         }
       } else {
         setError('Upload failed. Please try again.')

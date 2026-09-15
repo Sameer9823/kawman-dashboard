@@ -2,10 +2,13 @@ import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { ContactsTable } from '@/components/crm/contacts-table'
 import { ExportCsvButton } from '@/components/crm/export-csv-button'
+import { ExportMenu } from '@/components/report-engine/export-menu'
+import { buildContactsReport } from '@/lib/report-engine/builders/contacts'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
-import { getContactsPage, type ContactSortKey } from '@/services/contact.service'
+import { getContacts, getContactsPage, type ContactSortKey } from '@/services/contact.service'
+import { getSession } from '@/lib/session'
 
 export const metadata = { title: 'Contacts | Kawman ExAct' }
 
@@ -30,7 +33,19 @@ export default async function ContactsPage({
   const pageParam = Number(first(params.page))
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : undefined
 
-  const result = await getContactsPage({ search, sortKey, sortDir, page })
+  const [result, session, allContacts] = await Promise.all([
+    getContactsPage({ search, sortKey, sortDir, page }),
+    getSession(),
+    getContacts().catch(() => [] as Awaited<ReturnType<typeof getContacts>>),
+  ])
+
+  const sessionUser = session?.user as unknown as { name?: string; email?: string; organization?: { name?: string } | null } | undefined
+  const exportReport = buildContactsReport({
+    contacts: allContacts.length ? allContacts : result.contacts,
+    generatedBy: sessionUser?.name ?? sessionUser?.email,
+    organizationName: sessionUser?.organization?.name ?? undefined,
+    filters: search ? { Search: search } : undefined,
+  })
 
   return (
     <MainLayout>
@@ -41,6 +56,7 @@ export default async function ContactsPage({
           action={
             <div className="flex flex-wrap items-center gap-2">
               <ExportCsvButton href="/api/contacts/export" />
+              <ExportMenu report={exportReport} />
               <Button asChild className="gap-1.5">
                 <Link href="/contacts/new">
                   <Plus className="h-4 w-4" />

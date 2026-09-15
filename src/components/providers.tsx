@@ -2,9 +2,8 @@
 
 import * as React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ThemeProvider } from 'next-themes'
+import { ThemeProvider, useTheme } from 'next-themes'
 import { Toaster } from 'sonner'
-import { useUIStore } from '@/stores/ui'
 import dynamic from 'next/dynamic'
 
 // Devtools touches localStorage on mount and throws SecurityError when
@@ -43,9 +42,25 @@ interface ProvidersProps {
   children: React.ReactNode
 }
 
+function ThemedToaster() {
+  // Keep toasts readable in both themes without introducing a server/client
+  // mismatch: Toaster itself is client-only, so reading resolvedTheme here is safe.
+  const { resolvedTheme } = useTheme() as { resolvedTheme?: string }
+  const isLight = resolvedTheme === 'light'
+  return (
+    <Toaster
+      position="top-right"
+      theme={isLight ? 'light' : 'dark'}
+      toastOptions={{
+        className: isLight ? 'bg-white border border-slate-200' : 'bg-white/5 border border-white/10',
+        style: isLight ? { background: '#ffffff', color: '#0f172a' } : { background: '#0a1623' },
+      }}
+    />
+  )
+}
+
 export function Providers({ children }: ProvidersProps) {
   const [queryClient] = React.useState(getQueryClient)
-  const theme = useUIStore((state) => state.theme)
   const [devtoolsEnabled, setDevtoolsEnabled] = React.useState(false)
 
   React.useEffect(() => {
@@ -59,20 +74,13 @@ export function Providers({ children }: ProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
         attribute="class"
-        defaultTheme={theme}
+        defaultTheme="dark"
         enableSystem
         disableTransitionOnChange
+        storageKey="kawman-theme"
       >
         {children}
-        <Toaster
-          position="top-right"
-          theme="dark"
-          className="bg-[#07101B] border border-white/10"
-          toastOptions={{
-            className: 'bg-white/5 border border-white/10',
-            style: { background: '#0a1623' },
-          }}
-        />
+        <ThemedToaster />
         {devtoolsEnabled && <ReactQueryDevtools initialIsOpen={false} />}
       </ThemeProvider>
     </QueryClientProvider>

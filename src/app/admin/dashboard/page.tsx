@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Users, Building2, ShieldCheck, ScrollText } from 'lucide-react'
+import { Users, Building2, ShieldCheck, History } from 'lucide-react'
 import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { DashboardGate } from '@/components/dashboard/dashboard-gate'
@@ -49,7 +49,7 @@ export default async function AdminDashboardPage() {
     { label: 'Users', value: userCount, icon: Users, href: '/admin/users' },
     { label: 'Departments', value: deptCount, icon: Building2, href: '/admin/departments' },
     { label: 'Teams', value: teamCount, icon: ShieldCheck, href: '/admin/teams' },
-    { label: 'Audit events', value: recentLogs.length, icon: ScrollText, href: '/admin/audit-logs' },
+    { label: 'Audit events', value: recentLogs.length, icon: History, href: '/admin/activity' },
   ]
 
   return (

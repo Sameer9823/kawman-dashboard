@@ -8,21 +8,21 @@ datasource db {
 }
 
 model Organization {
-  id              String           @id @default(cuid())
+  id              String             @id @default(cuid())
   name            String
-  slug            String           @unique
+  slug            String             @unique
   logo            String?
   website         String?
   industry        String?
   address         String?
   phone           String?
   email           String?
-  timezone        String           @default("Asia/Kolkata")
-  currency        String           @default("INR")
-  dateFormat      String           @default("DD/MM/YYYY")
+  timezone        String             @default("Asia/Kolkata")
+  currency        String             @default("INR")
+  dateFormat      String             @default("DD/MM/YYYY")
   settings        Json?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
   aiConversations AIConversation[]
   aiInsights      AIInsight[]
   aiReports       AIReport[]
@@ -45,6 +45,7 @@ model Organization {
   savedViews      SavedView[]
   teams           Team[]
   users           User[]
+  liveLocations   UserLiveLocation[]
   dailyReports    DailyReport[]
 
   @@index([slug])
@@ -74,6 +75,7 @@ model User {
   accounts               Account[]
   activities             Activity[]           @relation("ActivityActor")
   auditLogs              AuditLog[]           @relation("AuditActor")
+  liveLocation           UserLiveLocation?
   checkIns               CheckIn[]
   ownedCompanies         Company[]            @relation("CompanyOwner")
   ownedContacts          Contact[]            @relation("ContactOwner")
@@ -129,6 +131,26 @@ model Session {
   lastSeenAt DateTime?
 
   @@index([userId])
+}
+
+model UserLiveLocation {
+  id             String       @id @default(cuid())
+  userId         String       @unique
+  organizationId String
+  latitude       Decimal      @db.Decimal(10, 8)
+  longitude      Decimal      @db.Decimal(11, 8)
+  accuracy       Decimal?     @db.Decimal(10, 2)
+  heading        Decimal?     @db.Decimal(10, 2)
+  speed          Decimal?     @db.Decimal(10, 2)
+  isTracking     Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([updatedAt])
+  @@index([isTracking])
 }
 
 model Account {

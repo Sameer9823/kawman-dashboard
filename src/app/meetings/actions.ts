@@ -11,6 +11,8 @@ import { PERMISSIONS } from '@/lib/permissions-data'
 import { saveTranscript, addRecordingLink, generateMeetingSummary, updateMeetingSummaryText } from '@/services/meeting.service'
 import { isCloudinaryConfigured, uploadToCloudinary } from '@/lib/cloudinary'
 import { getTranscriptionService } from '@/lib/transcription'
+import { findOrCreateCompanyByName } from '@/services/company.service'
+import { findOrCreateContactByName } from '@/services/contact.service'
 import { logAudit } from '@/lib/audit-log'
 
 async function assertPermission(permission: string) {
@@ -26,8 +28,8 @@ async function assertPermission(permission: string) {
 const meetingSchema = z.object({
   title: z.string().trim().min(2, 'Title is required'),
   notes: z.string().trim().optional(),
-  companyId: z.string().trim().optional(),
-  contactId: z.string().trim().optional(),
+  company: z.string().trim().optional(),
+  contact: z.string().trim().optional(),
   dealId: z.string().trim().optional(),
   participantIds: z.string().trim().optional(),
 })
@@ -53,6 +55,24 @@ export async function createMeetingAction(_prev: MeetingFormState, formData: For
     : []
   if (!participantIds.includes(session.user.id)) participantIds.push(session.user.id)
 
+  const company = data.company?.trim()
+    ? await findOrCreateCompanyByName({
+        name: data.company.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: session.user.id,
+      })
+    : null
+  const companyId = company?.id ?? null
+  const contact = data.contact?.trim()
+    ? await findOrCreateContactByName({
+        name: data.contact.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: session.user.id,
+        companyId,
+      })
+    : null
+  const contactId = contact?.id ?? null
+
   const meeting = await prisma.meeting.create({
     data: {
       title: data.title,
@@ -63,8 +83,8 @@ export async function createMeetingAction(_prev: MeetingFormState, formData: For
       notes: data.notes || null,
       organizationId: session.user.organizationId,
       createdById: session.user.id,
-      companyId: data.companyId || null,
-      contactId: data.contactId || null,
+      companyId,
+      contactId,
       dealId: data.dealId || null,
       participants: {
         create: participantIds.map((userId) => ({
@@ -108,14 +128,69 @@ export async function updateMeetingStatusAction(meetingId: string, status: (type
   revalidatePath('/meetings')
 }
 
-// ============================================================
-// Transcript
-// ============================================================
-
 export interface SimpleActionState {
   error?: string
   success?: boolean
 }
+
+export async function renameMeetingAction(meetingId: string, title: string): Promise<SimpleActionState> {
+  try {
+    await validateCsrf()
+    const session = await assertPermission(PERMISSIONS['meetings.update'].name)
+    const t = title.trim()
+    if (t.length < 2) return { error: 'Title must be at least 2 characters' }
+    const existing = await prisma.meeting.findFirst({ where: { id: meetingId, organizationId: session.user.organizationId } })
+    if (!existing) return { error: 'Meeting not found' }
+    await prisma.meeting.update({ where: { id: meetingId }, data: { title: t } })
+    await logAudit({ organizationId: session.user.organizationId, actorId: session.user.id, action: 'UPDATE', resource: 'Meeting', resourceId: meetingId, metadata: { title: t } })
+    revalidatePath(`/meetings/${meetingId}`)
+    revalidatePath('/meetings')
+    revalidatePath('/meetings/mom')
+    revalidatePath('/meetings/videos')
+    return { success: true }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to rename meeting' }
+  }
+}
+
+export async function deleteMeetingAction(meetingId: string): Promise<SimpleActionState> {
+  try {
+    await validateCsrf()
+    const session = await assertPermission(PERMISSIONS['meetings.delete'].name)
+    const existing = await prisma.meeting.findFirst({ where: { id: meetingId, organizationId: session.user.organizationId } })
+    if (!existing) return { error: 'Meeting not found' }
+    await prisma.meeting.delete({ where: { id: meetingId } })
+    await logAudit({ organizationId: session.user.organizationId, actorId: session.user.id, action: 'DELETE', resource: 'Meeting', resourceId: meetingId, metadata: { title: existing.title } })
+    revalidatePath('/meetings')
+    revalidatePath('/meetings/mom')
+    revalidatePath('/meetings/videos')
+    return { success: true }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to delete meeting' }
+  }
+}
+
+export async function deleteMomAction(meetingId: string): Promise<SimpleActionState> {
+  try {
+    await validateCsrf()
+    const session = await assertPermission(PERMISSIONS['meetings.update'].name)
+    const meeting = await prisma.meeting.findFirst({ where: { id: meetingId, organizationId: session.user.organizationId } })
+    if (!meeting) return { error: 'Meeting not found' }
+    const existing = await prisma.meetingSummary.findFirst({ where: { meetingId } })
+    if (!existing) return { error: 'No MoM to delete' }
+    await prisma.meetingSummary.delete({ where: { id: existing.id } })
+    await logAudit({ organizationId: session.user.organizationId, actorId: session.user.id, action: 'DELETE', resource: 'MeetingSummary', resourceId: existing.id, metadata: { meetingId } })
+    revalidatePath(`/meetings/${meetingId}`)
+    revalidatePath('/meetings/mom')
+    return { success: true }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to delete MoM' }
+  }
+}
+
+// ============================================================
+// Transcript
+// ============================================================
 
 export async function saveTranscriptAction(meetingId: string, content: string): Promise<SimpleActionState> {
   try {
@@ -260,12 +335,9 @@ export async function uploadRecordingAction(
 
 async function transcribeAndGenerateMom(meetingId: string, recordingId: string, videoUrl: string) {
   try {
-    // transcription started (recording id hidden in prod logs)
-    
     const transcriptionService = getTranscriptionService()
     const result = await transcriptionService.transcribe(videoUrl)
 
-    // Save transcript
     await prisma.meetingTranscript.create({
       data: {
         meetingId,
@@ -274,15 +346,13 @@ async function transcribeAndGenerateMom(meetingId: string, recordingId: string, 
       },
     })
 
-    // transcript saved
-
-    // Generate MoM from transcript
     await generateMeetingSummary(meetingId)
-    
-    // MoM generated
+    // generateMeetingSummary already flips PROCESSING -> COMPLETED, but
+    // ensure it even when the AI provider returns empty (still done).
+    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'COMPLETED' } }).catch(() => {})
   } catch (err) {
     console.error('[TRANSCRIPTION] Failed:', err)
-    // Don't throw - this is a background process
+    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'FAILED' } }).catch(() => {})
   }
 }
 
@@ -305,8 +375,8 @@ export async function createMeetingWithVideoAction(
 
   const title = formData.get('title')?.toString().trim() || ''
   const notes = formData.get('notes')?.toString().trim()
-  const companyId = formData.get('companyId')?.toString().trim() || undefined
-  const contactId = formData.get('contactId')?.toString().trim() || undefined
+  const companyName = formData.get('company')?.toString().trim() || undefined
+  const contactName = formData.get('contact')?.toString().trim() || undefined
   const dealId = formData.get('dealId')?.toString().trim() || undefined
   const participantIds = formData.get('participantIds')?.toString().trim()
   const file = formData.get('videoFile')
@@ -353,6 +423,24 @@ export async function createMeetingWithVideoAction(
     mimeType: videoFile.type || 'video/mp4',
   })
 
+  const company = companyName
+    ? await findOrCreateCompanyByName({
+        name: companyName,
+        organizationId: session.user.organizationId,
+        ownerId: session.user.id,
+      })
+    : null
+  const companyId = company?.id ?? null
+  const contact = contactName
+    ? await findOrCreateContactByName({
+        name: contactName,
+        organizationId: session.user.organizationId,
+        ownerId: session.user.id,
+        companyId,
+      })
+    : null
+  const contactId = contact?.id ?? null
+
   // Create meeting with PROCESSING status
   const meeting = await prisma.meeting.create({
     data: {
@@ -362,8 +450,8 @@ export async function createMeetingWithVideoAction(
       status: 'PROCESSING',
       scheduledAt: new Date(),
       duration: 0,
-      companyId: companyId || null,
-      contactId: contactId || null,
+      companyId,
+      contactId,
       dealId: dealId || null,
       notes: notes || null,
       createdById: session.user.id,

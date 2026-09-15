@@ -40,7 +40,7 @@ export default async function AIReportDetailPage({ params }: { params: Promise<{
               Back to reports
             </Link>
           </Button>
-          <ReportActions />
+          <ReportActions report={report} />
         </div>
 
         {/* Document header */}

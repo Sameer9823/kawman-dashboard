@@ -4,11 +4,14 @@ import { LeadsTable } from '@/components/crm/leads-table'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
-import { getLeadsPage, type LeadSortKey } from '@/services/lead.service'
+import { getLeads, getLeadsPage, type LeadSortKey } from '@/services/lead.service'
 import { getOrgUserOptions } from '@/services/user.service'
 import type { LeadStatus } from '@/types/crm'
 import { RecalculateAllScoresButton } from '@/components/crm/recalculate-all-scores-button'
 import { ExportCsvButton } from '@/components/crm/export-csv-button'
+import { ExportMenu } from '@/components/report-engine/export-menu'
+import { buildLeadsReport } from '@/lib/report-engine/builders/leads'
+import { getSession } from '@/lib/session'
 import { ImportLeadsButton } from '@/components/crm/import-leads-button'
 
 export const metadata = { title: 'Leads | Kawman ExAct' }
@@ -37,8 +40,24 @@ export default async function LeadsPage({
   const pageParam = Number(first(params.page))
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : undefined
 
-  const result = await getLeadsPage({ search, status, sortKey, sortDir, page })
-  const owners = await getOrgUserOptions()
+  // Current page view (filtered + paginated) for the table; full scoped set for export
+  const [result, owners, session, allLeads] = await Promise.all([
+    getLeadsPage({ search, status, sortKey, sortDir, page }),
+    getOrgUserOptions(),
+    getSession(),
+    getLeads().catch(() => [] as Awaited<ReturnType<typeof getLeads>>),
+  ])
+
+  const sessionUser = session?.user as unknown as { name?: string; email?: string; organization?: { name?: string } | null } | undefined
+  const exportReport = buildLeadsReport({
+    leads: allLeads.length ? allLeads : result.leads,
+    generatedBy: sessionUser?.name ?? sessionUser?.email,
+    organizationName: sessionUser?.organization?.name ?? undefined,
+    filters: {
+      ...(search ? { Search: search } : {}),
+      ...(status ? { Status: status } : {}),
+    },
+  })
 
   return (
     <MainLayout>
@@ -47,10 +66,11 @@ export default async function LeadsPage({
           title="Leads"
           subtitle={`${result.total} leads in your pipeline`}
           action={
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
               <RecalculateAllScoresButton />
               <ImportLeadsButton />
               <ExportCsvButton href="/api/leads/export" />
+              <ExportMenu report={exportReport} />
               <Button asChild className="gap-1.5">
                 <Link href="/leads/new">
                   <Plus className="h-4 w-4" />

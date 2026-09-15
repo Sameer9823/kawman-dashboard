@@ -10,18 +10,7 @@ const OPTIONS = [
   { value: 'system', label: 'System', icon: Monitor },
 ] as const
 
-/**
- * Theme toggle (audit: "Dark/Light Theme Toggle — theme stored in UI
- * store but no UI to change it"). next-themes was already installed and
- * wired into components/providers.tsx — it was just never exposed
- * anywhere for the user to actually click. This is that missing control.
- *
- * Honest caveat: most of this app's components use hardcoded dark-mode
- * Tailwind classes rather than theme-aware tokens, so selecting "Light"
- * here correctly persists the choice and flips the <html> class, but the
- * majority of surfaces won't visually change yet — that needs a separate
- * design-token migration across the component library.
- */
+/** Theme toggle — Light / Dark / System via next-themes (class on <html>). */
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   // next-themes reads localStorage on mount; rendering the real state

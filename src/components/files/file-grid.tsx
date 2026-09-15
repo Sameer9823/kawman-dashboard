@@ -55,6 +55,7 @@ export function FileGrid({
     startTransition(async () => {
       await fn()
       router.refresh()
+      window.dispatchEvent(new Event('storage:refresh'))
     })
   }
 

@@ -4,16 +4,29 @@ import { Card } from '@/components/ui/card'
 import { ClipboardCheck } from 'lucide-react'
 import { format } from 'date-fns'
 import { getVisitReports } from '@/services/field-visit.service'
+import { getSession } from '@/lib/session'
+import { ExportMenu } from '@/components/report-engine/export-menu'
+import { buildFieldVisitReportsReport } from '@/lib/report-engine/builders/field-visits'
 
 export const metadata = { title: 'Visit Reports | Kawman ExAct' }
 
 export default async function VisitReportsPage() {
-  const reports = await getVisitReports()
+  const [reports, session] = await Promise.all([getVisitReports(), getSession()])
+  const sessionUser = session?.user as unknown as { name?: string; email?: string; organization?: { name?: string } | null } | undefined
+  const exportReport = buildFieldVisitReportsReport({
+    reports: reports as unknown as import('@/lib/report-engine/builders/field-visits').VisitReportRow[],
+    generatedBy: sessionUser?.name ?? sessionUser?.email,
+    organizationName: sessionUser?.organization?.name ?? undefined,
+  })
 
   return (
     <MainLayout>
       <div className="space-y-6">
-        <PageHeader title="Visit Reports" subtitle={`${reports.length} reports submitted`} />
+        <PageHeader
+          title="Visit Reports"
+          subtitle={`${reports.length} reports submitted`}
+          action={reports.length > 0 ? <ExportMenu report={exportReport} /> : undefined}
+        />
 
         {reports.length === 0 ? (
           <Card className="bg-[#0a111c]/80 border-white/[0.08] py-14 text-center">

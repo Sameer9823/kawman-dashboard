@@ -143,3 +143,36 @@ export async function getContactById(id: string): Promise<ContactDetail | null> 
   if (!row) return null
   return { ...mapContact(row), ownerId: row.ownerId, companyId: row.companyId, mobile: row.mobile ?? '' }
 }
+
+/**
+ * Find an existing Contact by name (case-insensitive, org-scoped) or create it.
+ * Mirrors findOrCreateCompanyByName — used when forms accept free-text contact
+ * names instead of a <select> of existing contacts. Returns null for blank input.
+ */
+export async function findOrCreateContactByName(input: {
+  name: string
+  organizationId: string
+  ownerId: string
+  companyId?: string | null
+}): Promise<{ id: string; name: string } | null> {
+  const trimmed = input.name?.trim()
+  if (!trimmed) return null
+  const existing = await prisma.contact.findFirst({
+    where: { organizationId: input.organizationId, name: { equals: trimmed, mode: 'insensitive' as const } },
+    select: { id: true, name: true },
+  })
+  if (existing) return existing
+  const created = await prisma.contact.create({
+    data: {
+      name: trimmed,
+      organizationId: input.organizationId,
+      ownerId: input.ownerId,
+      companyId: input.companyId ?? null,
+    },
+    select: { id: true, name: true },
+  })
+  return created
+}
+
+export const findOrCreateContact = findOrCreateContactByName
+

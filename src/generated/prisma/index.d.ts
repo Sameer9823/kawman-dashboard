@@ -29,6 +29,11 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Session = $Result.DefaultSelection<Prisma.$SessionPayload>
 /**
+ * Model UserLiveLocation
+ * 
+ */
+export type UserLiveLocation = $Result.DefaultSelection<Prisma.$UserLiveLocationPayload>
+/**
  * Model Account
  * 
  */
@@ -596,6 +601,16 @@ export class PrismaClient<
     * ```
     */
   get session(): Prisma.SessionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userLiveLocation`: Exposes CRUD operations for the **UserLiveLocation** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserLiveLocations
+    * const userLiveLocations = await prisma.userLiveLocation.findMany()
+    * ```
+    */
+  get userLiveLocation(): Prisma.UserLiveLocationDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.account`: Exposes CRUD operations for the **Account** model.
@@ -1446,6 +1461,7 @@ export namespace Prisma {
     Organization: 'Organization',
     User: 'User',
     Session: 'Session',
+    UserLiveLocation: 'UserLiveLocation',
     Account: 'Account',
     Verification: 'Verification',
     Role: 'Role',
@@ -1501,7 +1517,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "organization" | "user" | "session" | "account" | "verification" | "role" | "permission" | "rolePermission" | "userRole" | "department" | "team" | "folder" | "file" | "fileVersion" | "savedView" | "filePermission" | "fileShare" | "fileCategory" | "fileActivity" | "lead" | "company" | "contact" | "deal" | "activity" | "dailyReport" | "followUp" | "fieldVisit" | "checkIn" | "geoFence" | "visitReport" | "visitReportAttachment" | "meeting" | "meetingParticipant" | "meetingRecording" | "meetingTranscript" | "meetingSummary" | "aIConversation" | "aIMessage" | "aIInsight" | "aIReport" | "notification" | "auditLog" | "integration"
+      modelProps: "organization" | "user" | "session" | "userLiveLocation" | "account" | "verification" | "role" | "permission" | "rolePermission" | "userRole" | "department" | "team" | "folder" | "file" | "fileVersion" | "savedView" | "filePermission" | "fileShare" | "fileCategory" | "fileActivity" | "lead" | "company" | "contact" | "deal" | "activity" | "dailyReport" | "followUp" | "fieldVisit" | "checkIn" | "geoFence" | "visitReport" | "visitReportAttachment" | "meeting" | "meetingParticipant" | "meetingRecording" | "meetingTranscript" | "meetingSummary" | "aIConversation" | "aIMessage" | "aIInsight" | "aIReport" | "notification" | "auditLog" | "integration"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1724,6 +1740,80 @@ export namespace Prisma {
           count: {
             args: Prisma.SessionCountArgs<ExtArgs>
             result: $Utils.Optional<SessionCountAggregateOutputType> | number
+          }
+        }
+      }
+      UserLiveLocation: {
+        payload: Prisma.$UserLiveLocationPayload<ExtArgs>
+        fields: Prisma.UserLiveLocationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserLiveLocationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLiveLocationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserLiveLocationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLiveLocationPayload>
+          }
+          findFirst: {
+            args: Prisma.UserLiveLocationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLiveLocationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserLiveLocationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLiveLocationPayload>
+          }
+          findMany: {
+            args: Prisma.UserLiveLocationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLiveLocationPayload>[]
+          }
+          create: {
+            args: Prisma.UserLiveLocationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLiveLocationPayload>
+          }
+          createMany: {
+            args: Prisma.UserLiveLocationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UserLiveLocationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLiveLocationPayload>[]
+          }
+          delete: {
+            args: Prisma.UserLiveLocationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLiveLocationPayload>
+          }
+          update: {
+            args: Prisma.UserLiveLocationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLiveLocationPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserLiveLocationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserLiveLocationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UserLiveLocationUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLiveLocationPayload>[]
+          }
+          upsert: {
+            args: Prisma.UserLiveLocationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserLiveLocationPayload>
+          }
+          aggregate: {
+            args: Prisma.UserLiveLocationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserLiveLocation>
+          }
+          groupBy: {
+            args: Prisma.UserLiveLocationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserLiveLocationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserLiveLocationCountArgs<ExtArgs>
+            result: $Utils.Optional<UserLiveLocationCountAggregateOutputType> | number
           }
         }
       }
@@ -4813,6 +4903,7 @@ export namespace Prisma {
     organization?: OrganizationOmit
     user?: UserOmit
     session?: SessionOmit
+    userLiveLocation?: UserLiveLocationOmit
     account?: AccountOmit
     verification?: VerificationOmit
     role?: RoleOmit
@@ -4955,6 +5046,7 @@ export namespace Prisma {
     savedViews: number
     teams: number
     users: number
+    liveLocations: number
     dailyReports: number
   }
 
@@ -4981,6 +5073,7 @@ export namespace Prisma {
     savedViews?: boolean | OrganizationCountOutputTypeCountSavedViewsArgs
     teams?: boolean | OrganizationCountOutputTypeCountTeamsArgs
     users?: boolean | OrganizationCountOutputTypeCountUsersArgs
+    liveLocations?: boolean | OrganizationCountOutputTypeCountLiveLocationsArgs
     dailyReports?: boolean | OrganizationCountOutputTypeCountDailyReportsArgs
   }
 
@@ -5147,6 +5240,13 @@ export namespace Prisma {
    */
   export type OrganizationCountOutputTypeCountUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserWhereInput
+  }
+
+  /**
+   * OrganizationCountOutputType without action
+   */
+  export type OrganizationCountOutputTypeCountLiveLocationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserLiveLocationWhereInput
   }
 
   /**
@@ -6428,6 +6528,7 @@ export namespace Prisma {
     savedViews?: boolean | Organization$savedViewsArgs<ExtArgs>
     teams?: boolean | Organization$teamsArgs<ExtArgs>
     users?: boolean | Organization$usersArgs<ExtArgs>
+    liveLocations?: boolean | Organization$liveLocationsArgs<ExtArgs>
     dailyReports?: boolean | Organization$dailyReportsArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["organization"]>
@@ -6510,6 +6611,7 @@ export namespace Prisma {
     savedViews?: boolean | Organization$savedViewsArgs<ExtArgs>
     teams?: boolean | Organization$teamsArgs<ExtArgs>
     users?: boolean | Organization$usersArgs<ExtArgs>
+    liveLocations?: boolean | Organization$liveLocationsArgs<ExtArgs>
     dailyReports?: boolean | Organization$dailyReportsArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -6541,6 +6643,7 @@ export namespace Prisma {
       savedViews: Prisma.$SavedViewPayload<ExtArgs>[]
       teams: Prisma.$TeamPayload<ExtArgs>[]
       users: Prisma.$UserPayload<ExtArgs>[]
+      liveLocations: Prisma.$UserLiveLocationPayload<ExtArgs>[]
       dailyReports: Prisma.$DailyReportPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -6975,6 +7078,7 @@ export namespace Prisma {
     savedViews<T extends Organization$savedViewsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$savedViewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SavedViewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     teams<T extends Organization$teamsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$teamsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TeamPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     users<T extends Organization$usersArgs<ExtArgs> = {}>(args?: Subset<T, Organization$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    liveLocations<T extends Organization$liveLocationsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$liveLocationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dailyReports<T extends Organization$dailyReportsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$dailyReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -7941,6 +8045,30 @@ export namespace Prisma {
   }
 
   /**
+   * Organization.liveLocations
+   */
+  export type Organization$liveLocationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationInclude<ExtArgs> | null
+    where?: UserLiveLocationWhereInput
+    orderBy?: UserLiveLocationOrderByWithRelationInput | UserLiveLocationOrderByWithRelationInput[]
+    cursor?: UserLiveLocationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserLiveLocationScalarFieldEnum | UserLiveLocationScalarFieldEnum[]
+  }
+
+  /**
    * Organization.dailyReports
    */
   export type Organization$dailyReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8248,6 +8376,7 @@ export namespace Prisma {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     activities?: boolean | User$activitiesArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
+    liveLocation?: boolean | User$liveLocationArgs<ExtArgs>
     checkIns?: boolean | User$checkInsArgs<ExtArgs>
     ownedCompanies?: boolean | User$ownedCompaniesArgs<ExtArgs>
     ownedContacts?: boolean | User$ownedContactsArgs<ExtArgs>
@@ -8357,6 +8486,7 @@ export namespace Prisma {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     activities?: boolean | User$activitiesArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
+    liveLocation?: boolean | User$liveLocationArgs<ExtArgs>
     checkIns?: boolean | User$checkInsArgs<ExtArgs>
     ownedCompanies?: boolean | User$ownedCompaniesArgs<ExtArgs>
     ownedContacts?: boolean | User$ownedContactsArgs<ExtArgs>
@@ -8411,6 +8541,7 @@ export namespace Prisma {
       accounts: Prisma.$AccountPayload<ExtArgs>[]
       activities: Prisma.$ActivityPayload<ExtArgs>[]
       auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+      liveLocation: Prisma.$UserLiveLocationPayload<ExtArgs> | null
       checkIns: Prisma.$CheckInPayload<ExtArgs>[]
       ownedCompanies: Prisma.$CompanyPayload<ExtArgs>[]
       ownedContacts: Prisma.$ContactPayload<ExtArgs>[]
@@ -8860,6 +8991,7 @@ export namespace Prisma {
     accounts<T extends User$accountsArgs<ExtArgs> = {}>(args?: Subset<T, User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     activities<T extends User$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     auditLogs<T extends User$auditLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    liveLocation<T extends User$liveLocationArgs<ExtArgs> = {}>(args?: Subset<T, User$liveLocationArgs<ExtArgs>>): Prisma__UserLiveLocationClient<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     checkIns<T extends User$checkInsArgs<ExtArgs> = {}>(args?: Subset<T, User$checkInsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CheckInPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ownedCompanies<T extends User$ownedCompaniesArgs<ExtArgs> = {}>(args?: Subset<T, User$ownedCompaniesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CompanyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ownedContacts<T extends User$ownedContactsArgs<ExtArgs> = {}>(args?: Subset<T, User$ownedContactsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -9455,6 +9587,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AuditLogScalarFieldEnum | AuditLogScalarFieldEnum[]
+  }
+
+  /**
+   * User.liveLocation
+   */
+  export type User$liveLocationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationInclude<ExtArgs> | null
+    where?: UserLiveLocationWhereInput
   }
 
   /**
@@ -11306,6 +11457,1205 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: SessionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model UserLiveLocation
+   */
+
+  export type AggregateUserLiveLocation = {
+    _count: UserLiveLocationCountAggregateOutputType | null
+    _avg: UserLiveLocationAvgAggregateOutputType | null
+    _sum: UserLiveLocationSumAggregateOutputType | null
+    _min: UserLiveLocationMinAggregateOutputType | null
+    _max: UserLiveLocationMaxAggregateOutputType | null
+  }
+
+  export type UserLiveLocationAvgAggregateOutputType = {
+    latitude: Decimal | null
+    longitude: Decimal | null
+    accuracy: Decimal | null
+    heading: Decimal | null
+    speed: Decimal | null
+  }
+
+  export type UserLiveLocationSumAggregateOutputType = {
+    latitude: Decimal | null
+    longitude: Decimal | null
+    accuracy: Decimal | null
+    heading: Decimal | null
+    speed: Decimal | null
+  }
+
+  export type UserLiveLocationMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    organizationId: string | null
+    latitude: Decimal | null
+    longitude: Decimal | null
+    accuracy: Decimal | null
+    heading: Decimal | null
+    speed: Decimal | null
+    isTracking: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserLiveLocationMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    organizationId: string | null
+    latitude: Decimal | null
+    longitude: Decimal | null
+    accuracy: Decimal | null
+    heading: Decimal | null
+    speed: Decimal | null
+    isTracking: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserLiveLocationCountAggregateOutputType = {
+    id: number
+    userId: number
+    organizationId: number
+    latitude: number
+    longitude: number
+    accuracy: number
+    heading: number
+    speed: number
+    isTracking: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UserLiveLocationAvgAggregateInputType = {
+    latitude?: true
+    longitude?: true
+    accuracy?: true
+    heading?: true
+    speed?: true
+  }
+
+  export type UserLiveLocationSumAggregateInputType = {
+    latitude?: true
+    longitude?: true
+    accuracy?: true
+    heading?: true
+    speed?: true
+  }
+
+  export type UserLiveLocationMinAggregateInputType = {
+    id?: true
+    userId?: true
+    organizationId?: true
+    latitude?: true
+    longitude?: true
+    accuracy?: true
+    heading?: true
+    speed?: true
+    isTracking?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserLiveLocationMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    organizationId?: true
+    latitude?: true
+    longitude?: true
+    accuracy?: true
+    heading?: true
+    speed?: true
+    isTracking?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserLiveLocationCountAggregateInputType = {
+    id?: true
+    userId?: true
+    organizationId?: true
+    latitude?: true
+    longitude?: true
+    accuracy?: true
+    heading?: true
+    speed?: true
+    isTracking?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UserLiveLocationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserLiveLocation to aggregate.
+     */
+    where?: UserLiveLocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserLiveLocations to fetch.
+     */
+    orderBy?: UserLiveLocationOrderByWithRelationInput | UserLiveLocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserLiveLocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserLiveLocations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserLiveLocations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserLiveLocations
+    **/
+    _count?: true | UserLiveLocationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: UserLiveLocationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserLiveLocationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserLiveLocationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserLiveLocationMaxAggregateInputType
+  }
+
+  export type GetUserLiveLocationAggregateType<T extends UserLiveLocationAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserLiveLocation]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserLiveLocation[P]>
+      : GetScalarType<T[P], AggregateUserLiveLocation[P]>
+  }
+
+
+
+
+  export type UserLiveLocationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserLiveLocationWhereInput
+    orderBy?: UserLiveLocationOrderByWithAggregationInput | UserLiveLocationOrderByWithAggregationInput[]
+    by: UserLiveLocationScalarFieldEnum[] | UserLiveLocationScalarFieldEnum
+    having?: UserLiveLocationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserLiveLocationCountAggregateInputType | true
+    _avg?: UserLiveLocationAvgAggregateInputType
+    _sum?: UserLiveLocationSumAggregateInputType
+    _min?: UserLiveLocationMinAggregateInputType
+    _max?: UserLiveLocationMaxAggregateInputType
+  }
+
+  export type UserLiveLocationGroupByOutputType = {
+    id: string
+    userId: string
+    organizationId: string
+    latitude: Decimal
+    longitude: Decimal
+    accuracy: Decimal | null
+    heading: Decimal | null
+    speed: Decimal | null
+    isTracking: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: UserLiveLocationCountAggregateOutputType | null
+    _avg: UserLiveLocationAvgAggregateOutputType | null
+    _sum: UserLiveLocationSumAggregateOutputType | null
+    _min: UserLiveLocationMinAggregateOutputType | null
+    _max: UserLiveLocationMaxAggregateOutputType | null
+  }
+
+  type GetUserLiveLocationGroupByPayload<T extends UserLiveLocationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserLiveLocationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserLiveLocationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserLiveLocationGroupByOutputType[P]>
+            : GetScalarType<T[P], UserLiveLocationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserLiveLocationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    latitude?: boolean
+    longitude?: boolean
+    accuracy?: boolean
+    heading?: boolean
+    speed?: boolean
+    isTracking?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userLiveLocation"]>
+
+  export type UserLiveLocationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    latitude?: boolean
+    longitude?: boolean
+    accuracy?: boolean
+    heading?: boolean
+    speed?: boolean
+    isTracking?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userLiveLocation"]>
+
+  export type UserLiveLocationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    latitude?: boolean
+    longitude?: boolean
+    accuracy?: boolean
+    heading?: boolean
+    speed?: boolean
+    isTracking?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userLiveLocation"]>
+
+  export type UserLiveLocationSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    organizationId?: boolean
+    latitude?: boolean
+    longitude?: boolean
+    accuracy?: boolean
+    heading?: boolean
+    speed?: boolean
+    isTracking?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UserLiveLocationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "organizationId" | "latitude" | "longitude" | "accuracy" | "heading" | "speed" | "isTracking" | "createdAt" | "updatedAt", ExtArgs["result"]["userLiveLocation"]>
+  export type UserLiveLocationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type UserLiveLocationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type UserLiveLocationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $UserLiveLocationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserLiveLocation"
+    objects: {
+      organization: Prisma.$OrganizationPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      organizationId: string
+      latitude: Prisma.Decimal
+      longitude: Prisma.Decimal
+      accuracy: Prisma.Decimal | null
+      heading: Prisma.Decimal | null
+      speed: Prisma.Decimal | null
+      isTracking: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["userLiveLocation"]>
+    composites: {}
+  }
+
+  type UserLiveLocationGetPayload<S extends boolean | null | undefined | UserLiveLocationDefaultArgs> = $Result.GetResult<Prisma.$UserLiveLocationPayload, S>
+
+  type UserLiveLocationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserLiveLocationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserLiveLocationCountAggregateInputType | true
+    }
+
+  export interface UserLiveLocationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserLiveLocation'], meta: { name: 'UserLiveLocation' } }
+    /**
+     * Find zero or one UserLiveLocation that matches the filter.
+     * @param {UserLiveLocationFindUniqueArgs} args - Arguments to find a UserLiveLocation
+     * @example
+     * // Get one UserLiveLocation
+     * const userLiveLocation = await prisma.userLiveLocation.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserLiveLocationFindUniqueArgs>(args: SelectSubset<T, UserLiveLocationFindUniqueArgs<ExtArgs>>): Prisma__UserLiveLocationClient<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserLiveLocation that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserLiveLocationFindUniqueOrThrowArgs} args - Arguments to find a UserLiveLocation
+     * @example
+     * // Get one UserLiveLocation
+     * const userLiveLocation = await prisma.userLiveLocation.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserLiveLocationFindUniqueOrThrowArgs>(args: SelectSubset<T, UserLiveLocationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserLiveLocationClient<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserLiveLocation that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLiveLocationFindFirstArgs} args - Arguments to find a UserLiveLocation
+     * @example
+     * // Get one UserLiveLocation
+     * const userLiveLocation = await prisma.userLiveLocation.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserLiveLocationFindFirstArgs>(args?: SelectSubset<T, UserLiveLocationFindFirstArgs<ExtArgs>>): Prisma__UserLiveLocationClient<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserLiveLocation that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLiveLocationFindFirstOrThrowArgs} args - Arguments to find a UserLiveLocation
+     * @example
+     * // Get one UserLiveLocation
+     * const userLiveLocation = await prisma.userLiveLocation.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserLiveLocationFindFirstOrThrowArgs>(args?: SelectSubset<T, UserLiveLocationFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserLiveLocationClient<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserLiveLocations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLiveLocationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserLiveLocations
+     * const userLiveLocations = await prisma.userLiveLocation.findMany()
+     * 
+     * // Get first 10 UserLiveLocations
+     * const userLiveLocations = await prisma.userLiveLocation.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userLiveLocationWithIdOnly = await prisma.userLiveLocation.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserLiveLocationFindManyArgs>(args?: SelectSubset<T, UserLiveLocationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserLiveLocation.
+     * @param {UserLiveLocationCreateArgs} args - Arguments to create a UserLiveLocation.
+     * @example
+     * // Create one UserLiveLocation
+     * const UserLiveLocation = await prisma.userLiveLocation.create({
+     *   data: {
+     *     // ... data to create a UserLiveLocation
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserLiveLocationCreateArgs>(args: SelectSubset<T, UserLiveLocationCreateArgs<ExtArgs>>): Prisma__UserLiveLocationClient<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserLiveLocations.
+     * @param {UserLiveLocationCreateManyArgs} args - Arguments to create many UserLiveLocations.
+     * @example
+     * // Create many UserLiveLocations
+     * const userLiveLocation = await prisma.userLiveLocation.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserLiveLocationCreateManyArgs>(args?: SelectSubset<T, UserLiveLocationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UserLiveLocations and returns the data saved in the database.
+     * @param {UserLiveLocationCreateManyAndReturnArgs} args - Arguments to create many UserLiveLocations.
+     * @example
+     * // Create many UserLiveLocations
+     * const userLiveLocation = await prisma.userLiveLocation.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UserLiveLocations and only return the `id`
+     * const userLiveLocationWithIdOnly = await prisma.userLiveLocation.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UserLiveLocationCreateManyAndReturnArgs>(args?: SelectSubset<T, UserLiveLocationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UserLiveLocation.
+     * @param {UserLiveLocationDeleteArgs} args - Arguments to delete one UserLiveLocation.
+     * @example
+     * // Delete one UserLiveLocation
+     * const UserLiveLocation = await prisma.userLiveLocation.delete({
+     *   where: {
+     *     // ... filter to delete one UserLiveLocation
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserLiveLocationDeleteArgs>(args: SelectSubset<T, UserLiveLocationDeleteArgs<ExtArgs>>): Prisma__UserLiveLocationClient<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserLiveLocation.
+     * @param {UserLiveLocationUpdateArgs} args - Arguments to update one UserLiveLocation.
+     * @example
+     * // Update one UserLiveLocation
+     * const userLiveLocation = await prisma.userLiveLocation.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserLiveLocationUpdateArgs>(args: SelectSubset<T, UserLiveLocationUpdateArgs<ExtArgs>>): Prisma__UserLiveLocationClient<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserLiveLocations.
+     * @param {UserLiveLocationDeleteManyArgs} args - Arguments to filter UserLiveLocations to delete.
+     * @example
+     * // Delete a few UserLiveLocations
+     * const { count } = await prisma.userLiveLocation.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserLiveLocationDeleteManyArgs>(args?: SelectSubset<T, UserLiveLocationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserLiveLocations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLiveLocationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserLiveLocations
+     * const userLiveLocation = await prisma.userLiveLocation.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserLiveLocationUpdateManyArgs>(args: SelectSubset<T, UserLiveLocationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserLiveLocations and returns the data updated in the database.
+     * @param {UserLiveLocationUpdateManyAndReturnArgs} args - Arguments to update many UserLiveLocations.
+     * @example
+     * // Update many UserLiveLocations
+     * const userLiveLocation = await prisma.userLiveLocation.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UserLiveLocations and only return the `id`
+     * const userLiveLocationWithIdOnly = await prisma.userLiveLocation.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UserLiveLocationUpdateManyAndReturnArgs>(args: SelectSubset<T, UserLiveLocationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UserLiveLocation.
+     * @param {UserLiveLocationUpsertArgs} args - Arguments to update or create a UserLiveLocation.
+     * @example
+     * // Update or create a UserLiveLocation
+     * const userLiveLocation = await prisma.userLiveLocation.upsert({
+     *   create: {
+     *     // ... data to create a UserLiveLocation
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserLiveLocation we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserLiveLocationUpsertArgs>(args: SelectSubset<T, UserLiveLocationUpsertArgs<ExtArgs>>): Prisma__UserLiveLocationClient<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UserLiveLocations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLiveLocationCountArgs} args - Arguments to filter UserLiveLocations to count.
+     * @example
+     * // Count the number of UserLiveLocations
+     * const count = await prisma.userLiveLocation.count({
+     *   where: {
+     *     // ... the filter for the UserLiveLocations we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserLiveLocationCountArgs>(
+      args?: Subset<T, UserLiveLocationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserLiveLocationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserLiveLocation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLiveLocationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserLiveLocationAggregateArgs>(args: Subset<T, UserLiveLocationAggregateArgs>): Prisma.PrismaPromise<GetUserLiveLocationAggregateType<T>>
+
+    /**
+     * Group by UserLiveLocation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserLiveLocationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserLiveLocationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserLiveLocationGroupByArgs['orderBy'] }
+        : { orderBy?: UserLiveLocationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserLiveLocationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserLiveLocationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserLiveLocation model
+   */
+  readonly fields: UserLiveLocationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserLiveLocation.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserLiveLocationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    organization<T extends OrganizationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizationDefaultArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserLiveLocation model
+   */
+  interface UserLiveLocationFieldRefs {
+    readonly id: FieldRef<"UserLiveLocation", 'String'>
+    readonly userId: FieldRef<"UserLiveLocation", 'String'>
+    readonly organizationId: FieldRef<"UserLiveLocation", 'String'>
+    readonly latitude: FieldRef<"UserLiveLocation", 'Decimal'>
+    readonly longitude: FieldRef<"UserLiveLocation", 'Decimal'>
+    readonly accuracy: FieldRef<"UserLiveLocation", 'Decimal'>
+    readonly heading: FieldRef<"UserLiveLocation", 'Decimal'>
+    readonly speed: FieldRef<"UserLiveLocation", 'Decimal'>
+    readonly isTracking: FieldRef<"UserLiveLocation", 'Boolean'>
+    readonly createdAt: FieldRef<"UserLiveLocation", 'DateTime'>
+    readonly updatedAt: FieldRef<"UserLiveLocation", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserLiveLocation findUnique
+   */
+  export type UserLiveLocationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationInclude<ExtArgs> | null
+    /**
+     * Filter, which UserLiveLocation to fetch.
+     */
+    where: UserLiveLocationWhereUniqueInput
+  }
+
+  /**
+   * UserLiveLocation findUniqueOrThrow
+   */
+  export type UserLiveLocationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationInclude<ExtArgs> | null
+    /**
+     * Filter, which UserLiveLocation to fetch.
+     */
+    where: UserLiveLocationWhereUniqueInput
+  }
+
+  /**
+   * UserLiveLocation findFirst
+   */
+  export type UserLiveLocationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationInclude<ExtArgs> | null
+    /**
+     * Filter, which UserLiveLocation to fetch.
+     */
+    where?: UserLiveLocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserLiveLocations to fetch.
+     */
+    orderBy?: UserLiveLocationOrderByWithRelationInput | UserLiveLocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserLiveLocations.
+     */
+    cursor?: UserLiveLocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserLiveLocations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserLiveLocations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserLiveLocations.
+     */
+    distinct?: UserLiveLocationScalarFieldEnum | UserLiveLocationScalarFieldEnum[]
+  }
+
+  /**
+   * UserLiveLocation findFirstOrThrow
+   */
+  export type UserLiveLocationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationInclude<ExtArgs> | null
+    /**
+     * Filter, which UserLiveLocation to fetch.
+     */
+    where?: UserLiveLocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserLiveLocations to fetch.
+     */
+    orderBy?: UserLiveLocationOrderByWithRelationInput | UserLiveLocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserLiveLocations.
+     */
+    cursor?: UserLiveLocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserLiveLocations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserLiveLocations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserLiveLocations.
+     */
+    distinct?: UserLiveLocationScalarFieldEnum | UserLiveLocationScalarFieldEnum[]
+  }
+
+  /**
+   * UserLiveLocation findMany
+   */
+  export type UserLiveLocationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationInclude<ExtArgs> | null
+    /**
+     * Filter, which UserLiveLocations to fetch.
+     */
+    where?: UserLiveLocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserLiveLocations to fetch.
+     */
+    orderBy?: UserLiveLocationOrderByWithRelationInput | UserLiveLocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserLiveLocations.
+     */
+    cursor?: UserLiveLocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserLiveLocations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserLiveLocations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserLiveLocations.
+     */
+    distinct?: UserLiveLocationScalarFieldEnum | UserLiveLocationScalarFieldEnum[]
+  }
+
+  /**
+   * UserLiveLocation create
+   */
+  export type UserLiveLocationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UserLiveLocation.
+     */
+    data: XOR<UserLiveLocationCreateInput, UserLiveLocationUncheckedCreateInput>
+  }
+
+  /**
+   * UserLiveLocation createMany
+   */
+  export type UserLiveLocationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserLiveLocations.
+     */
+    data: UserLiveLocationCreateManyInput | UserLiveLocationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserLiveLocation createManyAndReturn
+   */
+  export type UserLiveLocationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * The data used to create many UserLiveLocations.
+     */
+    data: UserLiveLocationCreateManyInput | UserLiveLocationCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserLiveLocation update
+   */
+  export type UserLiveLocationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UserLiveLocation.
+     */
+    data: XOR<UserLiveLocationUpdateInput, UserLiveLocationUncheckedUpdateInput>
+    /**
+     * Choose, which UserLiveLocation to update.
+     */
+    where: UserLiveLocationWhereUniqueInput
+  }
+
+  /**
+   * UserLiveLocation updateMany
+   */
+  export type UserLiveLocationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserLiveLocations.
+     */
+    data: XOR<UserLiveLocationUpdateManyMutationInput, UserLiveLocationUncheckedUpdateManyInput>
+    /**
+     * Filter which UserLiveLocations to update
+     */
+    where?: UserLiveLocationWhereInput
+    /**
+     * Limit how many UserLiveLocations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserLiveLocation updateManyAndReturn
+   */
+  export type UserLiveLocationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * The data used to update UserLiveLocations.
+     */
+    data: XOR<UserLiveLocationUpdateManyMutationInput, UserLiveLocationUncheckedUpdateManyInput>
+    /**
+     * Filter which UserLiveLocations to update
+     */
+    where?: UserLiveLocationWhereInput
+    /**
+     * Limit how many UserLiveLocations to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserLiveLocation upsert
+   */
+  export type UserLiveLocationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UserLiveLocation to update in case it exists.
+     */
+    where: UserLiveLocationWhereUniqueInput
+    /**
+     * In case the UserLiveLocation found by the `where` argument doesn't exist, create a new UserLiveLocation with this data.
+     */
+    create: XOR<UserLiveLocationCreateInput, UserLiveLocationUncheckedCreateInput>
+    /**
+     * In case the UserLiveLocation was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserLiveLocationUpdateInput, UserLiveLocationUncheckedUpdateInput>
+  }
+
+  /**
+   * UserLiveLocation delete
+   */
+  export type UserLiveLocationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationInclude<ExtArgs> | null
+    /**
+     * Filter which UserLiveLocation to delete.
+     */
+    where: UserLiveLocationWhereUniqueInput
+  }
+
+  /**
+   * UserLiveLocation deleteMany
+   */
+  export type UserLiveLocationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserLiveLocations to delete
+     */
+    where?: UserLiveLocationWhereInput
+    /**
+     * Limit how many UserLiveLocations to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserLiveLocation without action
+   */
+  export type UserLiveLocationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserLiveLocation
+     */
+    select?: UserLiveLocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserLiveLocation
+     */
+    omit?: UserLiveLocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserLiveLocationInclude<ExtArgs> | null
   }
 
 
@@ -59020,6 +60370,23 @@ export namespace Prisma {
   export type SessionScalarFieldEnum = (typeof SessionScalarFieldEnum)[keyof typeof SessionScalarFieldEnum]
 
 
+  export const UserLiveLocationScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    organizationId: 'organizationId',
+    latitude: 'latitude',
+    longitude: 'longitude',
+    accuracy: 'accuracy',
+    heading: 'heading',
+    speed: 'speed',
+    isTracking: 'isTracking',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UserLiveLocationScalarFieldEnum = (typeof UserLiveLocationScalarFieldEnum)[keyof typeof UserLiveLocationScalarFieldEnum]
+
+
   export const AccountScalarFieldEnum: {
     id: 'id',
     accountId: 'accountId',
@@ -59769,6 +61136,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Decimal'
+   */
+  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+  /**
+   * Reference to a field of type 'Decimal[]'
+   */
+  export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+  /**
    * Reference to a field of type 'RoleType'
    */
   export type EnumRoleTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RoleType'>
@@ -59849,20 +61230,6 @@ export namespace Prisma {
    * Reference to a field of type 'LeadStatus[]'
    */
   export type ListEnumLeadStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeadStatus[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Decimal'
-   */
-  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
-    
-
-
-  /**
-   * Reference to a field of type 'Decimal[]'
-   */
-  export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
     
 
 
@@ -60036,6 +61403,7 @@ export namespace Prisma {
     savedViews?: SavedViewListRelationFilter
     teams?: TeamListRelationFilter
     users?: UserListRelationFilter
+    liveLocations?: UserLiveLocationListRelationFilter
     dailyReports?: DailyReportListRelationFilter
   }
 
@@ -60077,6 +61445,7 @@ export namespace Prisma {
     savedViews?: SavedViewOrderByRelationAggregateInput
     teams?: TeamOrderByRelationAggregateInput
     users?: UserOrderByRelationAggregateInput
+    liveLocations?: UserLiveLocationOrderByRelationAggregateInput
     dailyReports?: DailyReportOrderByRelationAggregateInput
   }
 
@@ -60121,6 +61490,7 @@ export namespace Prisma {
     savedViews?: SavedViewListRelationFilter
     teams?: TeamListRelationFilter
     users?: UserListRelationFilter
+    liveLocations?: UserLiveLocationListRelationFilter
     dailyReports?: DailyReportListRelationFilter
   }, "id" | "slug">
 
@@ -60192,6 +61562,7 @@ export namespace Prisma {
     accounts?: AccountListRelationFilter
     activities?: ActivityListRelationFilter
     auditLogs?: AuditLogListRelationFilter
+    liveLocation?: XOR<UserLiveLocationNullableScalarRelationFilter, UserLiveLocationWhereInput> | null
     checkIns?: CheckInListRelationFilter
     ownedCompanies?: CompanyListRelationFilter
     ownedContacts?: ContactListRelationFilter
@@ -60248,6 +61619,7 @@ export namespace Prisma {
     accounts?: AccountOrderByRelationAggregateInput
     activities?: ActivityOrderByRelationAggregateInput
     auditLogs?: AuditLogOrderByRelationAggregateInput
+    liveLocation?: UserLiveLocationOrderByWithRelationInput
     checkIns?: CheckInOrderByRelationAggregateInput
     ownedCompanies?: CompanyOrderByRelationAggregateInput
     ownedContacts?: ContactOrderByRelationAggregateInput
@@ -60307,6 +61679,7 @@ export namespace Prisma {
     accounts?: AccountListRelationFilter
     activities?: ActivityListRelationFilter
     auditLogs?: AuditLogListRelationFilter
+    liveLocation?: XOR<UserLiveLocationNullableScalarRelationFilter, UserLiveLocationWhereInput> | null
     checkIns?: CheckInListRelationFilter
     ownedCompanies?: CompanyListRelationFilter
     ownedContacts?: ContactListRelationFilter
@@ -60464,6 +61837,96 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Session"> | string
     endedAt?: DateTimeNullableWithAggregatesFilter<"Session"> | Date | string | null
     lastSeenAt?: DateTimeNullableWithAggregatesFilter<"Session"> | Date | string | null
+  }
+
+  export type UserLiveLocationWhereInput = {
+    AND?: UserLiveLocationWhereInput | UserLiveLocationWhereInput[]
+    OR?: UserLiveLocationWhereInput[]
+    NOT?: UserLiveLocationWhereInput | UserLiveLocationWhereInput[]
+    id?: StringFilter<"UserLiveLocation"> | string
+    userId?: StringFilter<"UserLiveLocation"> | string
+    organizationId?: StringFilter<"UserLiveLocation"> | string
+    latitude?: DecimalFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string
+    accuracy?: DecimalNullableFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string | null
+    heading?: DecimalNullableFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string | null
+    speed?: DecimalNullableFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolFilter<"UserLiveLocation"> | boolean
+    createdAt?: DateTimeFilter<"UserLiveLocation"> | Date | string
+    updatedAt?: DateTimeFilter<"UserLiveLocation"> | Date | string
+    organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type UserLiveLocationOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrderInput | SortOrder
+    heading?: SortOrderInput | SortOrder
+    speed?: SortOrderInput | SortOrder
+    isTracking?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    organization?: OrganizationOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type UserLiveLocationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: UserLiveLocationWhereInput | UserLiveLocationWhereInput[]
+    OR?: UserLiveLocationWhereInput[]
+    NOT?: UserLiveLocationWhereInput | UserLiveLocationWhereInput[]
+    organizationId?: StringFilter<"UserLiveLocation"> | string
+    latitude?: DecimalFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string
+    accuracy?: DecimalNullableFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string | null
+    heading?: DecimalNullableFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string | null
+    speed?: DecimalNullableFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolFilter<"UserLiveLocation"> | boolean
+    createdAt?: DateTimeFilter<"UserLiveLocation"> | Date | string
+    updatedAt?: DateTimeFilter<"UserLiveLocation"> | Date | string
+    organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "userId">
+
+  export type UserLiveLocationOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrderInput | SortOrder
+    heading?: SortOrderInput | SortOrder
+    speed?: SortOrderInput | SortOrder
+    isTracking?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UserLiveLocationCountOrderByAggregateInput
+    _avg?: UserLiveLocationAvgOrderByAggregateInput
+    _max?: UserLiveLocationMaxOrderByAggregateInput
+    _min?: UserLiveLocationMinOrderByAggregateInput
+    _sum?: UserLiveLocationSumOrderByAggregateInput
+  }
+
+  export type UserLiveLocationScalarWhereWithAggregatesInput = {
+    AND?: UserLiveLocationScalarWhereWithAggregatesInput | UserLiveLocationScalarWhereWithAggregatesInput[]
+    OR?: UserLiveLocationScalarWhereWithAggregatesInput[]
+    NOT?: UserLiveLocationScalarWhereWithAggregatesInput | UserLiveLocationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UserLiveLocation"> | string
+    userId?: StringWithAggregatesFilter<"UserLiveLocation"> | string
+    organizationId?: StringWithAggregatesFilter<"UserLiveLocation"> | string
+    latitude?: DecimalWithAggregatesFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalWithAggregatesFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string
+    accuracy?: DecimalNullableWithAggregatesFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string | null
+    heading?: DecimalNullableWithAggregatesFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string | null
+    speed?: DecimalNullableWithAggregatesFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolWithAggregatesFilter<"UserLiveLocation"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"UserLiveLocation"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UserLiveLocation"> | Date | string
   }
 
   export type AccountWhereInput = {
@@ -63996,6 +65459,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -64037,6 +65501,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -64078,6 +65543,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -64119,6 +65585,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -64195,6 +65662,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -64251,6 +65719,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -64299,6 +65768,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -64355,6 +65825,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -64528,6 +65999,102 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type UserLiveLocationCreateInput = {
+    id?: string
+    latitude: Decimal | DecimalJsLike | number | string
+    longitude: Decimal | DecimalJsLike | number | string
+    accuracy?: Decimal | DecimalJsLike | number | string | null
+    heading?: Decimal | DecimalJsLike | number | string | null
+    speed?: Decimal | DecimalJsLike | number | string | null
+    isTracking?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    organization: OrganizationCreateNestedOneWithoutLiveLocationsInput
+    user: UserCreateNestedOneWithoutLiveLocationInput
+  }
+
+  export type UserLiveLocationUncheckedCreateInput = {
+    id?: string
+    userId: string
+    organizationId: string
+    latitude: Decimal | DecimalJsLike | number | string
+    longitude: Decimal | DecimalJsLike | number | string
+    accuracy?: Decimal | DecimalJsLike | number | string | null
+    heading?: Decimal | DecimalJsLike | number | string | null
+    speed?: Decimal | DecimalJsLike | number | string | null
+    isTracking?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserLiveLocationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    latitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accuracy?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    heading?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    speed?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneRequiredWithoutLiveLocationsNestedInput
+    user?: UserUpdateOneRequiredWithoutLiveLocationNestedInput
+  }
+
+  export type UserLiveLocationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    latitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accuracy?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    heading?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    speed?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserLiveLocationCreateManyInput = {
+    id?: string
+    userId: string
+    organizationId: string
+    latitude: Decimal | DecimalJsLike | number | string
+    longitude: Decimal | DecimalJsLike | number | string
+    accuracy?: Decimal | DecimalJsLike | number | string | null
+    heading?: Decimal | DecimalJsLike | number | string | null
+    speed?: Decimal | DecimalJsLike | number | string | null
+    isTracking?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserLiveLocationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    latitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accuracy?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    heading?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    speed?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserLiveLocationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    latitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accuracy?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    heading?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    speed?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AccountCreateInput = {
@@ -68395,6 +69962,12 @@ export namespace Prisma {
     none?: UserWhereInput
   }
 
+  export type UserLiveLocationListRelationFilter = {
+    every?: UserLiveLocationWhereInput
+    some?: UserLiveLocationWhereInput
+    none?: UserLiveLocationWhereInput
+  }
+
   export type DailyReportListRelationFilter = {
     every?: DailyReportWhereInput
     some?: DailyReportWhereInput
@@ -68491,6 +70064,10 @@ export namespace Prisma {
   }
 
   export type UserOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type UserLiveLocationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -68653,6 +70230,11 @@ export namespace Prisma {
     every?: AccountWhereInput
     some?: AccountWhereInput
     none?: AccountWhereInput
+  }
+
+  export type UserLiveLocationNullableScalarRelationFilter = {
+    is?: UserLiveLocationWhereInput | null
+    isNot?: UserLiveLocationWhereInput | null
   }
 
   export type CheckInListRelationFilter = {
@@ -68913,6 +70495,118 @@ export namespace Prisma {
     userId?: SortOrder
     endedAt?: SortOrder
     lastSeenAt?: SortOrder
+  }
+
+  export type DecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type DecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type UserLiveLocationCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrder
+    heading?: SortOrder
+    speed?: SortOrder
+    isTracking?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserLiveLocationAvgOrderByAggregateInput = {
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrder
+    heading?: SortOrder
+    speed?: SortOrder
+  }
+
+  export type UserLiveLocationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrder
+    heading?: SortOrder
+    speed?: SortOrder
+    isTracking?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserLiveLocationMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    organizationId?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrder
+    heading?: SortOrder
+    speed?: SortOrder
+    isTracking?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserLiveLocationSumOrderByAggregateInput = {
+    latitude?: SortOrder
+    longitude?: SortOrder
+    accuracy?: SortOrder
+    heading?: SortOrder
+    speed?: SortOrder
+  }
+
+  export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
+  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type AccountProviderIdAccountIdCompoundUniqueInput = {
@@ -69695,17 +71389,6 @@ export namespace Prisma {
     not?: NestedEnumLeadStatusFilter<$PrismaModel> | $Enums.LeadStatus
   }
 
-  export type DecimalNullableFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
-
   export type CompanyNullableScalarRelationFilter = {
     is?: CompanyWhereInput | null
     isNot?: CompanyWhereInput | null
@@ -69794,22 +71477,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumLeadStatusFilter<$PrismaModel>
     _max?: NestedEnumLeadStatusFilter<$PrismaModel>
-  }
-
-  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedDecimalNullableFilter<$PrismaModel>
-    _sum?: NestedDecimalNullableFilter<$PrismaModel>
-    _min?: NestedDecimalNullableFilter<$PrismaModel>
-    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type IntNullableFilter<$PrismaModel = never> = {
@@ -69957,17 +71624,6 @@ export namespace Prisma {
     lastActivityAt?: SortOrder
   }
 
-  export type DecimalFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
-  }
-
   export type EnumDealStageFilter<$PrismaModel = never> = {
     equals?: $Enums.DealStage | EnumDealStageFieldRefInput<$PrismaModel>
     in?: $Enums.DealStage[] | ListEnumDealStageFieldRefInput<$PrismaModel>
@@ -70045,22 +71701,6 @@ export namespace Prisma {
   export type DealSumOrderByAggregateInput = {
     value?: SortOrder
     probability?: SortOrder
-  }
-
-  export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedDecimalFilter<$PrismaModel>
-    _sum?: NestedDecimalFilter<$PrismaModel>
-    _min?: NestedDecimalFilter<$PrismaModel>
-    _max?: NestedDecimalFilter<$PrismaModel>
   }
 
   export type EnumDealStageWithAggregatesFilter<$PrismaModel = never> = {
@@ -71286,6 +72926,13 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
   }
 
+  export type UserLiveLocationCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<UserLiveLocationCreateWithoutOrganizationInput, UserLiveLocationUncheckedCreateWithoutOrganizationInput> | UserLiveLocationCreateWithoutOrganizationInput[] | UserLiveLocationUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: UserLiveLocationCreateOrConnectWithoutOrganizationInput | UserLiveLocationCreateOrConnectWithoutOrganizationInput[]
+    createMany?: UserLiveLocationCreateManyOrganizationInputEnvelope
+    connect?: UserLiveLocationWhereUniqueInput | UserLiveLocationWhereUniqueInput[]
+  }
+
   export type DailyReportCreateNestedManyWithoutOrganizationInput = {
     create?: XOR<DailyReportCreateWithoutOrganizationInput, DailyReportUncheckedCreateWithoutOrganizationInput> | DailyReportCreateWithoutOrganizationInput[] | DailyReportUncheckedCreateWithoutOrganizationInput[]
     connectOrCreate?: DailyReportCreateOrConnectWithoutOrganizationInput | DailyReportCreateOrConnectWithoutOrganizationInput[]
@@ -71445,6 +73092,13 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutOrganizationInput | UserCreateOrConnectWithoutOrganizationInput[]
     createMany?: UserCreateManyOrganizationInputEnvelope
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<UserLiveLocationCreateWithoutOrganizationInput, UserLiveLocationUncheckedCreateWithoutOrganizationInput> | UserLiveLocationCreateWithoutOrganizationInput[] | UserLiveLocationUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: UserLiveLocationCreateOrConnectWithoutOrganizationInput | UserLiveLocationCreateOrConnectWithoutOrganizationInput[]
+    createMany?: UserLiveLocationCreateManyOrganizationInputEnvelope
+    connect?: UserLiveLocationWhereUniqueInput | UserLiveLocationWhereUniqueInput[]
   }
 
   export type DailyReportUncheckedCreateNestedManyWithoutOrganizationInput = {
@@ -71774,6 +73428,20 @@ export namespace Prisma {
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
+  export type UserLiveLocationUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<UserLiveLocationCreateWithoutOrganizationInput, UserLiveLocationUncheckedCreateWithoutOrganizationInput> | UserLiveLocationCreateWithoutOrganizationInput[] | UserLiveLocationUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: UserLiveLocationCreateOrConnectWithoutOrganizationInput | UserLiveLocationCreateOrConnectWithoutOrganizationInput[]
+    upsert?: UserLiveLocationUpsertWithWhereUniqueWithoutOrganizationInput | UserLiveLocationUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: UserLiveLocationCreateManyOrganizationInputEnvelope
+    set?: UserLiveLocationWhereUniqueInput | UserLiveLocationWhereUniqueInput[]
+    disconnect?: UserLiveLocationWhereUniqueInput | UserLiveLocationWhereUniqueInput[]
+    delete?: UserLiveLocationWhereUniqueInput | UserLiveLocationWhereUniqueInput[]
+    connect?: UserLiveLocationWhereUniqueInput | UserLiveLocationWhereUniqueInput[]
+    update?: UserLiveLocationUpdateWithWhereUniqueWithoutOrganizationInput | UserLiveLocationUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: UserLiveLocationUpdateManyWithWhereWithoutOrganizationInput | UserLiveLocationUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: UserLiveLocationScalarWhereInput | UserLiveLocationScalarWhereInput[]
+  }
+
   export type DailyReportUpdateManyWithoutOrganizationNestedInput = {
     create?: XOR<DailyReportCreateWithoutOrganizationInput, DailyReportUncheckedCreateWithoutOrganizationInput> | DailyReportCreateWithoutOrganizationInput[] | DailyReportUncheckedCreateWithoutOrganizationInput[]
     connectOrCreate?: DailyReportCreateOrConnectWithoutOrganizationInput | DailyReportCreateOrConnectWithoutOrganizationInput[]
@@ -72096,6 +73764,20 @@ export namespace Prisma {
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
+  export type UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<UserLiveLocationCreateWithoutOrganizationInput, UserLiveLocationUncheckedCreateWithoutOrganizationInput> | UserLiveLocationCreateWithoutOrganizationInput[] | UserLiveLocationUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: UserLiveLocationCreateOrConnectWithoutOrganizationInput | UserLiveLocationCreateOrConnectWithoutOrganizationInput[]
+    upsert?: UserLiveLocationUpsertWithWhereUniqueWithoutOrganizationInput | UserLiveLocationUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: UserLiveLocationCreateManyOrganizationInputEnvelope
+    set?: UserLiveLocationWhereUniqueInput | UserLiveLocationWhereUniqueInput[]
+    disconnect?: UserLiveLocationWhereUniqueInput | UserLiveLocationWhereUniqueInput[]
+    delete?: UserLiveLocationWhereUniqueInput | UserLiveLocationWhereUniqueInput[]
+    connect?: UserLiveLocationWhereUniqueInput | UserLiveLocationWhereUniqueInput[]
+    update?: UserLiveLocationUpdateWithWhereUniqueWithoutOrganizationInput | UserLiveLocationUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: UserLiveLocationUpdateManyWithWhereWithoutOrganizationInput | UserLiveLocationUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: UserLiveLocationScalarWhereInput | UserLiveLocationScalarWhereInput[]
+  }
+
   export type DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput = {
     create?: XOR<DailyReportCreateWithoutOrganizationInput, DailyReportUncheckedCreateWithoutOrganizationInput> | DailyReportCreateWithoutOrganizationInput[] | DailyReportUncheckedCreateWithoutOrganizationInput[]
     connectOrCreate?: DailyReportCreateOrConnectWithoutOrganizationInput | DailyReportCreateOrConnectWithoutOrganizationInput[]
@@ -72143,6 +73825,12 @@ export namespace Prisma {
     connectOrCreate?: AuditLogCreateOrConnectWithoutActorInput | AuditLogCreateOrConnectWithoutActorInput[]
     createMany?: AuditLogCreateManyActorInputEnvelope
     connect?: AuditLogWhereUniqueInput | AuditLogWhereUniqueInput[]
+  }
+
+  export type UserLiveLocationCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserLiveLocationCreateWithoutUserInput, UserLiveLocationUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserLiveLocationCreateOrConnectWithoutUserInput
+    connect?: UserLiveLocationWhereUniqueInput
   }
 
   export type CheckInCreateNestedManyWithoutUserInput = {
@@ -72391,6 +74079,12 @@ export namespace Prisma {
     connectOrCreate?: AuditLogCreateOrConnectWithoutActorInput | AuditLogCreateOrConnectWithoutActorInput[]
     createMany?: AuditLogCreateManyActorInputEnvelope
     connect?: AuditLogWhereUniqueInput | AuditLogWhereUniqueInput[]
+  }
+
+  export type UserLiveLocationUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserLiveLocationCreateWithoutUserInput, UserLiveLocationUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserLiveLocationCreateOrConnectWithoutUserInput
+    connect?: UserLiveLocationWhereUniqueInput
   }
 
   export type CheckInUncheckedCreateNestedManyWithoutUserInput = {
@@ -72662,6 +74356,16 @@ export namespace Prisma {
     update?: AuditLogUpdateWithWhereUniqueWithoutActorInput | AuditLogUpdateWithWhereUniqueWithoutActorInput[]
     updateMany?: AuditLogUpdateManyWithWhereWithoutActorInput | AuditLogUpdateManyWithWhereWithoutActorInput[]
     deleteMany?: AuditLogScalarWhereInput | AuditLogScalarWhereInput[]
+  }
+
+  export type UserLiveLocationUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserLiveLocationCreateWithoutUserInput, UserLiveLocationUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserLiveLocationCreateOrConnectWithoutUserInput
+    upsert?: UserLiveLocationUpsertWithoutUserInput
+    disconnect?: UserLiveLocationWhereInput | boolean
+    delete?: UserLiveLocationWhereInput | boolean
+    connect?: UserLiveLocationWhereUniqueInput
+    update?: XOR<XOR<UserLiveLocationUpdateToOneWithWhereWithoutUserInput, UserLiveLocationUpdateWithoutUserInput>, UserLiveLocationUncheckedUpdateWithoutUserInput>
   }
 
   export type CheckInUpdateManyWithoutUserNestedInput = {
@@ -73150,6 +74854,16 @@ export namespace Prisma {
     deleteMany?: AuditLogScalarWhereInput | AuditLogScalarWhereInput[]
   }
 
+  export type UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserLiveLocationCreateWithoutUserInput, UserLiveLocationUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserLiveLocationCreateOrConnectWithoutUserInput
+    upsert?: UserLiveLocationUpsertWithoutUserInput
+    disconnect?: UserLiveLocationWhereInput | boolean
+    delete?: UserLiveLocationWhereInput | boolean
+    connect?: UserLiveLocationWhereUniqueInput
+    update?: XOR<XOR<UserLiveLocationUpdateToOneWithWhereWithoutUserInput, UserLiveLocationUpdateWithoutUserInput>, UserLiveLocationUncheckedUpdateWithoutUserInput>
+  }
+
   export type CheckInUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<CheckInCreateWithoutUserInput, CheckInUncheckedCreateWithoutUserInput> | CheckInCreateWithoutUserInput[] | CheckInUncheckedCreateWithoutUserInput[]
     connectOrCreate?: CheckInCreateOrConnectWithoutUserInput | CheckInCreateOrConnectWithoutUserInput[]
@@ -73540,6 +75254,50 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutSessionsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSessionsInput, UserUpdateWithoutSessionsInput>, UserUncheckedUpdateWithoutSessionsInput>
+  }
+
+  export type OrganizationCreateNestedOneWithoutLiveLocationsInput = {
+    create?: XOR<OrganizationCreateWithoutLiveLocationsInput, OrganizationUncheckedCreateWithoutLiveLocationsInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutLiveLocationsInput
+    connect?: OrganizationWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutLiveLocationInput = {
+    create?: XOR<UserCreateWithoutLiveLocationInput, UserUncheckedCreateWithoutLiveLocationInput>
+    connectOrCreate?: UserCreateOrConnectWithoutLiveLocationInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type DecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type NullableDecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string | null
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type OrganizationUpdateOneRequiredWithoutLiveLocationsNestedInput = {
+    create?: XOR<OrganizationCreateWithoutLiveLocationsInput, OrganizationUncheckedCreateWithoutLiveLocationsInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutLiveLocationsInput
+    upsert?: OrganizationUpsertWithoutLiveLocationsInput
+    connect?: OrganizationWhereUniqueInput
+    update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutLiveLocationsInput, OrganizationUpdateWithoutLiveLocationsInput>, OrganizationUncheckedUpdateWithoutLiveLocationsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutLiveLocationNestedInput = {
+    create?: XOR<UserCreateWithoutLiveLocationInput, UserUncheckedCreateWithoutLiveLocationInput>
+    connectOrCreate?: UserCreateOrConnectWithoutLiveLocationInput
+    upsert?: UserUpsertWithoutLiveLocationInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutLiveLocationInput, UserUpdateWithoutLiveLocationInput>, UserUncheckedUpdateWithoutLiveLocationInput>
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {
@@ -74780,14 +76538,6 @@ export namespace Prisma {
     set?: $Enums.LeadStatus
   }
 
-  export type NullableDecimalFieldUpdateOperationsInput = {
-    set?: Decimal | DecimalJsLike | number | string | null
-    increment?: Decimal | DecimalJsLike | number | string
-    decrement?: Decimal | DecimalJsLike | number | string
-    multiply?: Decimal | DecimalJsLike | number | string
-    divide?: Decimal | DecimalJsLike | number | string
-  }
-
   export type ActivityUpdateManyWithoutLeadNestedInput = {
     create?: XOR<ActivityCreateWithoutLeadInput, ActivityUncheckedCreateWithoutLeadInput> | ActivityCreateWithoutLeadInput[] | ActivityUncheckedCreateWithoutLeadInput[]
     connectOrCreate?: ActivityCreateOrConnectWithoutLeadInput | ActivityCreateOrConnectWithoutLeadInput[]
@@ -75618,14 +77368,6 @@ export namespace Prisma {
     connectOrCreate?: MeetingCreateOrConnectWithoutDealInput | MeetingCreateOrConnectWithoutDealInput[]
     createMany?: MeetingCreateManyDealInputEnvelope
     connect?: MeetingWhereUniqueInput | MeetingWhereUniqueInput[]
-  }
-
-  export type DecimalFieldUpdateOperationsInput = {
-    set?: Decimal | DecimalJsLike | number | string
-    increment?: Decimal | DecimalJsLike | number | string
-    decrement?: Decimal | DecimalJsLike | number | string
-    multiply?: Decimal | DecimalJsLike | number | string
-    divide?: Decimal | DecimalJsLike | number | string
   }
 
   export type EnumDealStageFieldUpdateOperationsInput = {
@@ -77089,6 +78831,60 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type NestedDecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
+  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
   export type NestedEnumRoleTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.RoleType | EnumRoleTypeFieldRefInput<$PrismaModel>
     in?: $Enums.RoleType[] | ListEnumRoleTypeFieldRefInput<$PrismaModel>
@@ -77224,17 +79020,6 @@ export namespace Prisma {
     not?: NestedEnumLeadStatusFilter<$PrismaModel> | $Enums.LeadStatus
   }
 
-  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
-
   export type NestedEnumLeadStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.LeadStatus | EnumLeadStatusFieldRefInput<$PrismaModel>
     in?: $Enums.LeadStatus[] | ListEnumLeadStatusFieldRefInput<$PrismaModel>
@@ -77243,22 +79028,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumLeadStatusFilter<$PrismaModel>
     _max?: NestedEnumLeadStatusFilter<$PrismaModel>
-  }
-
-  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedDecimalNullableFilter<$PrismaModel>
-    _sum?: NestedDecimalNullableFilter<$PrismaModel>
-    _min?: NestedDecimalNullableFilter<$PrismaModel>
-    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -77288,38 +79057,11 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
-  export type NestedDecimalFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
-  }
-
   export type NestedEnumDealStageFilter<$PrismaModel = never> = {
     equals?: $Enums.DealStage | EnumDealStageFieldRefInput<$PrismaModel>
     in?: $Enums.DealStage[] | ListEnumDealStageFieldRefInput<$PrismaModel>
     notIn?: $Enums.DealStage[] | ListEnumDealStageFieldRefInput<$PrismaModel>
     not?: NestedEnumDealStageFilter<$PrismaModel> | $Enums.DealStage
-  }
-
-  export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedDecimalFilter<$PrismaModel>
-    _sum?: NestedDecimalFilter<$PrismaModel>
-    _min?: NestedDecimalFilter<$PrismaModel>
-    _max?: NestedDecimalFilter<$PrismaModel>
   }
 
   export type NestedEnumDealStageWithAggregatesFilter<$PrismaModel = never> = {
@@ -78347,6 +80089,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -78401,6 +80144,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -78437,6 +80181,42 @@ export namespace Prisma {
 
   export type UserCreateManyOrganizationInputEnvelope = {
     data: UserCreateManyOrganizationInput | UserCreateManyOrganizationInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserLiveLocationCreateWithoutOrganizationInput = {
+    id?: string
+    latitude: Decimal | DecimalJsLike | number | string
+    longitude: Decimal | DecimalJsLike | number | string
+    accuracy?: Decimal | DecimalJsLike | number | string | null
+    heading?: Decimal | DecimalJsLike | number | string | null
+    speed?: Decimal | DecimalJsLike | number | string | null
+    isTracking?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutLiveLocationInput
+  }
+
+  export type UserLiveLocationUncheckedCreateWithoutOrganizationInput = {
+    id?: string
+    userId: string
+    latitude: Decimal | DecimalJsLike | number | string
+    longitude: Decimal | DecimalJsLike | number | string
+    accuracy?: Decimal | DecimalJsLike | number | string | null
+    heading?: Decimal | DecimalJsLike | number | string | null
+    speed?: Decimal | DecimalJsLike | number | string | null
+    isTracking?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserLiveLocationCreateOrConnectWithoutOrganizationInput = {
+    where: UserLiveLocationWhereUniqueInput
+    create: XOR<UserLiveLocationCreateWithoutOrganizationInput, UserLiveLocationUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type UserLiveLocationCreateManyOrganizationInputEnvelope = {
+    data: UserLiveLocationCreateManyOrganizationInput | UserLiveLocationCreateManyOrganizationInput[]
     skipDuplicates?: boolean
   }
 
@@ -79229,6 +81009,39 @@ export namespace Prisma {
     managerId?: StringNullableFilter<"User"> | string | null
   }
 
+  export type UserLiveLocationUpsertWithWhereUniqueWithoutOrganizationInput = {
+    where: UserLiveLocationWhereUniqueInput
+    update: XOR<UserLiveLocationUpdateWithoutOrganizationInput, UserLiveLocationUncheckedUpdateWithoutOrganizationInput>
+    create: XOR<UserLiveLocationCreateWithoutOrganizationInput, UserLiveLocationUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type UserLiveLocationUpdateWithWhereUniqueWithoutOrganizationInput = {
+    where: UserLiveLocationWhereUniqueInput
+    data: XOR<UserLiveLocationUpdateWithoutOrganizationInput, UserLiveLocationUncheckedUpdateWithoutOrganizationInput>
+  }
+
+  export type UserLiveLocationUpdateManyWithWhereWithoutOrganizationInput = {
+    where: UserLiveLocationScalarWhereInput
+    data: XOR<UserLiveLocationUpdateManyMutationInput, UserLiveLocationUncheckedUpdateManyWithoutOrganizationInput>
+  }
+
+  export type UserLiveLocationScalarWhereInput = {
+    AND?: UserLiveLocationScalarWhereInput | UserLiveLocationScalarWhereInput[]
+    OR?: UserLiveLocationScalarWhereInput[]
+    NOT?: UserLiveLocationScalarWhereInput | UserLiveLocationScalarWhereInput[]
+    id?: StringFilter<"UserLiveLocation"> | string
+    userId?: StringFilter<"UserLiveLocation"> | string
+    organizationId?: StringFilter<"UserLiveLocation"> | string
+    latitude?: DecimalFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string
+    accuracy?: DecimalNullableFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string | null
+    heading?: DecimalNullableFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string | null
+    speed?: DecimalNullableFilter<"UserLiveLocation"> | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolFilter<"UserLiveLocation"> | boolean
+    createdAt?: DateTimeFilter<"UserLiveLocation"> | Date | string
+    updatedAt?: DateTimeFilter<"UserLiveLocation"> | Date | string
+  }
+
   export type DailyReportUpsertWithWhereUniqueWithoutOrganizationInput = {
     where: DailyReportWhereUniqueInput
     update: XOR<DailyReportUpdateWithoutOrganizationInput, DailyReportUncheckedUpdateWithoutOrganizationInput>
@@ -79438,6 +81251,37 @@ export namespace Prisma {
   export type AuditLogCreateManyActorInputEnvelope = {
     data: AuditLogCreateManyActorInput | AuditLogCreateManyActorInput[]
     skipDuplicates?: boolean
+  }
+
+  export type UserLiveLocationCreateWithoutUserInput = {
+    id?: string
+    latitude: Decimal | DecimalJsLike | number | string
+    longitude: Decimal | DecimalJsLike | number | string
+    accuracy?: Decimal | DecimalJsLike | number | string | null
+    heading?: Decimal | DecimalJsLike | number | string | null
+    speed?: Decimal | DecimalJsLike | number | string | null
+    isTracking?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    organization: OrganizationCreateNestedOneWithoutLiveLocationsInput
+  }
+
+  export type UserLiveLocationUncheckedCreateWithoutUserInput = {
+    id?: string
+    organizationId: string
+    latitude: Decimal | DecimalJsLike | number | string
+    longitude: Decimal | DecimalJsLike | number | string
+    accuracy?: Decimal | DecimalJsLike | number | string | null
+    heading?: Decimal | DecimalJsLike | number | string | null
+    speed?: Decimal | DecimalJsLike | number | string | null
+    isTracking?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserLiveLocationCreateOrConnectWithoutUserInput = {
+    where: UserLiveLocationWhereUniqueInput
+    create: XOR<UserLiveLocationCreateWithoutUserInput, UserLiveLocationUncheckedCreateWithoutUserInput>
   }
 
   export type CheckInCreateWithoutUserInput = {
@@ -80402,6 +82246,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -80457,6 +82302,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -80509,6 +82355,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -80563,6 +82410,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -80639,6 +82487,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutOrganizationInput
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -80679,6 +82528,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -80928,6 +82778,43 @@ export namespace Prisma {
   export type AuditLogUpdateManyWithWhereWithoutActorInput = {
     where: AuditLogScalarWhereInput
     data: XOR<AuditLogUpdateManyMutationInput, AuditLogUncheckedUpdateManyWithoutActorInput>
+  }
+
+  export type UserLiveLocationUpsertWithoutUserInput = {
+    update: XOR<UserLiveLocationUpdateWithoutUserInput, UserLiveLocationUncheckedUpdateWithoutUserInput>
+    create: XOR<UserLiveLocationCreateWithoutUserInput, UserLiveLocationUncheckedCreateWithoutUserInput>
+    where?: UserLiveLocationWhereInput
+  }
+
+  export type UserLiveLocationUpdateToOneWithWhereWithoutUserInput = {
+    where?: UserLiveLocationWhereInput
+    data: XOR<UserLiveLocationUpdateWithoutUserInput, UserLiveLocationUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserLiveLocationUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    latitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accuracy?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    heading?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    speed?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneRequiredWithoutLiveLocationsNestedInput
+  }
+
+  export type UserLiveLocationUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    latitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accuracy?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    heading?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    speed?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CheckInUpsertWithWhereUniqueWithoutUserInput = {
@@ -81485,6 +83372,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -81540,6 +83428,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -81632,6 +83521,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -81672,6 +83562,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -81807,6 +83698,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -81862,6 +83754,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -81925,6 +83818,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -81980,6 +83874,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -82008,6 +83903,410 @@ export namespace Prisma {
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
   }
 
+  export type OrganizationCreateWithoutLiveLocationsInput = {
+    id?: string
+    name: string
+    slug: string
+    logo?: string | null
+    website?: string | null
+    industry?: string | null
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    timezone?: string
+    currency?: string
+    dateFormat?: string
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    aiConversations?: AIConversationCreateNestedManyWithoutOrganizationInput
+    aiInsights?: AIInsightCreateNestedManyWithoutOrganizationInput
+    aiReports?: AIReportCreateNestedManyWithoutOrganizationInput
+    activities?: ActivityCreateNestedManyWithoutOrganizationInput
+    auditLogs?: AuditLogCreateNestedManyWithoutOrganizationInput
+    companies?: CompanyCreateNestedManyWithoutOrganizationInput
+    contacts?: ContactCreateNestedManyWithoutOrganizationInput
+    deals?: DealCreateNestedManyWithoutOrganizationInput
+    departments?: DepartmentCreateNestedManyWithoutOrganizationInput
+    visits?: FieldVisitCreateNestedManyWithoutOrganizationInput
+    files?: FileCreateNestedManyWithoutOrganizationInput
+    fileCategories?: FileCategoryCreateNestedManyWithoutOrganizationInput
+    folders?: FolderCreateNestedManyWithoutOrganizationInput
+    followUps?: FollowUpCreateNestedManyWithoutOrganizationInput
+    geoFences?: GeoFenceCreateNestedManyWithoutOrganizationInput
+    integrations?: IntegrationCreateNestedManyWithoutOrganizationInput
+    leads?: LeadCreateNestedManyWithoutOrganizationInput
+    meetings?: MeetingCreateNestedManyWithoutOrganizationInput
+    notifications?: NotificationCreateNestedManyWithoutOrganizationInput
+    savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
+    teams?: TeamCreateNestedManyWithoutOrganizationInput
+    users?: UserCreateNestedManyWithoutOrganizationInput
+    dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationUncheckedCreateWithoutLiveLocationsInput = {
+    id?: string
+    name: string
+    slug: string
+    logo?: string | null
+    website?: string | null
+    industry?: string | null
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    timezone?: string
+    currency?: string
+    dateFormat?: string
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    aiConversations?: AIConversationUncheckedCreateNestedManyWithoutOrganizationInput
+    aiInsights?: AIInsightUncheckedCreateNestedManyWithoutOrganizationInput
+    aiReports?: AIReportUncheckedCreateNestedManyWithoutOrganizationInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutOrganizationInput
+    companies?: CompanyUncheckedCreateNestedManyWithoutOrganizationInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
+    deals?: DealUncheckedCreateNestedManyWithoutOrganizationInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutOrganizationInput
+    visits?: FieldVisitUncheckedCreateNestedManyWithoutOrganizationInput
+    files?: FileUncheckedCreateNestedManyWithoutOrganizationInput
+    fileCategories?: FileCategoryUncheckedCreateNestedManyWithoutOrganizationInput
+    folders?: FolderUncheckedCreateNestedManyWithoutOrganizationInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutOrganizationInput
+    geoFences?: GeoFenceUncheckedCreateNestedManyWithoutOrganizationInput
+    integrations?: IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+    leads?: LeadUncheckedCreateNestedManyWithoutOrganizationInput
+    meetings?: MeetingUncheckedCreateNestedManyWithoutOrganizationInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
+    savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
+    teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
+    users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationCreateOrConnectWithoutLiveLocationsInput = {
+    where: OrganizationWhereUniqueInput
+    create: XOR<OrganizationCreateWithoutLiveLocationsInput, OrganizationUncheckedCreateWithoutLiveLocationsInput>
+  }
+
+  export type UserCreateWithoutLiveLocationInput = {
+    id?: string
+    email: string
+    name?: string | null
+    passwordHash?: string | null
+    image?: string | null
+    employeeId?: string | null
+    phone?: string | null
+    designation?: string | null
+    status?: $Enums.UserStatus
+    emailVerified?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    aiConversations?: AIConversationCreateNestedManyWithoutUserInput
+    generatedAIReports?: AIReportCreateNestedManyWithoutGeneratedByInput
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    activities?: ActivityCreateNestedManyWithoutActorInput
+    auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    checkIns?: CheckInCreateNestedManyWithoutUserInput
+    ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
+    ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
+    ownedDeals?: DealCreateNestedManyWithoutOwnerInput
+    managedDepartments?: DepartmentCreateNestedManyWithoutManagerInput
+    assignedVisits?: FieldVisitCreateNestedManyWithoutAssigneeInput
+    uploadedFiles?: FileCreateNestedManyWithoutUploadedByInput
+    fileActivities?: FileActivityCreateNestedManyWithoutUserInput
+    createdFilePermissions?: FilePermissionCreateNestedManyWithoutCreatedByInput
+    filePermissions?: FilePermissionCreateNestedManyWithoutUserInput
+    fileSharesBy?: FileShareCreateNestedManyWithoutSharedByInput
+    fileSharesWith?: FileShareCreateNestedManyWithoutSharedWithInput
+    uploadedFileVersions?: FileVersionCreateNestedManyWithoutUploadedByInput
+    createdFolders?: FolderCreateNestedManyWithoutCreatedByInput
+    ownedFollowUps?: FollowUpCreateNestedManyWithoutOwnerInput
+    ownedLeads?: LeadCreateNestedManyWithoutOwnerInput
+    createdMeetings?: MeetingCreateNestedManyWithoutCreatedByInput
+    meetings?: MeetingParticipantCreateNestedManyWithoutUserInput
+    editedMeetingSummaries?: MeetingSummaryCreateNestedManyWithoutEditedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    savedViews?: SavedViewCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    managedTeams?: TeamCreateNestedManyWithoutManagerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    manager?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutManagerInput
+    organization: OrganizationCreateNestedOneWithoutUsersInput
+    team?: TeamCreateNestedOneWithoutUsersInput
+    roles?: UserRoleCreateNestedManyWithoutUserInput
+    visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
+    dailyReports?: DailyReportCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutLiveLocationInput = {
+    id?: string
+    email: string
+    name?: string | null
+    passwordHash?: string | null
+    image?: string | null
+    employeeId?: string | null
+    phone?: string | null
+    designation?: string | null
+    status?: $Enums.UserStatus
+    emailVerified?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    organizationId: string
+    departmentId?: string | null
+    teamId?: string | null
+    managerId?: string | null
+    aiConversations?: AIConversationUncheckedCreateNestedManyWithoutUserInput
+    generatedAIReports?: AIReportUncheckedCreateNestedManyWithoutGeneratedByInput
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
+    ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
+    ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
+    ownedDeals?: DealUncheckedCreateNestedManyWithoutOwnerInput
+    managedDepartments?: DepartmentUncheckedCreateNestedManyWithoutManagerInput
+    assignedVisits?: FieldVisitUncheckedCreateNestedManyWithoutAssigneeInput
+    uploadedFiles?: FileUncheckedCreateNestedManyWithoutUploadedByInput
+    fileActivities?: FileActivityUncheckedCreateNestedManyWithoutUserInput
+    createdFilePermissions?: FilePermissionUncheckedCreateNestedManyWithoutCreatedByInput
+    filePermissions?: FilePermissionUncheckedCreateNestedManyWithoutUserInput
+    fileSharesBy?: FileShareUncheckedCreateNestedManyWithoutSharedByInput
+    fileSharesWith?: FileShareUncheckedCreateNestedManyWithoutSharedWithInput
+    uploadedFileVersions?: FileVersionUncheckedCreateNestedManyWithoutUploadedByInput
+    createdFolders?: FolderUncheckedCreateNestedManyWithoutCreatedByInput
+    ownedFollowUps?: FollowUpUncheckedCreateNestedManyWithoutOwnerInput
+    ownedLeads?: LeadUncheckedCreateNestedManyWithoutOwnerInput
+    createdMeetings?: MeetingUncheckedCreateNestedManyWithoutCreatedByInput
+    meetings?: MeetingParticipantUncheckedCreateNestedManyWithoutUserInput
+    editedMeetingSummaries?: MeetingSummaryUncheckedCreateNestedManyWithoutEditedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    savedViews?: SavedViewUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    managedTeams?: TeamUncheckedCreateNestedManyWithoutManagerInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutManagerInput
+    roles?: UserRoleUncheckedCreateNestedManyWithoutUserInput
+    visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
+    dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutLiveLocationInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutLiveLocationInput, UserUncheckedCreateWithoutLiveLocationInput>
+  }
+
+  export type OrganizationUpsertWithoutLiveLocationsInput = {
+    update: XOR<OrganizationUpdateWithoutLiveLocationsInput, OrganizationUncheckedUpdateWithoutLiveLocationsInput>
+    create: XOR<OrganizationCreateWithoutLiveLocationsInput, OrganizationUncheckedCreateWithoutLiveLocationsInput>
+    where?: OrganizationWhereInput
+  }
+
+  export type OrganizationUpdateToOneWithWhereWithoutLiveLocationsInput = {
+    where?: OrganizationWhereInput
+    data: XOR<OrganizationUpdateWithoutLiveLocationsInput, OrganizationUncheckedUpdateWithoutLiveLocationsInput>
+  }
+
+  export type OrganizationUpdateWithoutLiveLocationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    timezone?: StringFieldUpdateOperationsInput | string
+    currency?: StringFieldUpdateOperationsInput | string
+    dateFormat?: StringFieldUpdateOperationsInput | string
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    aiConversations?: AIConversationUpdateManyWithoutOrganizationNestedInput
+    aiInsights?: AIInsightUpdateManyWithoutOrganizationNestedInput
+    aiReports?: AIReportUpdateManyWithoutOrganizationNestedInput
+    activities?: ActivityUpdateManyWithoutOrganizationNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutOrganizationNestedInput
+    companies?: CompanyUpdateManyWithoutOrganizationNestedInput
+    contacts?: ContactUpdateManyWithoutOrganizationNestedInput
+    deals?: DealUpdateManyWithoutOrganizationNestedInput
+    departments?: DepartmentUpdateManyWithoutOrganizationNestedInput
+    visits?: FieldVisitUpdateManyWithoutOrganizationNestedInput
+    files?: FileUpdateManyWithoutOrganizationNestedInput
+    fileCategories?: FileCategoryUpdateManyWithoutOrganizationNestedInput
+    folders?: FolderUpdateManyWithoutOrganizationNestedInput
+    followUps?: FollowUpUpdateManyWithoutOrganizationNestedInput
+    geoFences?: GeoFenceUpdateManyWithoutOrganizationNestedInput
+    integrations?: IntegrationUpdateManyWithoutOrganizationNestedInput
+    leads?: LeadUpdateManyWithoutOrganizationNestedInput
+    meetings?: MeetingUpdateManyWithoutOrganizationNestedInput
+    notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
+    savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
+    teams?: TeamUpdateManyWithoutOrganizationNestedInput
+    users?: UserUpdateManyWithoutOrganizationNestedInput
+    dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type OrganizationUncheckedUpdateWithoutLiveLocationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    timezone?: StringFieldUpdateOperationsInput | string
+    currency?: StringFieldUpdateOperationsInput | string
+    dateFormat?: StringFieldUpdateOperationsInput | string
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    aiConversations?: AIConversationUncheckedUpdateManyWithoutOrganizationNestedInput
+    aiInsights?: AIInsightUncheckedUpdateManyWithoutOrganizationNestedInput
+    aiReports?: AIReportUncheckedUpdateManyWithoutOrganizationNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutOrganizationNestedInput
+    companies?: CompanyUncheckedUpdateManyWithoutOrganizationNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
+    deals?: DealUncheckedUpdateManyWithoutOrganizationNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutOrganizationNestedInput
+    visits?: FieldVisitUncheckedUpdateManyWithoutOrganizationNestedInput
+    files?: FileUncheckedUpdateManyWithoutOrganizationNestedInput
+    fileCategories?: FileCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
+    folders?: FolderUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutOrganizationNestedInput
+    geoFences?: GeoFenceUncheckedUpdateManyWithoutOrganizationNestedInput
+    integrations?: IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutOrganizationNestedInput
+    meetings?: MeetingUncheckedUpdateManyWithoutOrganizationNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
+    savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
+    teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
+    users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type UserUpsertWithoutLiveLocationInput = {
+    update: XOR<UserUpdateWithoutLiveLocationInput, UserUncheckedUpdateWithoutLiveLocationInput>
+    create: XOR<UserCreateWithoutLiveLocationInput, UserUncheckedCreateWithoutLiveLocationInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutLiveLocationInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutLiveLocationInput, UserUncheckedUpdateWithoutLiveLocationInput>
+  }
+
+  export type UserUpdateWithoutLiveLocationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    designation?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    aiConversations?: AIConversationUpdateManyWithoutUserNestedInput
+    generatedAIReports?: AIReportUpdateManyWithoutGeneratedByNestedInput
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    activities?: ActivityUpdateManyWithoutActorNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    checkIns?: CheckInUpdateManyWithoutUserNestedInput
+    ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
+    ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
+    ownedDeals?: DealUpdateManyWithoutOwnerNestedInput
+    managedDepartments?: DepartmentUpdateManyWithoutManagerNestedInput
+    assignedVisits?: FieldVisitUpdateManyWithoutAssigneeNestedInput
+    uploadedFiles?: FileUpdateManyWithoutUploadedByNestedInput
+    fileActivities?: FileActivityUpdateManyWithoutUserNestedInput
+    createdFilePermissions?: FilePermissionUpdateManyWithoutCreatedByNestedInput
+    filePermissions?: FilePermissionUpdateManyWithoutUserNestedInput
+    fileSharesBy?: FileShareUpdateManyWithoutSharedByNestedInput
+    fileSharesWith?: FileShareUpdateManyWithoutSharedWithNestedInput
+    uploadedFileVersions?: FileVersionUpdateManyWithoutUploadedByNestedInput
+    createdFolders?: FolderUpdateManyWithoutCreatedByNestedInput
+    ownedFollowUps?: FollowUpUpdateManyWithoutOwnerNestedInput
+    ownedLeads?: LeadUpdateManyWithoutOwnerNestedInput
+    createdMeetings?: MeetingUpdateManyWithoutCreatedByNestedInput
+    meetings?: MeetingParticipantUpdateManyWithoutUserNestedInput
+    editedMeetingSummaries?: MeetingSummaryUpdateManyWithoutEditedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    savedViews?: SavedViewUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    managedTeams?: TeamUpdateManyWithoutManagerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    manager?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutManagerNestedInput
+    organization?: OrganizationUpdateOneRequiredWithoutUsersNestedInput
+    team?: TeamUpdateOneWithoutUsersNestedInput
+    roles?: UserRoleUpdateManyWithoutUserNestedInput
+    visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
+    dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutLiveLocationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    designation?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    teamId?: NullableStringFieldUpdateOperationsInput | string | null
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConversations?: AIConversationUncheckedUpdateManyWithoutUserNestedInput
+    generatedAIReports?: AIReportUncheckedUpdateManyWithoutGeneratedByNestedInput
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
+    ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
+    ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
+    ownedDeals?: DealUncheckedUpdateManyWithoutOwnerNestedInput
+    managedDepartments?: DepartmentUncheckedUpdateManyWithoutManagerNestedInput
+    assignedVisits?: FieldVisitUncheckedUpdateManyWithoutAssigneeNestedInput
+    uploadedFiles?: FileUncheckedUpdateManyWithoutUploadedByNestedInput
+    fileActivities?: FileActivityUncheckedUpdateManyWithoutUserNestedInput
+    createdFilePermissions?: FilePermissionUncheckedUpdateManyWithoutCreatedByNestedInput
+    filePermissions?: FilePermissionUncheckedUpdateManyWithoutUserNestedInput
+    fileSharesBy?: FileShareUncheckedUpdateManyWithoutSharedByNestedInput
+    fileSharesWith?: FileShareUncheckedUpdateManyWithoutSharedWithNestedInput
+    uploadedFileVersions?: FileVersionUncheckedUpdateManyWithoutUploadedByNestedInput
+    createdFolders?: FolderUncheckedUpdateManyWithoutCreatedByNestedInput
+    ownedFollowUps?: FollowUpUncheckedUpdateManyWithoutOwnerNestedInput
+    ownedLeads?: LeadUncheckedUpdateManyWithoutOwnerNestedInput
+    createdMeetings?: MeetingUncheckedUpdateManyWithoutCreatedByNestedInput
+    meetings?: MeetingParticipantUncheckedUpdateManyWithoutUserNestedInput
+    editedMeetingSummaries?: MeetingSummaryUncheckedUpdateManyWithoutEditedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    savedViews?: SavedViewUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    managedTeams?: TeamUncheckedUpdateManyWithoutManagerNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutManagerNestedInput
+    roles?: UserRoleUncheckedUpdateManyWithoutUserNestedInput
+    visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
+  }
+
   export type UserCreateWithoutAccountsInput = {
     id?: string
     email: string
@@ -82026,6 +84325,7 @@ export namespace Prisma {
     generatedAIReports?: AIReportCreateNestedManyWithoutGeneratedByInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -82081,6 +84381,7 @@ export namespace Prisma {
     generatedAIReports?: AIReportUncheckedCreateNestedManyWithoutGeneratedByInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -82144,6 +84445,7 @@ export namespace Prisma {
     generatedAIReports?: AIReportUpdateManyWithoutGeneratedByNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -82199,6 +84501,7 @@ export namespace Prisma {
     generatedAIReports?: AIReportUncheckedUpdateManyWithoutGeneratedByNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -82500,6 +84803,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -82555,6 +84859,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -82649,6 +84954,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -82704,6 +85010,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -82751,6 +85058,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -82806,6 +85114,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -82876,6 +85185,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -82916,6 +85226,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -83011,6 +85322,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -83065,6 +85377,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -83134,6 +85447,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -83189,6 +85503,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -83265,6 +85580,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -83305,6 +85621,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -83436,6 +85753,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -83491,6 +85809,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -83561,6 +85880,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutOrganizationInput
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -83601,6 +85921,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -83628,6 +85949,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -83682,6 +86004,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -83802,6 +86125,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -83857,6 +86181,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -83933,6 +86258,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -83973,6 +86299,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -84099,6 +86426,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -84154,6 +86482,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -84224,6 +86553,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -84264,6 +86594,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -84397,6 +86728,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -84452,6 +86784,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -84528,6 +86861,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -84568,6 +86902,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -84688,6 +87023,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -84728,6 +87064,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -84755,6 +87092,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -84810,6 +87148,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -85072,6 +87411,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -85112,6 +87452,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -85145,6 +87486,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -85200,6 +87542,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -85388,6 +87731,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -85443,6 +87787,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -85563,6 +87908,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -85618,6 +87964,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -85683,6 +88030,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -85723,6 +88071,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -85750,6 +88099,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -85805,6 +88155,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -85886,6 +88237,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -85926,6 +88278,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -85959,6 +88312,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -86014,6 +88368,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -86061,6 +88416,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -86116,6 +88472,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -86308,6 +88665,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -86363,6 +88721,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -86426,6 +88785,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -86481,6 +88841,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -86703,6 +89064,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -86758,6 +89120,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -86856,6 +89219,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -86911,6 +89275,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -86963,6 +89328,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -87018,6 +89384,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -87138,6 +89505,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -87193,6 +89561,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -87251,6 +89620,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -87306,6 +89676,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -87371,6 +89742,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -87411,6 +89783,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -87467,6 +89840,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -87507,6 +89881,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -87580,6 +89955,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -87635,6 +90011,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -87755,6 +90132,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -87810,6 +90188,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -88111,6 +90490,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -88151,6 +90531,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -88178,6 +90559,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -88233,6 +90615,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -88478,6 +90861,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -88518,6 +90902,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -88551,6 +90936,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -88606,6 +90992,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -88707,6 +91094,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -88747,6 +91135,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -88774,6 +91163,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
     ownedDeals?: DealCreateNestedManyWithoutOwnerInput
@@ -88829,6 +91219,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
     ownedDeals?: DealUncheckedCreateNestedManyWithoutOwnerInput
@@ -89268,6 +91659,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -89308,6 +91700,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -89341,6 +91734,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
     ownedDeals?: DealUpdateManyWithoutOwnerNestedInput
@@ -89396,6 +91790,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
     ownedDeals?: DealUncheckedUpdateManyWithoutOwnerNestedInput
@@ -89668,6 +92063,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -89708,6 +92104,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -89735,6 +92132,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedDeals?: DealCreateNestedManyWithoutOwnerInput
@@ -89790,6 +92188,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedDeals?: DealUncheckedCreateNestedManyWithoutOwnerInput
@@ -90168,6 +92567,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -90208,6 +92608,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -90241,6 +92642,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedDeals?: DealUpdateManyWithoutOwnerNestedInput
@@ -90296,6 +92698,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedDeals?: DealUncheckedUpdateManyWithoutOwnerNestedInput
@@ -90614,6 +93017,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -90654,6 +93058,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -90681,6 +93086,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -90736,6 +93142,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -91154,6 +93561,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -91194,6 +93602,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -91227,6 +93636,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -91282,6 +93692,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -91376,6 +93787,7 @@ export namespace Prisma {
     generatedAIReports?: AIReportCreateNestedManyWithoutGeneratedByInput
     accounts?: AccountCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -91431,6 +93843,7 @@ export namespace Prisma {
     generatedAIReports?: AIReportUncheckedCreateNestedManyWithoutGeneratedByInput
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -91704,6 +94117,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -91744,6 +94158,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -91781,6 +94196,7 @@ export namespace Prisma {
     generatedAIReports?: AIReportUpdateManyWithoutGeneratedByNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -91836,6 +94252,7 @@ export namespace Prisma {
     generatedAIReports?: AIReportUncheckedUpdateManyWithoutGeneratedByNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -92139,6 +94556,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -92179,6 +94597,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -92201,6 +94620,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -92256,6 +94676,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -92327,6 +94748,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutDailyReportsInput = {
@@ -92367,6 +94789,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutDailyReportsInput = {
@@ -92431,6 +94854,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -92486,6 +94910,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -92563,6 +94988,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutDailyReportsInput = {
@@ -92603,6 +95029,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type AIReportUpsertWithoutDailyReportInput = {
@@ -92832,6 +95259,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -92872,6 +95300,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -92899,6 +95328,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -92954,6 +95384,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -93210,6 +95641,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -93250,6 +95682,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -93283,6 +95716,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -93338,6 +95772,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -93421,6 +95856,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -93476,6 +95912,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -93699,6 +96136,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -93739,6 +96177,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -93833,6 +96272,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -93888,6 +96328,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -94135,6 +96576,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -94175,6 +96617,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -94213,6 +96656,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
     ownedDeals?: DealCreateNestedManyWithoutOwnerInput
@@ -94268,6 +96712,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
     ownedDeals?: DealUncheckedCreateNestedManyWithoutOwnerInput
@@ -94376,6 +96821,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
     ownedDeals?: DealUpdateManyWithoutOwnerNestedInput
@@ -94431,6 +96877,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
     ownedDeals?: DealUncheckedUpdateManyWithoutOwnerNestedInput
@@ -94606,6 +97053,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -94646,6 +97094,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -94767,6 +97216,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -94807,6 +97257,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -94829,6 +97280,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -94884,6 +97336,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -95014,6 +97467,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -95069,6 +97523,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -95471,6 +97926,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -95526,6 +97982,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -95645,6 +98102,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -95685,6 +98143,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -95952,6 +98411,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -96007,6 +98467,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -96138,6 +98599,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -96178,6 +98640,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -96368,6 +98831,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -96423,6 +98887,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -96545,6 +99010,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -96600,6 +99066,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -96871,6 +99338,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -96926,6 +99394,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -97042,6 +99511,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -97097,6 +99567,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -97221,6 +99692,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -97261,6 +99733,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -97287,6 +99760,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -97342,6 +99816,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -97450,6 +99925,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -97490,6 +99966,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -97522,6 +99999,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -97577,6 +100055,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -97723,6 +100202,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -97763,6 +100243,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -97819,6 +100300,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -97859,6 +100341,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -97880,6 +100363,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -97935,6 +100419,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -98006,6 +100491,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -98046,6 +100532,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -98128,6 +100615,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -98183,6 +100671,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -98260,6 +100749,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -98300,6 +100790,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -98391,6 +100882,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -98431,6 +100923,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -98458,6 +100951,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -98513,6 +101007,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -98594,6 +101089,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -98634,6 +101130,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -98667,6 +101164,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -98722,6 +101220,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -98768,6 +101267,7 @@ export namespace Prisma {
     generatedAIReports?: AIReportCreateNestedManyWithoutGeneratedByInput
     accounts?: AccountCreateNestedManyWithoutUserInput
     activities?: ActivityCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
     checkIns?: CheckInCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
@@ -98823,6 +101323,7 @@ export namespace Prisma {
     generatedAIReports?: AIReportUncheckedCreateNestedManyWithoutGeneratedByInput
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
     checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
     ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
     ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
@@ -98894,6 +101395,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -98934,6 +101436,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -98971,6 +101474,7 @@ export namespace Prisma {
     generatedAIReports?: AIReportUpdateManyWithoutGeneratedByNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -99026,6 +101530,7 @@ export namespace Prisma {
     generatedAIReports?: AIReportUncheckedUpdateManyWithoutGeneratedByNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -99103,6 +101608,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -99143,6 +101649,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -99183,6 +101690,7 @@ export namespace Prisma {
     savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
     teams?: TeamCreateNestedManyWithoutOrganizationInput
     users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
   }
 
@@ -99223,6 +101731,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
     teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
@@ -99279,6 +101788,7 @@ export namespace Prisma {
     savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUpdateManyWithoutOrganizationNestedInput
     users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -99319,6 +101829,7 @@ export namespace Prisma {
     savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
     teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
@@ -99619,6 +102130,19 @@ export namespace Prisma {
     departmentId?: string | null
     teamId?: string | null
     managerId?: string | null
+  }
+
+  export type UserLiveLocationCreateManyOrganizationInput = {
+    id?: string
+    userId: string
+    latitude: Decimal | DecimalJsLike | number | string
+    longitude: Decimal | DecimalJsLike | number | string
+    accuracy?: Decimal | DecimalJsLike | number | string | null
+    heading?: Decimal | DecimalJsLike | number | string | null
+    speed?: Decimal | DecimalJsLike | number | string | null
+    isTracking?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DailyReportCreateManyOrganizationInput = {
@@ -100579,6 +103103,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -100633,6 +103158,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -100679,6 +103205,45 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     teamId?: NullableStringFieldUpdateOperationsInput | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type UserLiveLocationUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    latitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accuracy?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    heading?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    speed?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutLiveLocationNestedInput
+  }
+
+  export type UserLiveLocationUncheckedUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    latitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accuracy?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    heading?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    speed?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserLiveLocationUncheckedUpdateManyWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    latitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    longitude?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    accuracy?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    heading?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    speed?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    isTracking?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DailyReportUpdateWithoutOrganizationInput = {
@@ -102349,6 +104914,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -102403,6 +104969,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -102774,6 +105341,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -102828,6 +105396,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
@@ -102958,6 +105527,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     activities?: ActivityUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
@@ -103012,6 +105582,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
     checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
     ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
     ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput

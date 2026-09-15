@@ -14,12 +14,8 @@ const STAGES = ['NEW_LEAD', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION',
 
 export function DealForm({
   owners,
-  companies,
-  contacts,
 }: {
   owners: UserOption[]
-  companies: { id: string; name: string }[]
-  contacts: { id: string; name: string; companyId: string | null }[]
 }) {
   const [state, formAction, pending] = useActionState(createDealAction, initialState)
   const router = useRouter()
@@ -38,24 +34,10 @@ export function DealForm({
           <Input name="name" placeholder="Acme — Bulk Supply Q3" required />
         </Field>
         <Field label="Company" error={state.fieldErrors?.company}>
-          <Input name="company" placeholder="Acme Nutraceuticals" list="company-suggestions" />
-          <datalist id="company-suggestions">
-            {companies.map((c) => (
-              <option key={c.id} value={c.name} />
-            ))}
-          </datalist>
+          <Input name="company" placeholder="Acme Nutraceuticals" />
         </Field>
-        <Field label="Contact" error={state.fieldErrors?.contactId}>
-          <select
-            name="contactId"
-            defaultValue=""
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
-            <option value="">None</option>
-            {contacts.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+        <Field label="Contact" error={state.fieldErrors?.contact}>
+          <Input name="contact" placeholder="+91 98765 43210" />
         </Field>
         <Field label="Deal value (₹) *" error={state.fieldErrors?.value}>
           <Input name="value" type="number" min={0} step="1000" placeholder="1200000" required />

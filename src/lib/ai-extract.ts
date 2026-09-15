@@ -89,9 +89,13 @@ export async function extractDocument(file: File, buffer: Buffer): Promise<Extra
 
   // ---------- PDF ----------
   if (mime === 'application/pdf') {
-    // pdf-parse 1.1.1 is CJS; dynamic import keeps edge/server boundary clean
-    const mod = await import('pdf-parse')
-    const pdf = (mod as unknown as { default: (b: Buffer) => Promise<{ text: string; numpages: number }> }).default ?? (mod as unknown as (b: Buffer) => Promise<{ text: string; numpages: number }>)
+    // pdf-parse 1.1.1's index.js has a debug side-effect: when `!module.parent`
+    // (true under ESM/Next.js) it does `Fs.readFileSync('./test/data/05-versions-space.pdf')`
+    // and throws ENOENT. Import the lib directly to bypass it.
+    const mod = await import('pdf-parse/lib/pdf-parse.js')
+    const pdf =
+      (mod as unknown as { default: (b: Buffer) => Promise<{ text: string; numpages: number }> }).default ??
+      (mod as unknown as (b: Buffer) => Promise<{ text: string; numpages: number }>)
     const data = await pdf(buffer)
     const raw = (data.text ?? '').trim()
     const { text, truncated } = truncateText(raw || '[No extractable text in PDF]')

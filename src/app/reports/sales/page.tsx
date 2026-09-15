@@ -3,13 +3,22 @@ import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { Card } from '@/components/ui/card'
 import { RevenueChart } from '@/components/reports/revenue-chart'
+import { ExportMenu } from '@/components/report-engine/export-menu'
+import { buildSalesReport } from '@/lib/report-engine/builders/sales'
 import { getSalesReportData } from '@/services/crm-reports.service'
+import { getSession } from '@/lib/session'
 import { formatCurrency } from '@/lib/utils'
 
 export const metadata = { title: 'Sales Reports | Kawman ExAct' }
 
 export default async function SalesReportsPage() {
-  const data = await getSalesReportData()
+  const [data, session] = await Promise.all([getSalesReportData(), getSession()])
+  const sessionUser = session?.user as unknown as { name?: string; email?: string; organization?: { name?: string } | null } | undefined
+  const exportReport = buildSalesReport({
+    data,
+    generatedBy: sessionUser?.name ?? sessionUser?.email,
+    organizationName: sessionUser?.organization?.name ?? undefined,
+  })
 
   const stats = [
     { label: 'Total revenue won', value: data.totalWonValue, icon: DollarSign },
@@ -21,7 +30,11 @@ export default async function SalesReportsPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <PageHeader title="Sales Reports" subtitle="Revenue, win rate, and rep performance from your live pipeline" />
+        <PageHeader
+          title="Sales Reports"
+          subtitle="Revenue, win rate, and rep performance from your live pipeline"
+          action={<ExportMenu report={exportReport} />}
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((s) => (

@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Copy, Printer, Check, Download, Trash2, Loader2 } from 'lucide-react'
+import { Copy, Printer, Check, Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { exportReportPdf } from '@/lib/report-pdf'
+import { ExportMenu } from '@/components/report-engine/export-menu'
+import { buildAiReport } from '@/lib/report-engine/builders/ai-report'
 
 type ReportForActions = {
   id: string
@@ -22,10 +23,16 @@ export function ReportActions({ report }: { report?: ReportForActions }) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleting, startDelete] = useTransition()
 
-  function handleExportPdf() {
-    if (!report) return
-    exportReportPdf(report)
-  }
+  const exportReport = useMemo(() => {
+    if (!report) return null
+    return buildAiReport({
+      title: report.title,
+      type: report.type,
+      content: report.content,
+      createdAt: report.createdAt,
+      generatedByName: report.generatedByName,
+    })
+  }, [report])
 
   function handleDelete() {
     if (!report) return
@@ -33,7 +40,7 @@ export function ReportActions({ report }: { report?: ReportForActions }) {
       const res = await fetch(`/api/ai/reports/${report.id}`, { method: 'DELETE' })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        alert(data.error || 'Failed to delete report')
+        alert((data as { error?: string }).error || 'Failed to delete report')
         return
       }
       router.push('/ai/reports')
@@ -44,17 +51,7 @@ export function ReportActions({ report }: { report?: ReportForActions }) {
   return (
     <>
       <div className="flex items-center gap-1.5 flex-wrap">
-        {report && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 gap-1.5 text-white/60 hover:text-white hover:bg-white/10"
-            onClick={handleExportPdf}
-          >
-            <Download className="h-3.5 w-3.5" />
-            Export PDF
-          </Button>
-        )}
+        {exportReport && <ExportMenu report={exportReport} />}
         <Button
           variant="ghost"
           size="sm"

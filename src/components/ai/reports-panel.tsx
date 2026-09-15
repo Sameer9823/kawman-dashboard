@@ -3,12 +3,12 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FileBarChart, Sparkles, AlertTriangle, ArrowRight, Loader2, Trash2, Download, FileDown } from 'lucide-react'
+import { FileBarChart, Sparkles, AlertTriangle, ArrowRight, Loader2, Trash2, FileDown } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { formatDistanceToNow } from 'date-fns'
-import { exportReportPdf } from '@/lib/report-pdf'
+import { buildAiReport } from '@/lib/report-engine/builders/ai-report'
 
 interface ReportTypeMeta {
   type: string
@@ -41,7 +41,6 @@ export function ReportsPanel({
   const [deleting, startDeleting] = React.useTransition()
   const [exportingId, setExportingId] = React.useState<string | null>(null)
 
-  // keep in sync if server re-renders with new initialReports
   React.useEffect(() => setReports(initialReports), [initialReports])
 
   async function handleGenerate(type: string) {
@@ -70,7 +69,7 @@ export function ReportsPanel({
       const res = await fetch(`/api/ai/reports/${id}`, { method: 'DELETE' })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        setError(data.error || 'Failed to delete report')
+        setError((data as { error?: string }).error || 'Failed to delete report')
         return
       }
       setReports((prev) => prev.filter((r) => r.id !== id))
@@ -84,14 +83,36 @@ export function ReportsPanel({
     try {
       const res = await fetch(`/api/ai/reports/${report.id}`)
       if (!res.ok) throw new Error('Failed to load report')
-      const full = await res.json()
-      exportReportPdf({
+      const full = (await res.json()) as { title: string; type: string; content: string; createdAt: string; generatedByName: string }
+      const def = buildAiReport({
         title: full.title,
         type: full.type,
         content: full.content,
         createdAt: full.createdAt,
         generatedByName: full.generatedByName,
       })
+      // Universal export — server renders premium PDF/Excel/CSV via shared template → Puppeteer/ExcelJS
+      const exportRes = await fetch('/api/reports/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report: def, format: 'pdf' }),
+      })
+      if (!exportRes.ok) {
+        const data = await exportRes.json().catch(() => ({}))
+        throw new Error((data as { error?: string }).error || 'Export failed')
+      }
+      const blob = await exportRes.blob()
+      const disposition = exportRes.headers.get('Content-Disposition')
+      const m = disposition?.match(/filename="?([^";]+)"?/)
+      const filename = m ? m[1] : `Kawman-ExAct-${def.name}.pdf`
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 4000)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Export failed')
     } finally {
@@ -140,7 +161,10 @@ export function ReportsPanel({
                       Generating...
                     </>
                   ) : (
-                    <>Generate</>
+                    <>
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Generate
+                    </>
                   )}
                 </Button>
               </CardFooter>
@@ -150,38 +174,36 @@ export function ReportsPanel({
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2 mb-3">
+          <FileBarChart className="h-4 w-4 text-white/40" />
           <h2 className="text-sm font-semibold text-white/70">Recent reports</h2>
-          <span className="text-xs text-white/30">{reports.length} total</span>
+          <span className="text-xs text-white/30">({reports.length})</span>
         </div>
         {reports.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-white/5 py-12 text-center">
-            <FileBarChart className="h-6 w-6 text-white/30 mx-auto mb-2" />
-            <p className="text-white/40 text-sm">No reports generated yet</p>
-          </div>
+          <Card className="p-8 text-center border-dashed">
+            <p className="text-sm text-white/40">No reports yet. Generate one above.</p>
+          </Card>
         ) : (
-          <div className="rounded-xl border border-white/10 bg-white/5 divide-y divide-white/10 overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {reports.map((r) => (
-              <div
-                key={r.id}
-                className="flex items-center gap-2 px-3 sm:px-4 py-3 hover:bg-white/5 transition-colors group"
-              >
-                <Link href={`/ai/reports/${r.id}`} className="flex-1 min-w-0 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-sm text-white font-medium truncate">{r.title}</p>
-                    <p className="text-xs text-white/40 mt-0.5">
-                      {r.generatedByName} · {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
-                    </p>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-white/20 group-hover:text-white/40 shrink-0 hidden sm:block" />
-                </Link>
-
-                <div className="flex items-center gap-1 shrink-0">
+              <Card key={r.id} className="flex flex-col">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm leading-tight line-clamp-2">{r.title}</CardTitle>
+                  <CardDescription className="text-xs">
+                    {r.type.replace(/_/g, ' ')} · {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })} · {r.generatedByName}
+                  </CardDescription>
+                </CardHeader>
+                <CardFooter className="mt-auto flex items-center gap-1.5 pt-3">
+                  <Button asChild variant="ghost" size="sm" className="gap-1.5 h-7">
+                    <Link href={`/ai/reports/${r.id}`}>
+                      View <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/10"
-                    title="Export PDF"
+                    className="h-7 w-7 text-white/40 hover:text-white"
+                    title="Export PDF (universal)"
                     disabled={exportingId === r.id}
                     onClick={() => handleExport(r)}
                   >
@@ -200,8 +222,8 @@ export function ReportsPanel({
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
-                </div>
-              </div>
+                </CardFooter>
+              </Card>
             ))}
           </div>
         )}

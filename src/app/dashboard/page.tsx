@@ -14,6 +14,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ClipboardCheck } from 'lucide-react'
 import { NewActionDropdown } from '@/components/dashboard/new-action-dropdown'
+import { ExportMenu } from '@/components/report-engine/export-menu'
+import { buildDashboardReport } from '@/lib/report-engine/builders/dashboard'
 import { getDashboardMetrics } from '@/services/dashboard.service'
 import { getSession } from '@/lib/session'
 
@@ -38,6 +40,12 @@ export default async function DashboardPage() {
   }
 
   const metrics = await getDashboardMetrics()
+  const sessionUser = session?.user as unknown as { name?: string; email?: string; organization?: { name?: string } | null } | undefined
+  const exportReport = buildDashboardReport({
+    metrics,
+    generatedBy: sessionUser?.name ?? sessionUser?.email,
+    organizationName: sessionUser?.organization?.name ?? undefined,
+  })
 
   return (
     <MainLayout>
@@ -55,6 +63,7 @@ export default async function DashboardPage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <ExportMenu report={exportReport} />
             <Link href="/dashboard/daily-report">
               <Button variant="outline" className="gap-1.5"><ClipboardCheck className="h-4 w-4" /> Submit today&apos;s report</Button>
             </Link>

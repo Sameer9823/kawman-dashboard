@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/card'
 import { PipelineCard } from '@/components/dashboard/pipeline-card'
 import { LeadSourceChart } from '@/components/dashboard/lead-source-chart'
 import { DashboardGate } from '@/components/dashboard/dashboard-gate'
+import { ExportMenu } from '@/components/report-engine/export-menu'
+import { buildCrmDashboardReport } from '@/lib/report-engine/builders/crm-dashboard'
 import { getCrmDashboardData } from '@/services/crm-reports.service'
 import { formatCurrency } from '@/lib/utils'
 import { getSession } from '@/lib/session'
@@ -26,6 +28,12 @@ export default async function CrmDashboardPage() {
   }
 
   const data = await getCrmDashboardData()
+  const sessionUser = session?.user as unknown as { name?: string; email?: string; organization?: { name?: string } | null } | undefined
+  const exportReport = buildCrmDashboardReport({
+    data,
+    generatedBy: sessionUser?.name ?? sessionUser?.email,
+    organizationName: sessionUser?.organization?.name ?? undefined,
+  })
 
   const stats = [
     { label: 'Leads', value: data.totals.leads, icon: Users, href: '/leads', color: 'text-purple-400 bg-purple-500/15' },
@@ -37,7 +45,11 @@ export default async function CrmDashboardPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <PageHeader title="CRM Dashboard" subtitle="A single view across your leads, companies, contacts, and pipeline" />
+        <PageHeader
+          title="CRM Dashboard"
+          subtitle="A single view across your leads, companies, contacts, and pipeline"
+          action={<ExportMenu report={exportReport} />}
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((s) => (

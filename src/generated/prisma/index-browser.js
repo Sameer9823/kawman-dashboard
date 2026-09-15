@@ -171,6 +171,20 @@ exports.Prisma.SessionScalarFieldEnum = {
   lastSeenAt: 'lastSeenAt'
 };
 
+exports.Prisma.UserLiveLocationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  organizationId: 'organizationId',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  accuracy: 'accuracy',
+  heading: 'heading',
+  speed: 'speed',
+  isTracking: 'isTracking',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.AccountScalarFieldEnum = {
   id: 'id',
   accountId: 'accountId',
@@ -837,6 +851,7 @@ exports.Prisma.ModelName = {
   Organization: 'Organization',
   User: 'User',
   Session: 'Session',
+  UserLiveLocation: 'UserLiveLocation',
   Account: 'Account',
   Verification: 'Verification',
   Role: 'Role',

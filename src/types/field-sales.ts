@@ -95,6 +95,13 @@ export interface ActiveUserPin {
   lastCheckInAt: string | null
   companyName: string | null
   visitTitle: string | null
+  /** Live-tracking fields (from UserLiveLocation) — null when only check-in location is available */
+  accuracy: number | null
+  heading: number | null
+  speed: number | null
+  updatedAt: string | null
+  isTracking: boolean
+  isStale: boolean
 }
 
 export interface LiveMapData {

@@ -13,9 +13,8 @@ const STATUS_COLOR: Record<LiveVisitMarker['status'], string> = {
 }
 
 /**
- * Lightweight dashboard-card preview of field activity. The real
- * interactive Mapbox map (see src/lib/maps.ts) renders on the full
- * /field-sales/live-map page, which requires NEXT_PUBLIC_MAPBOX_TOKEN.
+ * Lightweight dashboard-card preview of field activity. The interactive
+ * map (see src/lib/maps.ts) renders on the full /field-sales/live-map page.
  * This card intentionally stays token-free so the dashboard always renders.
  */
 export function LiveMapCard({ markers }: { markers: LiveVisitMarker[] }) {

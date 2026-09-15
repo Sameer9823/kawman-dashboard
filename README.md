@@ -23,7 +23,7 @@ All routes pass `tsc --noEmit`, `eslint`, and `next build` (74+ static/dynamic r
 - **Styling:** Tailwind v4, `class-variance-authority`, `clsx`/`tailwind-merge`, Radix UI (dialog, select, popover, tabs, etc.), `lucide-react`, `recharts` 3.10, `react-day-picker`
 - **Data:** Prisma 7.10 (`@prisma/adapter-pg` + `pg` 8.23), Neon Postgres (pooled `DATABASE_URL` + direct `DIRECT_URL`), `server-only` services, `zod` 4.4
 - **Auth:** `better-auth` 1.7, `customSession` + `emailOTP` + `nextCookies`
-- **Files/Media:** `cloudinary` 2.11, `@cloudinary/react`, `fluent-ffmpeg` + `@ffmpeg-installer/ffmpeg`, `mapbox-gl` + `@mapbox/mapbox-sdk` + `@turf/turf`
+- **Files/Media:** `cloudinary` 2.11, `@cloudinary/react`, `fluent-ffmpeg` + `@ffmpeg-installer/ffmpeg`, `maplibre-gl` + `@turf/turf` (MapLibre — token-free; no Mapbox)
 - **AI:** `openai` 7.8, `@google/generative-ai` 0.24, `ai` 7.0
 - **Infra:** `ioredis` 6, `bullmq` 6.3, `next-themes`, `zustand` 5, `date-fns` 4.4, `sonner`
 - **Tooling:** `eslint-config-next` 16.3, `vitest` 4.1, `playwright` 1.62, `tsx` 4.23

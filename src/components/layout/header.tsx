@@ -109,6 +109,13 @@ export function Header() {
   }
 
   async function handleLogout() {
+    // End field session: mark live location stopped so map drops pin promptly (also clears throttle)
+    try {
+      await fetch('/api/field-sales/live-location', { method: 'DELETE' })
+    } catch {}
+    try {
+      localStorage.removeItem('fieldTrackingEnabled')
+    } catch {}
     await signOut()
     router.push('/login')
     router.refresh()

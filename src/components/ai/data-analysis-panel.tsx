@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Markdown } from './markdown'
+import { AiUpload, type UploadedFileInfo } from './ai-upload'
+import { AiCharts } from './ai-charts'
 import { buildAiReport } from '@/lib/report-engine/builders/ai-report'
 
 const DATA_ANALYSIS_PROMPTS = [
@@ -18,6 +20,7 @@ const DATA_ANALYSIS_PROMPTS = [
 interface QA {
   question: string
   answer: string
+  charts?: UploadedFileInfo['charts']
 }
 
 export function DataAnalysisPanel({ aiConfigured }: { aiConfigured: boolean }) {
@@ -29,19 +32,58 @@ export function DataAnalysisPanel({ aiConfigured }: { aiConfigured: boolean }) {
   const [clearConfirm, setClearConfirm] = React.useState(false)
   const [exportingIdx, setExportingIdx] = React.useState<number | null>(null)
 
+  // Upload state
+  const [uploaded, setUploaded] = React.useState<UploadedFileInfo[]>([])
+  const [uploading, setUploading] = React.useState(false)
+  const [uploadError, setUploadError] = React.useState<string | null>(null)
+
+  async function handleFilesSelected(list: FileList) {
+    setUploadError(null)
+    if (uploaded.length + list.length > 3) {
+      setUploadError('You can attach up to 3 files.')
+      return
+    }
+    const form = new FormData()
+    for (let i = 0; i < list.length; i++) form.append('files', list[i])
+    setUploading(true)
+    try {
+      const res = await fetch('/api/ai/upload', { method: 'POST', body: form })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error((data as { error?: string }).error || 'Upload failed')
+      const incoming = (data as { files: UploadedFileInfo[] }).files ?? []
+      setUploaded((prev) => [...prev, ...incoming].slice(0, 3))
+    } catch (e) {
+      setUploadError(e instanceof Error ? e.message : 'Upload failed')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   async function runAnalysis(q: string) {
-    if (!q.trim() || loading) return
+    const eff = q.trim() || (uploaded.length ? 'Analyse the attached files. If it is a spreadsheet, summarise the data, call out key numbers, and describe what the charts show.' : '')
+    if (!eff || loading) return
     setLoading(true)
     setError(null)
+    const turnFiles = [...uploaded]
+    const turnCharts = turnFiles.flatMap((f) => f.charts ?? [])
+    const docContext = turnFiles.map((f) => f.snippet).join('\n\n').slice(0, 18_000) || undefined
+    const images = turnFiles
+      .filter((f) => f.kind === 'image' && f.imageBase64)
+      .map((f) => ({ base64: f.imageBase64!, mimeType: f.mimeType }))
+    // keep uploader sticky for data-analysis (user may run several questions on same file)
     try {
       const res = await fetch('/api/ai/data-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({
+          question: eff,
+          docContext,
+          images: images.length ? images : undefined,
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to analyze')
-      setHistory((prev) => [{ question: q, answer: data.answer as string }, ...prev])
+      setHistory((prev) => [{ question: eff, answer: data.answer as string, charts: turnCharts.length ? turnCharts : undefined }, ...prev])
       setQuestion('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -68,7 +110,6 @@ export function DataAnalysisPanel({ aiConfigured }: { aiConfigured: boolean }) {
         createdAt: new Date().toISOString(),
         generatedByName: 'Data Analysis',
       })
-      // Universal export — same premium template + Puppeteer pipeline as every other report
       const res = await fetch('/api/reports/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -107,7 +148,15 @@ export function DataAnalysisPanel({ aiConfigured }: { aiConfigured: boolean }) {
         </div>
       )}
 
-      <Card className="bg-[#0a111c]/80 border-white/[0.08] p-4">
+      <Card className="bg-[#0a111c]/80 border-white/[0.08] p-4 space-y-3">
+        <AiUpload
+          files={uploaded}
+          uploading={uploading}
+          disabled={!aiConfigured || loading}
+          onFilesSelected={handleFilesSelected}
+          onRemove={(idx) => setUploaded((prev) => prev.filter((_, i) => i !== idx))}
+        />
+        {uploadError && <p className="text-xs text-amber-300">{uploadError}</p>}
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -118,17 +167,17 @@ export function DataAnalysisPanel({ aiConfigured }: { aiConfigured: boolean }) {
           <input
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Ask a question about your leads, deals, or pipeline..."
+            placeholder={uploaded.length ? 'Ask about the uploaded file — e.g. “summarise this sheet and flag anomalies”' : 'Ask a question about your leads, deals, or pipeline...'}
             disabled={!aiConfigured || loading}
             className="flex-1 h-10 rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 disabled:opacity-50"
           />
-          <Button type="submit" size="sm" disabled={!aiConfigured || loading || !question.trim()} className="gap-1.5">
+          <Button type="submit" size="sm" disabled={!aiConfigured || loading || (!question.trim() && !uploaded.length)} className="gap-1.5">
             <Send className="h-3.5 w-3.5" />
             {loading ? 'Analyzing…' : 'Analyze'}
           </Button>
         </form>
 
-        <div className="flex flex-wrap gap-2 mt-3">
+        <div className="flex flex-wrap gap-2">
           {DATA_ANALYSIS_PROMPTS.map((p) => (
             <button
               key={p}
@@ -162,13 +211,13 @@ export function DataAnalysisPanel({ aiConfigured }: { aiConfigured: boolean }) {
       {history.length === 0 && !loading ? (
         <div className="rounded-xl border border-white/10 bg-white/5 py-12 text-center">
           <Sparkles className="h-6 w-6 text-white/30 mx-auto mb-2" />
-          <p className="text-white/40 text-sm">Ask a question above to analyze your live CRM data.</p>
+          <p className="text-white/40 text-sm">Ask a question above — or drop a PDF / image / Excel sheet to analyze it.</p>
         </div>
       ) : (
         <div className="space-y-4">
           {loading && (
             <Card className="bg-[#0a111c]/80 border-white/[0.08] p-4 animate-pulse">
-              <p className="text-sm text-white/40">Analyzing your data…</p>
+              <p className="text-sm text-white/40">Analyzing…</p>
             </Card>
           )}
           {history.map((qa, i) => (
@@ -185,6 +234,7 @@ export function DataAnalysisPanel({ aiConfigured }: { aiConfigured: boolean }) {
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
+              {qa.charts?.length ? <AiCharts charts={qa.charts} /> : null}
               <div className="border-t border-white/[0.06] pt-3">
                 <Markdown content={qa.answer} />
               </div>

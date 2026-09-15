@@ -505,17 +505,24 @@ export { isAIConfigured }
 // quick "ask a question about the data" tool.
 // ============================================================
 
-export async function analyzeQuestion(question: string): Promise<string> {
+export async function analyzeQuestion(
+  question: string,
+  opts?: { docContext?: string; images?: import('@/lib/ai').AIImageAttachment[] }
+): Promise<string> {
   const session = await requireApiSession()
   const orgContext = await buildOrgContext(session.user.organizationId, session.user)
+  const hasDocs = !!opts?.docContext?.trim()
   const system = [
     'You are a data analyst embedded in Kawman ExAct, a CRM and field-sales platform.',
-    'Answer the question below using ONLY the live CRM snapshot provided. Be specific and quote the',
-    'actual numbers from the snapshot. If the snapshot doesn\'t contain enough detail to fully answer,',
-    'say so plainly rather than guessing. Use short markdown (headings, bullets, bold numbers).',
+    hasDocs
+      ? 'Answer using BOTH the live CRM snapshot AND the uploaded document context (PDF/image/sheet extract that follows). Ground numbers in whichever source you cite, quote exact figures, and never invent data. Use short markdown (headings, bullets, bold numbers, tables).'
+      : 'Answer the question below using ONLY the live CRM snapshot provided. Be specific and quote the actual numbers from the snapshot. If the snapshot doesn\'t contain enough detail to fully answer, say so plainly rather than guessing. Use short markdown (headings, bullets, bold numbers).',
     '',
     orgContext,
   ].join('\n')
 
-  return generateCompletion([{ role: 'user', content: question }], system)
+  return generateCompletion([{ role: 'user', content: question }], system, {
+    docContext: opts?.docContext,
+    images: opts?.images,
+  })
 }

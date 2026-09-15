@@ -53,7 +53,7 @@ export function DealDetailForm({
           <Input name="company" defaultValue={deal.company === '—' ? '' : deal.company} />
         </Field>
         <Field label="Contact" error={state.fieldErrors?.contact}>
-          <Input name="contact" defaultValue={deal.contact === '—' ? '' : deal.contact} placeholder="Anjali Mehta" />
+          <Input name="contact" defaultValue={deal.contact === '—' ? '' : deal.contact} placeholder="+91 98765 43210" />
         </Field>
         <Field label="Value (₹) *" error={state.fieldErrors?.value}>
           <Input name="value" type="number" min={0} defaultValue={deal.value} required />

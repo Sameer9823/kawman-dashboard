@@ -47,7 +47,7 @@ export function NewMeetingForm({
           <Input name="company" placeholder="Acme Nutraceuticals" />
         </Field>
         <Field label="Contact" error={state.fieldErrors?.contact}>
-          <Input name="contact" placeholder="Anjali Mehta" />
+          <Input name="contact" placeholder="+91 98765 43210" />
         </Field>
         <Field label="Deal" error={state.fieldErrors?.dealId}>
           <select

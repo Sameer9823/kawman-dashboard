@@ -128,14 +128,69 @@ export async function updateMeetingStatusAction(meetingId: string, status: (type
   revalidatePath('/meetings')
 }
 
-// ============================================================
-// Transcript
-// ============================================================
-
 export interface SimpleActionState {
   error?: string
   success?: boolean
 }
+
+export async function renameMeetingAction(meetingId: string, title: string): Promise<SimpleActionState> {
+  try {
+    await validateCsrf()
+    const session = await assertPermission(PERMISSIONS['meetings.update'].name)
+    const t = title.trim()
+    if (t.length < 2) return { error: 'Title must be at least 2 characters' }
+    const existing = await prisma.meeting.findFirst({ where: { id: meetingId, organizationId: session.user.organizationId } })
+    if (!existing) return { error: 'Meeting not found' }
+    await prisma.meeting.update({ where: { id: meetingId }, data: { title: t } })
+    await logAudit({ organizationId: session.user.organizationId, actorId: session.user.id, action: 'UPDATE', resource: 'Meeting', resourceId: meetingId, metadata: { title: t } })
+    revalidatePath(`/meetings/${meetingId}`)
+    revalidatePath('/meetings')
+    revalidatePath('/meetings/mom')
+    revalidatePath('/meetings/videos')
+    return { success: true }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to rename meeting' }
+  }
+}
+
+export async function deleteMeetingAction(meetingId: string): Promise<SimpleActionState> {
+  try {
+    await validateCsrf()
+    const session = await assertPermission(PERMISSIONS['meetings.delete'].name)
+    const existing = await prisma.meeting.findFirst({ where: { id: meetingId, organizationId: session.user.organizationId } })
+    if (!existing) return { error: 'Meeting not found' }
+    await prisma.meeting.delete({ where: { id: meetingId } })
+    await logAudit({ organizationId: session.user.organizationId, actorId: session.user.id, action: 'DELETE', resource: 'Meeting', resourceId: meetingId, metadata: { title: existing.title } })
+    revalidatePath('/meetings')
+    revalidatePath('/meetings/mom')
+    revalidatePath('/meetings/videos')
+    return { success: true }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to delete meeting' }
+  }
+}
+
+export async function deleteMomAction(meetingId: string): Promise<SimpleActionState> {
+  try {
+    await validateCsrf()
+    const session = await assertPermission(PERMISSIONS['meetings.update'].name)
+    const meeting = await prisma.meeting.findFirst({ where: { id: meetingId, organizationId: session.user.organizationId } })
+    if (!meeting) return { error: 'Meeting not found' }
+    const existing = await prisma.meetingSummary.findFirst({ where: { meetingId } })
+    if (!existing) return { error: 'No MoM to delete' }
+    await prisma.meetingSummary.delete({ where: { id: existing.id } })
+    await logAudit({ organizationId: session.user.organizationId, actorId: session.user.id, action: 'DELETE', resource: 'MeetingSummary', resourceId: existing.id, metadata: { meetingId } })
+    revalidatePath(`/meetings/${meetingId}`)
+    revalidatePath('/meetings/mom')
+    return { success: true }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to delete MoM' }
+  }
+}
+
+// ============================================================
+// Transcript
+// ============================================================
 
 export async function saveTranscriptAction(meetingId: string, content: string): Promise<SimpleActionState> {
   try {
@@ -280,12 +335,9 @@ export async function uploadRecordingAction(
 
 async function transcribeAndGenerateMom(meetingId: string, recordingId: string, videoUrl: string) {
   try {
-    // transcription started (recording id hidden in prod logs)
-    
     const transcriptionService = getTranscriptionService()
     const result = await transcriptionService.transcribe(videoUrl)
 
-    // Save transcript
     await prisma.meetingTranscript.create({
       data: {
         meetingId,
@@ -294,15 +346,13 @@ async function transcribeAndGenerateMom(meetingId: string, recordingId: string, 
       },
     })
 
-    // transcript saved
-
-    // Generate MoM from transcript
     await generateMeetingSummary(meetingId)
-    
-    // MoM generated
+    // generateMeetingSummary already flips PROCESSING -> COMPLETED, but
+    // ensure it even when the AI provider returns empty (still done).
+    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'COMPLETED' } }).catch(() => {})
   } catch (err) {
     console.error('[TRANSCRIPTION] Failed:', err)
-    // Don't throw - this is a background process
+    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'FAILED' } }).catch(() => {})
   }
 }
 

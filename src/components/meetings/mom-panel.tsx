@@ -13,10 +13,12 @@ import {
   ArrowRightCircle,
   Pencil,
   Check,
+  Trash2,
   AlertTriangle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { generateMomAction, editMomSummaryAction } from '@/app/meetings/actions'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { generateMomAction, editMomSummaryAction, deleteMomAction } from '@/app/meetings/actions'
 import type { MeetingSummaryData } from '@/types/meetings'
 
 interface Section {
@@ -52,6 +54,8 @@ export function MomPanel({
   const [editing, setEditing] = useState(false)
   const [editValue, setEditValue] = useState(summary?.summary ?? '')
   const [savingEdit, startSavingEdit] = useTransition()
+  const [deletingMom, startDeletingMom] = useTransition()
+  const [confirmDeleteMom, setConfirmDeleteMom] = useState(false)
 
   function handleGenerate() {
     setError(null)
@@ -66,6 +70,15 @@ export function MomPanel({
       const result = await editMomSummaryAction(meetingId, editValue)
       if (result.error) setError(result.error)
       else setEditing(false)
+    })
+  }
+
+  function handleDeleteMom() {
+    setError(null)
+    startDeletingMom(async () => {
+      const result = await deleteMomAction(meetingId)
+      if (result.error) setError(result.error)
+      else window.location.reload()
     })
   }
 
@@ -91,10 +104,18 @@ export function MomPanel({
           <Sparkles className="h-4 w-4 text-purple-300" />
           AI-generated Minutes of Meeting
         </div>
-        <Button size="sm" disabled={!canGenerate || generating} onClick={handleGenerate} className="gap-1.5">
-          {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-          {summary ? 'Regenerate' : 'Generate MoM'}
-        </Button>
+        <div className="flex items-center gap-2">
+          {summary && (
+            <Button size="sm" variant="ghost" disabled={deletingMom} onClick={() => setConfirmDeleteMom(true)} className="gap-1.5 text-white/60 hover:text-red-300">
+              {deletingMom ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+              Delete MoM
+            </Button>
+          )}
+          <Button size="sm" disabled={!canGenerate || generating} onClick={handleGenerate} className="gap-1.5">
+            {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+            {summary ? 'Regenerate' : 'Generate MoM'}
+          </Button>
+        </div>
       </div>
 
       {!canGenerate && !summary && (
@@ -175,6 +196,16 @@ export function MomPanel({
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={confirmDeleteMom}
+        onOpenChange={setConfirmDeleteMom}
+        title="Delete MoM?"
+        description="This will delete the AI-generated summary and its insights for this meeting. The transcript and recording stay intact — you can regenerate the MoM later."
+        confirmLabel="Delete MoM"
+        variant="destructive"
+        loading={deletingMom}
+        onConfirm={handleDeleteMom}
+      />
     </div>
   )
 }

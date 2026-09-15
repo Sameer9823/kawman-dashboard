@@ -431,6 +431,13 @@ export async function generateMeetingSummary(meetingId: string) {
   } else {
     await prisma.meetingSummary.create({ data: { meetingId, ...data } })
   }
+
+  // Video-upload flow creates the meeting as PROCESSING — once a MoM
+  // exists the pipeline is done, so flip to COMPLETED instead of
+  // leaving the card stuck on "Processing video…" forever.
+  if (meeting.status === 'PROCESSING') {
+    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'COMPLETED' } }).catch(() => {})
+  }
 }
 
 export async function updateMeetingSummaryText(meetingId: string, summary: string) {

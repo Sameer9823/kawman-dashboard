@@ -250,11 +250,16 @@ export function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2.5 rounded-lg pl-1 pr-2 py-1 hover:bg-white/5 transition-colors">
-                <div className="h-8 w-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0">
-                  <span className="text-white font-medium text-xs">
-                    {user?.name ? getInitials(user.name) : 'U'}
-                  </span>
-                </div>
+                {user?.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- Cloudinary URL, not a local optimizable asset
+                  <img src={user.image} alt={user?.name ?? 'Avatar'} className="h-8 w-8 rounded-full object-cover border border-white/10 shrink-0" />
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-purple-600 flex items-center justify-center shrink-0">
+                    <span className="text-white font-medium text-xs">
+                      {user?.name ? getInitials(user.name) : 'U'}
+                    </span>
+                  </div>
+                )}
                 <div className="hidden md:block text-left leading-tight">
                   <p className="text-sm font-medium text-white">{user?.name ?? 'Account'}</p>
                   <p className="text-xs text-white/40">{user?.email ?? ''}</p>

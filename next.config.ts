@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "500mb",
     },
+    // Proxy runs before the Server Action; its own 10MB default truncates
+    // the multipart stream before bodySizeLimit is ever checked (hence the
+    // "Request body exceeded 10MB" + "Unexpected end of form" loop).
+    proxyClientMaxBodySize: "500mb",
   },
   async redirects() {
     return [{ source: "/admin/audit-logs/:path*", destination: "/admin/activity", permanent: false }]

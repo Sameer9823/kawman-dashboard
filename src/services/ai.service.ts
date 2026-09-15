@@ -486,6 +486,16 @@ export async function generateTeamManagementSummary(dateRange?: { from: Date; to
   return { id: row.id }
 }
 
+export async function deleteReport(id: string): Promise<void> {
+  const session = await requireApiSession()
+  const existing = await prisma.aIReport.findFirst({
+    where: { id, organizationId: session.user.organizationId },
+    select: { id: true },
+  })
+  if (!existing) throw new Error('Report not found')
+  await prisma.aIReport.delete({ where: { id } })
+}
+
 export { isAIConfigured }
 
 // ============================================================

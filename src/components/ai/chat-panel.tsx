@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { Send, Plus, Trash2, Bot, User as UserIcon, Sparkles, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { Markdown } from './markdown'
 import { cn } from '@/lib/utils'
@@ -42,6 +43,8 @@ export function ChatPanel({
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const idCounter = React.useRef(0)
   const [mobileListOpen, setMobileListOpen] = React.useState(false)
+  const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null)
+  const [deleting, setDeleting] = React.useState(false)
 
   React.useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
@@ -62,11 +65,17 @@ export function ChatPanel({
     setError(null)
   }
 
-  async function removeConversation(id: string, e: React.MouseEvent) {
-    e.stopPropagation()
-    await fetch(`/api/ai/conversations/${id}`, { method: 'DELETE' })
-    setConversations((prev) => prev.filter((c) => c.id !== id))
-    if (activeId === id) newChat()
+  async function confirmRemoveConversation() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await fetch(`/api/ai/conversations/${deleteTarget}`, { method: 'DELETE' })
+      setConversations((prev) => prev.filter((c) => c.id !== deleteTarget))
+      if (activeId === deleteTarget) newChat()
+    } finally {
+      setDeleting(false)
+      setDeleteTarget(null)
+    }
   }
 
   async function send(text?: string) {
@@ -166,7 +175,7 @@ export function ChatPanel({
               {conversations.map((c) => (
                 <button key={c.id} onClick={() => { loadConversation(c.id); setMobileListOpen(false) }} className={cn('w-full text-left px-3 py-2 rounded-lg text-sm group flex items-start justify-between gap-2', activeId === c.id ? 'bg-purple-500/15 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white')}>
                   <span className="truncate"><span className="block truncate font-medium">{c.title || 'Untitled chat'}</span>{c.lastMessagePreview && <span className="block truncate text-xs text-white/35">{c.lastMessagePreview}</span>}</span>
-                  <Trash2 className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-60 hover:!opacity-100 mt-0.5" onClick={(e) => removeConversation(c.id, e)} />
+                  <Trash2 className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-60 hover:!opacity-100 mt-0.5" onClick={(e) => { e.stopPropagation(); setDeleteTarget(c.id) }} />
                 </button>
               ))}
             </div>
@@ -201,7 +210,7 @@ export function ChatPanel({
               </span>
               <Trash2
                 className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-60 hover:!opacity-100 mt-0.5"
-                onClick={(e) => removeConversation(c.id, e)}
+                onClick={(e) => { e.stopPropagation(); setDeleteTarget(c.id) }}
               />
             </button>
           ))}
@@ -299,6 +308,16 @@ export function ChatPanel({
           </Button>
         </form>
       </div>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title="Delete conversation?"
+        description="This conversation and all its messages will be permanently deleted."
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={deleting}
+        onConfirm={confirmRemoveConversation}
+      />
     </div>
   )
 }

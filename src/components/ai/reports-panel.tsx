@@ -3,10 +3,12 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FileBarChart, Sparkles, AlertTriangle, ArrowRight, Loader2 } from 'lucide-react'
+import { FileBarChart, Sparkles, AlertTriangle, ArrowRight, Loader2, Trash2, Download, FileDown } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { formatDistanceToNow } from 'date-fns'
+import { exportReportPdf } from '@/lib/report-pdf'
 
 interface ReportTypeMeta {
   type: string
@@ -32,9 +34,15 @@ export function ReportsPanel({
   aiConfigured: boolean
 }) {
   const router = useRouter()
-  const reports = initialReports
+  const [reports, setReports] = React.useState(initialReports)
   const [generating, setGenerating] = React.useState<string | null>(null)
   const [error, setError] = React.useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = React.useState<ReportSummary | null>(null)
+  const [deleting, startDeleting] = React.useTransition()
+  const [exportingId, setExportingId] = React.useState<string | null>(null)
+
+  // keep in sync if server re-renders with new initialReports
+  React.useEffect(() => setReports(initialReports), [initialReports])
 
   async function handleGenerate(type: string) {
     setGenerating(type)
@@ -52,6 +60,42 @@ export function ReportsPanel({
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setGenerating(null)
+    }
+  }
+
+  function handleDelete() {
+    if (!deleteTarget) return
+    const id = deleteTarget.id
+    startDeleting(async () => {
+      const res = await fetch(`/api/ai/reports/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || 'Failed to delete report')
+        return
+      }
+      setReports((prev) => prev.filter((r) => r.id !== id))
+      setDeleteTarget(null)
+      router.refresh()
+    })
+  }
+
+  async function handleExport(report: ReportSummary) {
+    setExportingId(report.id)
+    try {
+      const res = await fetch(`/api/ai/reports/${report.id}`)
+      if (!res.ok) throw new Error('Failed to load report')
+      const full = await res.json()
+      exportReportPdf({
+        title: full.title,
+        type: full.type,
+        content: full.content,
+        createdAt: full.createdAt,
+        generatedByName: full.generatedByName,
+      })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Export failed')
+    } finally {
+      setExportingId(null)
     }
   }
 
@@ -106,7 +150,10 @@ export function ReportsPanel({
       </div>
 
       <div>
-        <h2 className="text-sm font-semibold text-white/70 mb-3">Recent reports</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-white/70">Recent reports</h2>
+          <span className="text-xs text-white/30">{reports.length} total</span>
+        </div>
         {reports.length === 0 ? (
           <div className="rounded-xl border border-white/10 bg-white/5 py-12 text-center">
             <FileBarChart className="h-6 w-6 text-white/30 mx-auto mb-2" />
@@ -115,23 +162,61 @@ export function ReportsPanel({
         ) : (
           <div className="rounded-xl border border-white/10 bg-white/5 divide-y divide-white/10 overflow-hidden">
             {reports.map((r) => (
-              <Link
+              <div
                 key={r.id}
-                href={`/ai/reports/${r.id}`}
-                className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-white/5 transition-colors"
+                className="flex items-center gap-2 px-3 sm:px-4 py-3 hover:bg-white/5 transition-colors group"
               >
-                <div className="min-w-0">
-                  <p className="text-sm text-white font-medium truncate">{r.title}</p>
-                  <p className="text-xs text-white/40 mt-0.5">
-                    {r.generatedByName} · {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
-                  </p>
+                <Link href={`/ai/reports/${r.id}`} className="flex-1 min-w-0 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm text-white font-medium truncate">{r.title}</p>
+                    <p className="text-xs text-white/40 mt-0.5">
+                      {r.generatedByName} · {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
+                    </p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-white/20 group-hover:text-white/40 shrink-0 hidden sm:block" />
+                </Link>
+
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-white/30 hover:text-white hover:bg-white/10"
+                    title="Export PDF"
+                    disabled={exportingId === r.id}
+                    onClick={() => handleExport(r)}
+                  >
+                    {exportingId === r.id ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <FileDown className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-white/30 hover:text-red-300 hover:bg-red-500/10"
+                    title="Delete report"
+                    onClick={() => setDeleteTarget(r)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
-                <ArrowRight className="h-4 w-4 text-white/30 shrink-0" />
-              </Link>
+              </div>
             ))}
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title="Delete report?"
+        description={deleteTarget ? `“${deleteTarget.title}” will be permanently deleted.` : ''}
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

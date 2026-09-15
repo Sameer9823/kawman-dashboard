@@ -62,6 +62,7 @@ export function MomPanel({
     startGenerate(async () => {
       const result = await generateMomAction(meetingId)
       if (result.error) setError(result.error)
+      else window.dispatchEvent(new Event('storage:refresh'))
     })
   }
 
@@ -78,7 +79,7 @@ export function MomPanel({
     startDeletingMom(async () => {
       const result = await deleteMomAction(meetingId)
       if (result.error) setError(result.error)
-      else window.location.reload()
+      else { window.dispatchEvent(new Event('storage:refresh')); window.location.reload() }
     })
   }
 

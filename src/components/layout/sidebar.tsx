@@ -200,20 +200,36 @@ function formatStorageGb(gb: number): string {
 export function Sidebar() {
   const { sidebarCollapsed, toggleSidebar, setMobileDrawerOpen } = useUIStore()
   const { hasPermission, hasAnyPermission } = usePermissions()
+  const pathname = usePathname()
   const [storage, setStorage] = React.useState<StorageUsage | null>(null)
 
-  React.useEffect(() => {
-    let cancelled = false
-    fetch('/api/storage/usage', { cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: StorageUsage | null) => {
-        if (!cancelled && data) setStorage(data)
-      })
-      .catch(() => {})
-    return () => {
-      cancelled = true
-    }
+  const refreshStorage = React.useCallback(async () => {
+    try {
+      const r = await fetch('/api/storage/usage', { cache: 'no-store' })
+      if (!r.ok) return
+      const data: StorageUsage = await r.json()
+      setStorage(data)
+    } catch {}
   }, [])
+
+  React.useEffect(() => {
+    refreshStorage()
+    const onRefresh = () => refreshStorage()
+    window.addEventListener('storage:refresh', onRefresh)
+    window.addEventListener('focus', onRefresh)
+    document.addEventListener('visibilitychange', onRefresh)
+    const id = window.setInterval(refreshStorage, 30_000)
+    return () => {
+      window.removeEventListener('storage:refresh', onRefresh)
+      window.removeEventListener('focus', onRefresh)
+      document.removeEventListener('visibilitychange', onRefresh)
+      window.clearInterval(id)
+    }
+  }, [refreshStorage])
+
+  React.useEffect(() => {
+    refreshStorage()
+  }, [pathname, refreshStorage])
 
   const closeDrawer = React.useCallback(() => setMobileDrawerOpen(false), [setMobileDrawerOpen])
 

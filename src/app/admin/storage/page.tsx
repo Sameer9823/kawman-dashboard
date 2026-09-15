@@ -7,8 +7,10 @@ export const metadata = { title: 'Storage | Kawman ExAct Admin' }
 
 export default async function AdminStoragePage() {
   const session = await requirePermission('files.manage')
-  const [agg, byUploader] = await Promise.all([
+  const [fileAgg, recordingAgg, versionAgg, byUploader] = await Promise.all([
     prisma.file.aggregate({ where: { organizationId: session.user.organizationId }, _sum: { fileSize: true }, _count: true }),
+    prisma.meetingRecording.aggregate({ where: { meeting: { organizationId: session.user.organizationId } }, _sum: { fileSize: true } }),
+    prisma.fileVersion.aggregate({ where: { file: { organizationId: session.user.organizationId } }, _sum: { fileSize: true } }),
     prisma.file.groupBy({
       by: ['uploadedById'],
       where: { organizationId: session.user.organizationId },
@@ -17,14 +19,18 @@ export default async function AdminStoragePage() {
     }),
   ])
 
-  const usedGb = Number(agg._sum.fileSize ?? 0) / 1024 ** 3
+  const fileBytes = Number(fileAgg._sum.fileSize ?? 0)
+  const recordingBytes = Number(recordingAgg._sum.fileSize ?? 0)
+  const versionBytes = Number(versionAgg._sum.fileSize ?? 0)
+  const usedBytes = fileBytes + recordingBytes + versionBytes
+  const usedGb = usedBytes / 1024 ** 3
   const totalGb = 100
   const pct = Math.min(100, Math.round((usedGb / totalGb) * 100))
 
   return (
     <MainLayout>
       <div className="space-y-6 max-w-3xl">
-        <PageHeader title="Storage" subtitle={`${agg._count} file${agg._count === 1 ? '' : 's'} stored`} />
+        <PageHeader title="Storage" subtitle={`${fileAgg._count} file${fileAgg._count === 1 ? '' : 's'} stored`} />
 
         <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-5">
           <div className="flex justify-between text-sm mb-2">

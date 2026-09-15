@@ -24,7 +24,7 @@ export function MeetingHeaderActions({ meetingId, title }: { meetingId: string; 
     start(async () => {
       const res = await renameMeetingAction(meetingId, t)
       if (res?.error) toast.error(res.error)
-      else { toast.success('Meeting renamed'); setEditing(false); router.refresh() }
+      else { toast.success('Meeting renamed'); setEditing(false); router.refresh(); window.dispatchEvent(new Event('storage:refresh')) }
     })
   }
 
@@ -32,7 +32,7 @@ export function MeetingHeaderActions({ meetingId, title }: { meetingId: string; 
     startDeleting(async () => {
       const res = await deleteMeetingAction(meetingId)
       if (res?.error) toast.error(res.error)
-      else { toast.success('Meeting deleted'); router.push('/meetings') }
+      else { toast.success('Meeting deleted'); window.dispatchEvent(new Event('storage:refresh')); router.push('/meetings') }
     })
   }
 

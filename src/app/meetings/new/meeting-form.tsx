@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import * as React from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -17,6 +18,9 @@ export function NewMeetingForm({
   currentUserId: string
 }) {
   const [state, formAction, pending] = useActionState(createMeetingWithVideoAction, initialState)
+  useEffect(() => {
+    if (state.meetingId) window.dispatchEvent(new Event('storage:refresh'))
+  }, [state.meetingId])
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([currentUserId])
 
   function toggleParticipant(id: string) {

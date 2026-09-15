@@ -8,14 +8,17 @@ export async function GET() {
 
   const organizationId = session.user.organizationId
 
-  const agg = await prisma.file.aggregate({
-    where: { organizationId },
-    _sum: { fileSize: true },
-    _count: true,
-  })
+  const [fileAgg, recordingAgg, versionAgg] = await Promise.all([
+    prisma.file.aggregate({ where: { organizationId }, _sum: { fileSize: true }, _count: true }),
+    prisma.meetingRecording.aggregate({ where: { meeting: { organizationId } }, _sum: { fileSize: true } }),
+    prisma.fileVersion.aggregate({ where: { file: { organizationId } }, _sum: { fileSize: true } }),
+  ])
 
-  const usedBytes = Number(agg._sum.fileSize ?? 0)
-  const fileCount = agg._count
+  const fileBytes = Number(fileAgg._sum.fileSize ?? 0)
+  const recordingBytes = Number(recordingAgg._sum.fileSize ?? 0)
+  const versionBytes = Number(versionAgg._sum.fileSize ?? 0)
+  const usedBytes = fileBytes + recordingBytes + versionBytes
+  const fileCount = fileAgg._count
   const totalGb = 100 // plan limit — keep in sync with /admin/storage
   const usedGb = usedBytes / 1024 ** 3
   const pct = totalGb > 0 ? Math.min(100, (usedGb / totalGb) * 100) : 0
@@ -27,9 +30,10 @@ export async function GET() {
       totalGb,
       pct: Math.round(pct * 10) / 10,
       fileCount,
+      breakdown: { fileBytes, recordingBytes, versionBytes },
     },
     {
-      headers: { 'Cache-Control': 'private, max-age=30' },
+      headers: { 'Cache-Control': 'private, max-age=15' },
     },
   )
 }

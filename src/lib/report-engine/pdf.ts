@@ -26,16 +26,36 @@ async function getBrowser(): Promise<import('puppeteer').Browser> {
       'puppeteer is not installed. Run `npm install puppeteer` (or `puppeteer-core` + browser) to enable PDF export.',
     )
   }
-  browserPromise = puppeteer.launch({
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--font-render-hinting=none',
-    ],
-  })
-  const b = await browserPromise
+  browserPromise = puppeteer
+    .launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--font-render-hinting=none',
+      ],
+    })
+    .catch((err: unknown) => {
+      // Launch failed (e.g. Chrome not installed) — don't poison the singleton
+      browserPromise = null
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('Could not find Chrome')) {
+        throw new Error(
+          'Chrome for Puppeteer is not installed. Run `npx puppeteer browsers install chrome` once locally, ' +
+            'or add it to your build (e.g. `npx puppeteer browsers install chrome` in postinstall). Original: ' +
+            msg,
+        )
+      }
+      throw err
+    })
+  let b: import('puppeteer').Browser
+  try {
+    b = await browserPromise
+  } catch (e) {
+    browserPromise = null
+    throw e
+  }
   // Best-effort cleanup on process exit (no-op in serverless, useful locally)
   const cleanup = async (): Promise<void> => {
     try {

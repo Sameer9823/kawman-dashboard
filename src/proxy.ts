@@ -99,6 +99,6 @@ export async function proxy(request: NextRequest) {
 }
 export const config = {
   matcher: [
-    '/((?!api/auth|api/meetings/[^/]+/upload-recording|meetings/new|_next/static|_next/image|favicon\\.ico|manifest\\.json|sw\\.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!api/auth|api/meetings/[^/]+/upload-recording|_next/static|_next/image|favicon\\.ico|manifest\\.json|sw\\.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

@@ -1,14 +1,19 @@
 import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { getOrgUserOptions } from '@/services/user.service'
-import { requireApiSession } from '@/lib/session'
+import { requireSession } from '@/lib/session'
 import { NewMeetingForm } from './meeting-form'
 
 export const metadata = { title: 'New Meeting (MOM) | Kawman ExAct' }
 
 export default async function NewMeetingPage() {
-  const session = await requireApiSession()
-  const users = await getOrgUserOptions()
+  const session = await requireSession()
+  let users: Awaited<ReturnType<typeof getOrgUserOptions>> = []
+  try {
+    users = await getOrgUserOptions()
+  } catch (err) {
+    console.error('[meetings/new] getOrgUserOptions failed — rendering with empty roster:', err)
+  }
 
   return (
     <MainLayout>

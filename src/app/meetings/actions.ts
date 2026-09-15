@@ -11,6 +11,8 @@ import { PERMISSIONS } from '@/lib/permissions-data'
 import { saveTranscript, addRecordingLink, generateMeetingSummary, updateMeetingSummaryText } from '@/services/meeting.service'
 import { isCloudinaryConfigured, uploadToCloudinary } from '@/lib/cloudinary'
 import { getTranscriptionService } from '@/lib/transcription'
+import { findOrCreateCompanyByName } from '@/services/company.service'
+import { findOrCreateContactByName } from '@/services/contact.service'
 import { logAudit } from '@/lib/audit-log'
 
 async function assertPermission(permission: string) {
@@ -26,8 +28,8 @@ async function assertPermission(permission: string) {
 const meetingSchema = z.object({
   title: z.string().trim().min(2, 'Title is required'),
   notes: z.string().trim().optional(),
-  companyId: z.string().trim().optional(),
-  contactId: z.string().trim().optional(),
+  company: z.string().trim().optional(),
+  contact: z.string().trim().optional(),
   dealId: z.string().trim().optional(),
   participantIds: z.string().trim().optional(),
 })
@@ -53,6 +55,24 @@ export async function createMeetingAction(_prev: MeetingFormState, formData: For
     : []
   if (!participantIds.includes(session.user.id)) participantIds.push(session.user.id)
 
+  const company = data.company?.trim()
+    ? await findOrCreateCompanyByName({
+        name: data.company.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: session.user.id,
+      })
+    : null
+  const companyId = company?.id ?? null
+  const contact = data.contact?.trim()
+    ? await findOrCreateContactByName({
+        name: data.contact.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: session.user.id,
+        companyId,
+      })
+    : null
+  const contactId = contact?.id ?? null
+
   const meeting = await prisma.meeting.create({
     data: {
       title: data.title,
@@ -63,8 +83,8 @@ export async function createMeetingAction(_prev: MeetingFormState, formData: For
       notes: data.notes || null,
       organizationId: session.user.organizationId,
       createdById: session.user.id,
-      companyId: data.companyId || null,
-      contactId: data.contactId || null,
+      companyId,
+      contactId,
       dealId: data.dealId || null,
       participants: {
         create: participantIds.map((userId) => ({
@@ -305,8 +325,8 @@ export async function createMeetingWithVideoAction(
 
   const title = formData.get('title')?.toString().trim() || ''
   const notes = formData.get('notes')?.toString().trim()
-  const companyId = formData.get('companyId')?.toString().trim() || undefined
-  const contactId = formData.get('contactId')?.toString().trim() || undefined
+  const companyName = formData.get('company')?.toString().trim() || undefined
+  const contactName = formData.get('contact')?.toString().trim() || undefined
   const dealId = formData.get('dealId')?.toString().trim() || undefined
   const participantIds = formData.get('participantIds')?.toString().trim()
   const file = formData.get('videoFile')
@@ -353,6 +373,24 @@ export async function createMeetingWithVideoAction(
     mimeType: videoFile.type || 'video/mp4',
   })
 
+  const company = companyName
+    ? await findOrCreateCompanyByName({
+        name: companyName,
+        organizationId: session.user.organizationId,
+        ownerId: session.user.id,
+      })
+    : null
+  const companyId = company?.id ?? null
+  const contact = contactName
+    ? await findOrCreateContactByName({
+        name: contactName,
+        organizationId: session.user.organizationId,
+        ownerId: session.user.id,
+        companyId,
+      })
+    : null
+  const contactId = contact?.id ?? null
+
   // Create meeting with PROCESSING status
   const meeting = await prisma.meeting.create({
     data: {
@@ -362,8 +400,8 @@ export async function createMeetingWithVideoAction(
       status: 'PROCESSING',
       scheduledAt: new Date(),
       duration: 0,
-      companyId: companyId || null,
-      contactId: contactId || null,
+      companyId,
+      contactId,
       dealId: dealId || null,
       notes: notes || null,
       createdById: session.user.id,

@@ -4,7 +4,6 @@ import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { getContactById } from '@/services/contact.service'
 import { getOrgUserOptions } from '@/services/user.service'
-import { getCompanyOptions } from '@/services/company.service'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { formatCurrency } from '@/lib/utils'
@@ -14,10 +13,9 @@ export const metadata = { title: 'Contact Detail | Kawman ExAct' }
 
 export default async function ContactDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [contact, owners, companies] = await Promise.all([
+  const [contact, owners] = await Promise.all([
     getContactById(id),
     getOrgUserOptions(),
-    getCompanyOptions(),
   ])
   if (!contact) notFound()
 
@@ -52,7 +50,7 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
             )
           }
         />
-        <ContactDetailForm contact={contact} owners={owners} companies={companies} />
+        <ContactDetailForm contact={contact} owners={owners} />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">

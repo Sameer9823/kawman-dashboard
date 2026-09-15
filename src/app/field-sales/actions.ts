@@ -8,6 +8,8 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
+import { findOrCreateCompanyByName } from '@/services/company.service'
+import { findOrCreateContactByName } from '@/services/contact.service'
 import { createCheckIn as createCheckInRow } from '@/services/field-visit.service'
 
 async function assertPermission(permission: string) {
@@ -24,8 +26,8 @@ const visitSchema = z.object({
   title: z.string().trim().min(2, 'Title is required'),
   purpose: z.string().trim().min(2, 'Purpose is required'),
   scheduledAt: z.string().trim().min(1, 'Date/time is required'),
-  companyId: z.string().trim().optional(),
-  contactId: z.string().trim().optional(),
+  company: z.string().trim().optional(),
+  contact: z.string().trim().optional(),
   assigneeId: z.string().trim().optional(),
   address: z.string().trim().optional(),
   latitude: z.coerce.number().min(-90).max(90).optional(),
@@ -53,6 +55,24 @@ export async function createFieldVisitAction(_prev: VisitFormState, formData: Fo
     return { fieldErrors: { scheduledAt: 'Enter a valid date/time' } }
   }
 
+  const company = data.company?.trim()
+    ? await findOrCreateCompanyByName({
+        name: data.company.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: data.assigneeId || session.user.id,
+      })
+    : null
+  const companyId = company?.id ?? null
+  const contact = data.contact?.trim()
+    ? await findOrCreateContactByName({
+        name: data.contact.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: data.assigneeId || session.user.id,
+        companyId,
+      })
+    : null
+  const contactId = contact?.id ?? null
+
   await prisma.fieldVisit.create({
     data: {
       title: data.title,
@@ -64,8 +84,8 @@ export async function createFieldVisitAction(_prev: VisitFormState, formData: Fo
       longitude: data.longitude ?? null,
       organizationId: session.user.organizationId,
       assigneeId: data.assigneeId || session.user.id,
-      companyId: data.companyId || null,
-      contactId: data.contactId || null,
+      companyId,
+      contactId,
     },
   })
 
@@ -129,7 +149,7 @@ const geoFenceSchema = z.object({
   latitude: z.coerce.number().min(-90).max(90),
   longitude: z.coerce.number().min(-180).max(180),
   radius: z.coerce.number().int().min(10, 'Radius must be at least 10m').max(50000),
-  companyId: z.string().trim().optional(),
+  company: z.string().trim().optional(),
 })
 
 export interface GeoFenceFormState {
@@ -147,13 +167,21 @@ export async function createGeoFenceAction(_prev: GeoFenceFormState, formData: F
     return { fieldErrors }
   }
   const data = parsed.data
+  const company2 = data.company?.trim()
+    ? await findOrCreateCompanyByName({
+        name: data.company.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: session.user.id,
+      })
+    : null
+  const companyId2 = company2?.id ?? null
   await prisma.geoFence.create({
     data: {
       name: data.name,
       latitude: data.latitude,
       longitude: data.longitude,
       radius: data.radius,
-      companyId: data.companyId || null,
+      companyId: companyId2,
       organizationId: session.user.organizationId,
     },
   })

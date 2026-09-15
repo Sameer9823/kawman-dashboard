@@ -18,13 +18,9 @@ const initialState: DealFormState = {}
 export function DealDetailForm({
   deal,
   owners,
-  companies,
-  contacts,
 }: {
   deal: DealDetail
   owners: UserOption[]
-  companies: { id: string; name: string }[]
-  contacts: { id: string; name: string; companyId: string | null }[]
 }) {
   const router = useRouter()
   const [deleting, startDelete] = useTransition()
@@ -54,26 +50,10 @@ export function DealDetailForm({
           <Input name="name" defaultValue={deal.name} required />
         </Field>
         <Field label="Company" error={state.fieldErrors?.company}>
-          <Input name="company" defaultValue={deal.company === '—' ? '' : deal.company} list="company-suggestions-detail" />
-          <datalist id="company-suggestions-detail">
-            {companies.map((c) => (
-              <option key={c.id} value={c.name} />
-            ))}
-          </datalist>
+          <Input name="company" defaultValue={deal.company === '—' ? '' : deal.company} />
         </Field>
-        <Field label="Contact" error={state.fieldErrors?.contactId}>
-          <select
-            name="contactId"
-            defaultValue={deal.contactId}
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
-            <option value="">No contact</option>
-            {contacts.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+        <Field label="Contact" error={state.fieldErrors?.contact}>
+          <Input name="contact" defaultValue={deal.contact === '—' ? '' : deal.contact} placeholder="Anjali Mehta" />
         </Field>
         <Field label="Value (₹) *" error={state.fieldErrors?.value}>
           <Input name="value" type="number" min={0} defaultValue={deal.value} required />

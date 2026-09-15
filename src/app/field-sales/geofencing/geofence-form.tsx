@@ -7,7 +7,7 @@ import { createGeoFenceAction, type GeoFenceFormState } from '../actions'
 
 const initialState: GeoFenceFormState = {}
 
-export function GeoFenceForm({ companies }: { companies: { id: string; name: string }[] }) {
+export function GeoFenceForm() {
   const [state, formAction, pending] = useActionState(createGeoFenceAction, initialState)
 
   return (
@@ -15,19 +15,8 @@ export function GeoFenceForm({ companies }: { companies: { id: string; name: str
       <Field label="Fence name *" error={state.fieldErrors?.name}>
         <Input name="name" placeholder="Acme HQ perimeter" required />
       </Field>
-      <Field label="Linked company" error={state.fieldErrors?.companyId}>
-        <select
-          name="companyId"
-          defaultValue=""
-          className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-        >
-          <option value="">No company</option>
-          {companies.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+      <Field label="Linked company" error={state.fieldErrors?.company}>
+        <Input name="company" placeholder="Acme Nutraceuticals" />
       </Field>
       <Field label="Latitude *" error={state.fieldErrors?.latitude}>
         <Input name="latitude" type="number" step="0.000001" placeholder="19.119677" required />

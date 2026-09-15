@@ -3,8 +3,6 @@ import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { getDealById } from '@/services/deal.service'
 import { getOrgUserOptions } from '@/services/user.service'
-import { getCompanyOptions } from '@/services/company.service'
-import { getContactOptions } from '@/services/contact.service'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { formatCurrency } from '@/lib/utils'
@@ -14,11 +12,9 @@ export const metadata = { title: 'Deal Detail | Kawman ExAct' }
 
 export default async function DealDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [deal, owners, companies, contacts] = await Promise.all([
+  const [deal, owners] = await Promise.all([
     getDealById(id),
     getOrgUserOptions(),
-    getCompanyOptions(),
-    getContactOptions(),
   ])
   if (!deal) notFound()
 
@@ -40,7 +36,7 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
     <MainLayout>
       <div className="space-y-6 max-w-4xl">
         <PageHeader title={deal.name} subtitle={`${deal.company} · ${formatCurrency(deal.value)}`} />
-        <DealDetailForm deal={deal} owners={owners} companies={companies} contacts={contacts} />
+        <DealDetailForm deal={deal} owners={owners} />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">

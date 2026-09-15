@@ -13,7 +13,7 @@ const initialState: LeadFormState = {}
 
 const LEAD_SOURCES = ['Website', 'Referral', 'Trade Show', 'Cold Call', 'Email Campaign', 'Social Media', 'Other']
 
-export function LeadForm({ owners, companies }: { owners: UserOption[]; companies: { id: string; name: string }[] }) {
+export function LeadForm({ owners }: { owners: UserOption[] }) {
   const [state, formAction, pending] = useActionState(createLeadAction, initialState)
   const router = useRouter()
   useEffect(() => {
@@ -32,12 +32,7 @@ export function LeadForm({ owners, companies }: { owners: UserOption[]; companie
         </Field>
 
         <Field label="Company" error={state.fieldErrors?.company}>
-          <Input name="company" placeholder="Acme Nutraceuticals" list="company-suggestions" />
-          <datalist id="company-suggestions">
-            {companies.map((c) => (
-              <option key={c.id} value={c.name} />
-            ))}
-          </datalist>
+          <Input name="company" placeholder="Acme Nutraceuticals" />
         </Field>
 
         <Field label="Email" error={state.fieldErrors?.email}>

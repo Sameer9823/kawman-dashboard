@@ -16,11 +16,9 @@ const initialState: ContactFormState = {}
 export function ContactDetailForm({
   contact,
   owners,
-  companies,
 }: {
   contact: ContactDetail
   owners: UserOption[]
-  companies: { id: string; name: string }[]
 }) {
   const router = useRouter()
   const [deleting, startDelete] = useTransition()
@@ -50,12 +48,7 @@ export function ContactDetailForm({
           <Input name="name" defaultValue={contact.name} required />
         </Field>
         <Field label="Company" error={state.fieldErrors?.company}>
-          <Input name="company" defaultValue={contact.company === '—' ? '' : contact.company} list="company-suggestions-detail" />
-          <datalist id="company-suggestions-detail">
-            {companies.map((c) => (
-              <option key={c.id} value={c.name} />
-            ))}
-          </datalist>
+          <Input name="company" defaultValue={contact.company === '—' ? '' : contact.company} placeholder="Acme Nutraceuticals" />
         </Field>
         <Field label="Designation" error={state.fieldErrors?.designation}>
           <Input name="designation" defaultValue={contact.designation === '—' ? '' : contact.designation} />

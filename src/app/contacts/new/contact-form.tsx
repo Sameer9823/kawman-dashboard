@@ -13,10 +13,8 @@ const initialState: ContactFormState = {}
 
 export function ContactForm({
   owners,
-  companies,
 }: {
   owners: UserOption[]
-  companies: { id: string; name: string }[]
 }) {
   const [state, formAction, pending] = useActionState(createContactAction, initialState)
   const router = useRouter()
@@ -35,12 +33,7 @@ export function ContactForm({
           <Input name="name" placeholder="Anjali Mehta" required />
         </Field>
         <Field label="Company" error={state.fieldErrors?.company}>
-          <Input name="company" placeholder="Acme Nutraceuticals" list="company-suggestions" />
-          <datalist id="company-suggestions">
-            {companies.map((c) => (
-              <option key={c.id} value={c.name} />
-            ))}
-          </datalist>
+          <Input name="company" placeholder="Acme Nutraceuticals" />
         </Field>
         <Field label="Designation" error={state.fieldErrors?.designation}>
           <Input name="designation" placeholder="Procurement Head" />

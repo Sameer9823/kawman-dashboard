@@ -9,13 +9,14 @@ import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
 import { logAudit } from '@/lib/audit-log'
 import { findOrCreateCompanyByName } from '@/services/company.service'
+import { findOrCreateContactByName } from '@/services/contact.service'
 
 const STAGES = ['NEW_LEAD', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST'] as const
 
 const dealSchema = z.object({
   name: z.string().trim().min(2, 'Deal name is required'),
   company: z.string().trim().optional(),
-  contactId: z.string().trim().optional(),
+  contact: z.string().trim().optional(),
   value: z.coerce.number().min(0, 'Value must be positive'),
   probability: z.coerce.number().int().min(0).max(100).optional(),
   stage: z.enum(STAGES).optional(),
@@ -56,6 +57,15 @@ export async function createDealAction(_prev: DealFormState, formData: FormData)
       })
     : null
   const companyId = company?.id ?? null
+  const contact = data.contact?.trim()
+    ? await findOrCreateContactByName({
+        name: data.contact.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: data.ownerId || session.user.id,
+        companyId,
+      })
+    : null
+  const contactId = contact?.id ?? null
 
   const deal = await prisma.deal.create({
     data: {
@@ -66,7 +76,7 @@ export async function createDealAction(_prev: DealFormState, formData: FormData)
       expectedClose: data.expectedClose ? new Date(data.expectedClose) : null,
       priority: data.priority ?? 'MEDIUM',
       companyId,
-      contactId: data.contactId || null,
+      contactId,
       organizationId: session.user.organizationId,
       ownerId: data.ownerId || session.user.id,
     },
@@ -119,6 +129,16 @@ export async function updateDealAction(id: string, _prev: DealFormState, formDat
     : null
   const rawCompany = formData.get('company')
   const companyId = rawCompany !== null ? (company?.id ?? null) : existing.companyId
+  const contact = data.contact?.trim()
+    ? await findOrCreateContactByName({
+        name: data.contact.trim(),
+        organizationId: session.user.organizationId,
+        ownerId: data.ownerId || existing.ownerId,
+        companyId,
+      })
+    : null
+  const rawContact = formData.get('contact')
+  const contactId = rawContact !== null ? (contact?.id ?? null) : existing.contactId
   const notes = formData.get('notes')
 
   await prisma.deal.update({
@@ -131,7 +151,7 @@ export async function updateDealAction(id: string, _prev: DealFormState, formDat
       expectedClose: data.expectedClose ? new Date(data.expectedClose) : null,
       priority: data.priority ?? existing.priority,
       companyId,
-      contactId: data.contactId || null,
+      contactId,
       ownerId: data.ownerId || existing.ownerId,
       notes: typeof notes === 'string' && notes.trim() ? notes.trim() : existing.notes,
       closedAt: data.stage === 'WON' || data.stage === 'LOST' ? (existing.closedAt ?? new Date()) : null,

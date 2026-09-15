@@ -11,13 +11,9 @@ const initialState: CreateMeetingWithVideoState = {}
 
 export function NewMeetingForm({
   users,
-  companies,
-  contacts,
   currentUserId,
 }: {
   users: UserOption[]
-  companies: { id: string; name: string }[]
-  contacts: { id: string; name: string; companyId: string | null }[]
   currentUserId: string
 }) {
   const [state, formAction, pending] = useActionState(createMeetingWithVideoAction, initialState)
@@ -47,33 +43,11 @@ export function NewMeetingForm({
           <p className="text-xs text-white/40 mt-1">MP4, WebM, MOV, AVI, MKV (max 500MB)</p>
         </Field>
 
-        <Field label="Company" error={state.fieldErrors?.companyId}>
-          <select
-            name="companyId"
-            defaultValue=""
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
-            <option value="">No company</option>
-            {companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+        <Field label="Company" error={state.fieldErrors?.company}>
+          <Input name="company" placeholder="Acme Nutraceuticals" />
         </Field>
-        <Field label="Contact" error={state.fieldErrors?.contactId}>
-          <select
-            name="contactId"
-            defaultValue=""
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
-            <option value="">No contact</option>
-            {contacts.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+        <Field label="Contact" error={state.fieldErrors?.contact}>
+          <Input name="contact" placeholder="Anjali Mehta" />
         </Field>
         <Field label="Deal" error={state.fieldErrors?.dealId}>
           <select

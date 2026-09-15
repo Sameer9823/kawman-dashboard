@@ -6,7 +6,7 @@ import { getContactOptions } from '@/services/contact.service'
 import { requireApiSession } from '@/lib/session'
 import { NewMeetingForm } from './meeting-form'
 
-export const metadata = { title: 'Schedule Meeting | Kawman ExAct' }
+export const metadata = { title: 'New Meeting (MOM) | Kawman ExAct' }
 
 export default async function NewMeetingPage() {
   const session = await requireApiSession()
@@ -19,7 +19,7 @@ export default async function NewMeetingPage() {
   return (
     <MainLayout>
       <div className="space-y-6 max-w-3xl">
-        <PageHeader title="Schedule Meeting" subtitle="Set up a meeting and invite participants" />
+        <PageHeader title="New Meeting" subtitle="Upload a recording to transcribe and generate MOM & insights" />
         <NewMeetingForm users={users} companies={companies} contacts={contacts} currentUserId={session.user.id} />
       </div>
     </MainLayout>

@@ -26,8 +26,8 @@ import {
   BarChart3,
   Video,
   FileText,
-  CalendarPlus,
   Calendar,
+  Sparkles,
   Navigation,
   UserCheck,
   ShieldCheck,
@@ -110,7 +110,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { name: 'Meeting Videos', href: '/meetings/videos', icon: Video },
       { name: 'MOM & Insights', href: '/meetings/mom', icon: FileText },
-      { name: 'Schedule Meeting', href: '/meetings/new', icon: CalendarPlus },
+      { name: 'New Meeting (MOM)', href: '/meetings/new', icon: Sparkles },
     ],
   },
   {

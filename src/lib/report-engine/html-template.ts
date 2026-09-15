@@ -170,37 +170,154 @@ function insightsHtml(insights: ReportInsight[]): string {
     ${insights.map(ins => {
       const tone = ins.variant ?? 'info'
       return `<div class="insight-card v-${tone}">
-        <div class="insight-title">${esc(ins.title)}</div>
-        <div class="insight-desc">${esc(ins.description)}</div>
+        <div class="insight-title">${inlineMd(ins.title)}</div>
+        <div class="insight-desc">${inlineMd(ins.description)}</div>
       </div>`
     }).join('')}
   </div>`
+}
+
+function inlineMd(s: string): string {
+  // Escape first, then restore markdown inline elements
+  let html = esc(s)
+  // inline code `...`
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>')
+  // bold **...**
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  // italic *...* (single, not **) and _..._
+  html = html.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>')
+  html = html.replace(/(?<!_)__([^_\n]+)__(?!_)/g, '<strong>$1</strong>')
+  html = html.replace(/(?<!\w)_([^_\n]+)_(?!\w)/g, '<em>$1</em>')
+  // links [text](url) — text already escaped, url is plain
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+  return html
+}
+
+function isTableSep(line: string): boolean {
+  const t = line.trim()
+  // markdown separator: | --- | :---: | etc. or --- | --- 
+  if (!t.includes('-') && !t.includes(':')) return false
+  return /^\|?[\s|:\-]+\|?[\s|:\-]*$/.test(t) && /---/.test(t)
+}
+
+function parseMdTable(headerLine: string, sepLine: string, bodyLines: string[]): string {
+  const splitRow = (l: string) =>
+    l
+      .trim()
+      .replace(/^\|/, '')
+      .replace(/\|$/, '')
+      .split('|')
+      .map((c) => c.trim())
+  const headers = splitRow(headerLine)
+  const aligns: Array<'left' | 'center' | 'right'> = splitRow(sepLine).map((c) => {
+    const t = c.trim()
+    if (t.startsWith(':') && t.endsWith(':')) return 'center'
+    if (t.endsWith(':')) return 'right'
+    return 'left'
+  })
+  const rows: string[][] = []
+  for (const l of bodyLines) {
+    if (!l.trim() || !l.includes('|')) break
+    if (isTableSep(l)) continue
+    const cells = splitRow(l)
+    while (cells.length < headers.length) cells.push('')
+    rows.push(cells.slice(0, headers.length))
+  }
+  const headHtml = `<thead><tr>${headers.map((h, i) => `<th class="a-${aligns[i] ?? 'left'}">${inlineMd(h)}</th>`).join('')}</tr></thead>`
+  const bodyHtml = `<tbody>${rows.map((r) => `<tr>${r.map((c, i) => `<td class="a-${aligns[i] ?? 'left'}">${inlineMd(c)}</td>`).join('')}</tr>`).join('')}</tbody>`
+  return `<div class="md-table-wrap"><table class="report-table md-table">${headHtml}${bodyHtml}</table></div>`
 }
 
 function textHtml(text: string): string {
   if (!text.trim()) return ''
   const lines = text.split('\n')
   let out = '<div class="text-block">'
-  let inList = false
-  for (const raw of lines) {
-    const line = raw.trim()
-    if (!line) { if (inList) { out += '</ul>'; inList = false } continue }
-    if (line.startsWith('- ') || line.startsWith('• ')) {
-      if (!inList) { out += '<ul>'; inList = true }
-      const content = line.slice(2).trim()
-      const html = content.includes('**') ? content.split(/(\*\*[^*]+\*\*)/g).map(p => p.startsWith('**') ? `<strong>${esc(p.slice(2,-2))}</strong>` : esc(p)).join('') : esc(content)
-      out += `<li>${html}</li>`
-      continue
-    }
-    if (inList) { out += '</ul>'; inList = false }
-    if (line.startsWith('> ')) {
-      out += `<blockquote>${esc(line.slice(2))}</blockquote>`
-      continue
-    }
-    const html = line.includes('**') ? line.split(/(\*\*[^*]+\*\*)/g).map(p => p.startsWith('**') ? `<strong>${esc(p.slice(2,-2))}</strong>` : esc(p)).join('') : esc(line)
-    out += `<p>${html}</p>`
+  let inList: 'ul' | 'ol' | null = null
+
+  const closeList = () => {
+    if (inList) { out += inList === 'ul' ? '</ul>' : '</ol>'; inList = null }
   }
-  if (inList) out += '</ul>'
+
+  let i = 0
+  while (i < lines.length) {
+    const raw = lines[i]
+    const line = raw.trim()
+
+    if (!line) { closeList(); i++; continue }
+
+    // heading: # .. ###### 
+    const hm = line.match(/^(#{1,6})\s+(.*)$/)
+    if (hm) {
+      closeList()
+      const level = hm[1].length
+      const content = inlineMd(hm[2].trim())
+      if (level <= 2) out += `<h2 class="md-h2">${content}</h2>`
+      else if (level === 3) out += `<h3 class="md-h3">${content}</h3>`
+      else out += `<h4 class="md-h4">${content}</h4>`
+      i++; continue
+    }
+
+    // horizontal rule
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(line)) {
+      closeList()
+      out += '<hr class="md-hr" />'
+      i++; continue
+    }
+
+    // blockquote — consume consecutive > lines
+    if (line.startsWith('>')) {
+      closeList()
+      const bqLines: string[] = []
+      while (i < lines.length && lines[i].trim().startsWith('>')) {
+        bqLines.push(lines[i].trim().replace(/^>\s?/, ''))
+        i++
+      }
+      out += `<blockquote>${inlineMd(bqLines.join(' '))}</blockquote>`
+      continue
+    }
+
+    // markdown pipe table: header + separator + rows
+    if (line.includes('|') && i + 1 < lines.length && isTableSep(lines[i + 1])) {
+      closeList()
+      const header = line
+      const sep = lines[i + 1]
+      const body: string[] = []
+      let j = i + 2
+      while (j < lines.length) {
+        const bl = lines[j].trim()
+        if (!bl || !bl.includes('|')) break
+        // stop if next block is a heading/list/hr rather than table row — but pipe tables already gated
+        body.push(lines[j])
+        j++
+      }
+      out += parseMdTable(header, sep, body)
+      i = j
+      continue
+    }
+
+    // ordered list: 1. item
+    const om = line.match(/^(\d+)\.\s+(.*)$/)
+    if (om) {
+      if (inList !== 'ol') { closeList(); out += '<ol>'; inList = 'ol' }
+      out += `<li>${inlineMd(om[2])}</li>`
+      i++; continue
+    }
+
+    // unordered list: -  *  +  • 
+    const um = line.match(/^[-*+•]\s+(.*)$/)
+    if (um) {
+      if (inList !== 'ul') { closeList(); out += '<ul>'; inList = 'ul' }
+      out += `<li>${inlineMd(um[1])}</li>`
+      i++; continue
+    }
+
+    // normal paragraph — close any open list first
+    closeList()
+    out += `<p>${inlineMd(line)}</p>`
+    i++
+  }
+
+  closeList()
   out += '</div>'
   return out
 }
@@ -355,8 +472,17 @@ export function buildReportHtml(input: UniversalReportDefinition): { html: strin
   .text-block { margin-top: 10px; font-size: 9px; color: #334155; line-height: 1.6; }
   .text-block p { margin: 6px 0; }
   .text-block ul { margin: 6px 0 6px 14px; padding: 0; }
+  .text-block ol { margin: 6px 0 6px 18px; padding: 0; }
   .text-block li { margin: 3px 0; }
   .text-block blockquote { margin: 8px 0; padding: 8px 12px; border-left: 3px solid #7C3AED; background: #f5f3ff; border-radius: 0 8px 8px 0; color: #4c1d95; }
+  .text-block .md-h2 { margin: 14px 0 6px; font-size: 13px; font-weight: 800; color: #0F1D3A; letter-spacing: -0.01em; }
+  .text-block .md-h3 { margin: 12px 0 4px; font-size: 11px; font-weight: 700; color: #0F1D3A; }
+  .text-block .md-h4 { margin: 10px 0 4px; font-size: 10px; font-weight: 700; color: #334155; }
+  .text-block .md-hr { margin: 10px 0; border: none; border-top: 1px solid #e2e8f0; }
+  .text-block code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 8.5px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 4px; }
+  .text-block a { color: #2563eb; text-decoration: underline; }
+  .md-table-wrap { margin: 10px 0; overflow: hidden; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .md-table-wrap .report-table { margin: 0; }
   /* Tables */
   .table-wrap { margin-top: 12px; }
   .table-title { font-size: 11px; font-weight: 700; color: #0F1D3A; }

@@ -1,12 +1,15 @@
 import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { Card } from '@/components/ui/card'
-import { ClipboardCheck } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { ClipboardCheck, Plus, Sparkles } from 'lucide-react'
+import Link from 'next/link'
 import { format } from 'date-fns'
 import { getVisitReports } from '@/services/field-visit.service'
 import { getSession } from '@/lib/session'
 import { ExportMenu } from '@/components/report-engine/export-menu'
 import { buildFieldVisitReportsReport } from '@/lib/report-engine/builders/field-visits'
+import { FieldSalesDailySummaryButton } from './summary-button'
 
 export const metadata = { title: 'Visit Reports | Kawman ExAct' }
 
@@ -24,14 +27,30 @@ export default async function VisitReportsPage() {
       <div className="space-y-6">
         <PageHeader
           title="Visit Reports"
-          subtitle={`${reports.length} reports submitted`}
-          action={reports.length > 0 ? <ExportMenu report={exportReport} /> : undefined}
+          subtitle={`${reports.length} reports submitted — what was discussed on site`}
+          action={
+            <div className="flex flex-wrap items-center gap-2">
+              <FieldSalesDailySummaryButton />
+              {reports.length > 0 ? <ExportMenu report={exportReport} /> : null}
+              <Button asChild className="gap-1.5">
+                <Link href="/field-sales/reports/new">
+                  <Plus className="h-4 w-4" /> New Field Report
+                </Link>
+              </Button>
+            </div>
+          }
         />
 
         {reports.length === 0 ? (
           <Card className="bg-[#0a111c]/80 border-white/[0.08] py-14 text-center">
             <ClipboardCheck className="h-6 w-6 text-white/30 mx-auto mb-2" />
             <p className="text-white/40 text-sm">No visit reports submitted yet</p>
+            <p className="text-white/30 text-xs mt-1">Tap New Field Report to write what was discussed — it will link to Submit Daily Report.</p>
+            <Button asChild className="mt-4 gap-1.5">
+              <Link href="/field-sales/reports/new">
+                <Plus className="h-4 w-4" /> New Field Report
+              </Link>
+            </Button>
           </Card>
         ) : (
           <div className="space-y-4">

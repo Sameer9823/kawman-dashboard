@@ -285,3 +285,139 @@ export async function deleteGeoFenceAction(id: string): Promise<void> {
   revalidatePath('/field-sales/geofencing')
   revalidatePath('/field-sales/live-map')
 }
+
+// ============================================================
+// Visit Reports — manual field report (what was discussed)
+// Linked to today's Daily Report + AI daily sales summary
+// ============================================================
+
+const visitReportSchema = z.object({
+  visitId: z.string().trim().min(1, 'Select a visit'),
+  purpose: z.string().trim().min(2, 'Purpose is required').max(2000),
+  discussion: z.string().trim().min(10, 'Write what was discussed (min 10 chars)').max(8000),
+  requirements: z.string().trim().max(4000).optional(),
+  competitorInfo: z.string().trim().max(4000).optional(),
+  customerFeedback: z.string().trim().max(4000).optional(),
+  nextSteps: z.string().trim().min(3, 'Next steps are required').max(4000),
+})
+
+export interface VisitReportFormState {
+  error?: string
+  fieldErrors?: Record<string, string>
+  success?: boolean
+  reportId?: string
+  dailyReportId?: string
+}
+
+function startOfDayLocal(d = new Date()): Date {
+  const x = new Date(d)
+  x.setHours(0, 0, 0, 0)
+  return x
+}
+
+export async function createVisitReportAction(
+  _prev: VisitReportFormState,
+  formData: FormData
+): Promise<VisitReportFormState> {
+  await validateCsrf()
+  const session = await assertPermission(PERMISSIONS['field_visits.create'].name)
+  const raw = Object.fromEntries(formData)
+  const parsed = visitReportSchema.safeParse(raw)
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {}
+    for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0])] = issue.message
+    return { fieldErrors }
+  }
+  const data = parsed.data
+
+  const visit = await prisma.fieldVisit.findFirst({
+    where: { id: data.visitId, organizationId: session.user.organizationId },
+    include: { company: { select: { name: true } } },
+  })
+  if (!visit) return { error: 'Visit not found or not in your organization.' }
+
+  try {
+    const report = await prisma.visitReport.create({
+      data: {
+        visitId: visit.id,
+        purpose: data.purpose,
+        discussion: data.discussion,
+        requirements: data.requirements || null,
+        competitorInfo: data.competitorInfo || null,
+        customerFeedback: data.customerFeedback || null,
+        nextSteps: data.nextSteps,
+        createdById: session.user.id,
+      },
+    })
+
+    // Link to today's DailyReport — create or append so Submit Daily Report already contains field work.
+    const today = startOfDayLocal(new Date())
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    const fieldSnippet = [
+      `Field Visit: ${visit.title}${visit.company?.name ? ` — ${visit.company.name}` : ''}`,
+      `Purpose: ${data.purpose}`,
+      `Discussion: ${data.discussion}`,
+      data.requirements ? `Requirements: ${data.requirements}` : null,
+      data.competitorInfo ? `Competitor: ${data.competitorInfo}` : null,
+      data.customerFeedback ? `Feedback: ${data.customerFeedback}` : null,
+      `Next: ${data.nextSteps}`,
+    ]
+      .filter(Boolean)
+      .join('\n')
+
+    const existingDaily = await prisma.dailyReport.findFirst({
+      where: { organizationId: session.user.organizationId, userId: session.user.id, date: { gte: today, lt: tomorrow } },
+    })
+
+    let dailyReportId = existingDaily?.id ?? null
+
+    if (!existingDaily) {
+      const created = await prisma.dailyReport.create({
+        data: {
+          organizationId: session.user.organizationId,
+          userId: session.user.id,
+          date: today,
+          status: 'DRAFT',
+          workDescription: fieldSnippet,
+          completedWork: `Field report — ${visit.title}: ${data.discussion.slice(0, 600)}`,
+          pendingWork: data.nextSteps || null,
+        },
+      })
+      dailyReportId = created.id
+    } else if (existingDaily.status === 'DRAFT') {
+      // Append without overwriting what the rep already wrote — keep both.
+      const appendedWork = existingDaily.workDescription
+        ? `${existingDaily.workDescription}\n\n---\n${fieldSnippet}`
+        : fieldSnippet
+      const appendedCompleted = existingDaily.completedWork
+        ? `${existingDaily.completedWork}\n• ${visit.title}: ${data.discussion.slice(0, 400)}`
+        : `Field report — ${visit.title}: ${data.discussion.slice(0, 600)}`
+      // Only fill pending if empty — nextSteps are tomorrow's carry-forward
+      const nextPending = existingDaily.pendingWork || data.nextSteps || null
+      const updated = await prisma.dailyReport.update({
+        where: { id: existingDaily.id },
+        data: {
+          workDescription: appendedWork.slice(0, 8000),
+          completedWork: appendedCompleted.slice(0, 8000),
+          pendingWork: nextPending?.slice(0, 5000) ?? null,
+        },
+      })
+      dailyReportId = updated.id
+    } else {
+      // SUBMITTED daily report exists — don't mutate submitted row; keep visitReport alone.
+      // The AI summary will still pull both when requested.
+      dailyReportId = existingDaily.id
+    }
+
+    revalidatePath('/field-sales/reports')
+    revalidatePath('/dashboard/daily-report')
+    revalidatePath('/admin/my-team')
+    revalidatePath('/admin/my-team/reports')
+
+    return { success: true, reportId: report.id, dailyReportId: dailyReportId ?? undefined }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to save field report' }
+  }
+}

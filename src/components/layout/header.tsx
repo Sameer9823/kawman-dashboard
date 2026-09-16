@@ -88,22 +88,22 @@ export function Header() {
 
   const unreadCount = notifications.filter((n) => !n.read).length
 
-  function markRead(id: string) {
-    // optimistic: flip the one notification to read in cache immediately
-    queryClient.setQueryData<NotificationDTO[]>(['notifications'], (prev) =>
-      prev ? prev.map((n) => (n.id === id ? { ...n, read: true } : n)) : prev
-    )
-    fetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+  function removeNotification(id: string) {
+    queryClient.setQueryData<NotificationDTO[]>(['notifications'], (prev) => (prev ? prev.filter((n) => n.id !== id) : prev))
+    fetch('/api/notifications', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
       .then(() => queryClient.invalidateQueries({ queryKey: ['notifications'] }))
       .catch(() => queryClient.invalidateQueries({ queryKey: ['notifications'] }))
   }
 
+  function markRead(id: string) {
+    // After super admin / admin has seen and opened the notification, remove it (don't keep it as read)
+    removeNotification(id)
+  }
+
   function markAllRead() {
     if (unreadCount === 0) return
-    queryClient.setQueryData<NotificationDTO[]>(['notifications'], (prev) =>
-      prev ? prev.map((n) => ({ ...n, read: true })) : prev
-    )
-    fetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+    queryClient.setQueryData<NotificationDTO[]>(['notifications'], () => [])
+    fetch('/api/notifications', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
       .then(() => queryClient.invalidateQueries({ queryKey: ['notifications'] }))
       .catch(() => queryClient.invalidateQueries({ queryKey: ['notifications'] }))
   }
@@ -207,7 +207,7 @@ export function Header() {
                     onClick={(e) => { e.preventDefault(); markAllRead() }}
                     className="text-xs text-purple-300 hover:text-purple-200 font-medium"
                   >
-                    Mark all read
+                    Clear all
                   </button>
                 )}
               </div>

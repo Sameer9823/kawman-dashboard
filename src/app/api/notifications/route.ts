@@ -46,3 +46,23 @@ export async function PATCH(request: Request) {
 
   return NextResponse.json({ ok: true })
 }
+
+export async function DELETE(request: Request) {
+  const session = await getSession()
+  if (!session) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+
+  const body = await request.json().catch(() => ({}))
+  const { id } = body as { id?: string }
+
+  if (id) {
+    await prisma.notification.deleteMany({
+      where: { id, userId: session.user.id, organizationId: session.user.organizationId },
+    })
+  } else {
+    await prisma.notification.deleteMany({
+      where: { userId: session.user.id, organizationId: session.user.organizationId },
+    })
+  }
+
+  return NextResponse.json({ ok: true })
+}

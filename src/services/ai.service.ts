@@ -396,7 +396,10 @@ export async function generateReport(type: ReportType) {
 
 export async function generateEmployeeDailySummary(dailyReportId: string): Promise<{ id: string }> {
   const session = await requireApiSession()
-  if (!(session.user.permissions as string[]).includes('team.view') && !(session.user.permissions as string[]).includes('team.view_all')) throw new Error('Forbidden: missing team.view')
+  {
+    const perms = session.user.permissions as string[]
+    if (!perms.includes('team.view') && !perms.includes('team.view_all') && !perms.includes('reports.view') && !perms.includes('reports.view_all') && !perms.includes('reports.submit')) throw new Error('Forbidden: missing team.view')
+  }
   const report = await prisma.dailyReport.findFirst({
     where: { id: dailyReportId, organizationId: session.user.organizationId },
     include: { user: { select: { name: true, email: true } } },
@@ -478,6 +481,116 @@ export async function generateTeamManagementSummary(dateRange?: { from: Date; to
     data: {
       type: 'team_management_summary',
       title: 'Team Management Summary — ' + from.toISOString().slice(0, 10) + ' to ' + to.toISOString().slice(0, 10),
+      content,
+      organizationId,
+      generatedById: session.user.id,
+    },
+  })
+  return { id: row.id }
+}
+
+/**
+ * Field-sales daily summary — summarizes today's field work for sales.
+ * Pulls today's VisitReports (what was discussed) + today's DailyReport
+ * + check-ins/visits, then asks the LLM to produce a daily sales briefing.
+ * Linked from Field Sales → Visit Reports → "Generate AI sales summary".
+ */
+export async function generateFieldSalesDailySummary(opts?: { date?: Date }): Promise<{ id: string }> {
+  const session = await requireApiSession()
+  const organizationId = session.user.organizationId
+  const day = opts?.date ?? new Date()
+  const start = new Date(day)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(start)
+  end.setDate(end.getDate() + 1)
+  const dateLabel = start.toISOString().slice(0, 10)
+
+  const [visitReports, dailyReport, checkIns, visitsToday, openDeals] = await Promise.all([
+    prisma.visitReport.findMany({
+      where: { createdById: session.user.id, createdAt: { gte: start, lt: end }, visit: { organizationId } },
+      include: { visit: { select: { title: true, company: { select: { name: true } } } } },
+      orderBy: { createdAt: 'asc' },
+      take: 30,
+    }),
+    prisma.dailyReport.findFirst({
+      where: { organizationId, userId: session.user.id, date: { gte: start, lt: end } },
+    }),
+    prisma.checkIn.findMany({
+      where: { userId: session.user.id, createdAt: { gte: start, lt: end }, visit: { organizationId } },
+      include: { visit: { select: { title: true } } },
+      orderBy: { createdAt: 'asc' },
+      take: 30,
+    }),
+    prisma.fieldVisit.count({ where: { organizationId, assigneeId: session.user.id, scheduledAt: { gte: start, lt: end } } }),
+    prisma.deal.findMany({
+      where: { organizationId, ownerId: session.user.id, stage: { notIn: ['WON', 'LOST'] } },
+      orderBy: { value: 'desc' },
+      take: 5,
+      select: { name: true, stage: true, value: true },
+    }),
+  ])
+
+  const orgContext = await buildOrgContext(organizationId, session.user)
+
+  const visitReportLines =
+    visitReports.length > 0
+      ? visitReports
+          .map(
+            (r) =>
+              `- Visit: ${r.visit.title}${r.visit.company?.name ? ` — ${r.visit.company.name}` : ''} | Purpose: ${r.purpose} | Discussion: ${(r.discussion ?? '-').slice(0, 500)} | Requirements: ${(r.requirements ?? '-').slice(0, 300)} | Next: ${(r.nextSteps ?? '-').slice(0, 300)}`
+          )
+          .join('\n')
+      : '- No field visit reports filed today.'
+
+  const checkInLines =
+    checkIns.length > 0
+      ? checkIns.map((c) => `- ${c.visit.title} at ${c.createdAt.toISOString().slice(11, 16)} — ${c.verificationStatus}${c.notes ? ` — ${c.notes.slice(0, 200)}` : ''}`).join('\n')
+      : '- No check-ins today.'
+
+  const dailyBlock = dailyReport
+    ? [
+        `DailyReport ${dateLabel} [${dailyReport.status}]:`,
+        `workDescription: ${(dailyReport.workDescription ?? '-').slice(0, 1200)}`,
+        `completedWork: ${(dailyReport.completedWork ?? '-').slice(0, 1000)}`,
+        `pendingWork: ${(dailyReport.pendingWork ?? '-').slice(0, 800)}`,
+        `blockers: ${(dailyReport.blockers ?? '-').slice(0, 600)}`,
+        `tomorrowPlan: ${(dailyReport.tomorrowPlan ?? '-').slice(0, 600)}`,
+      ].join('\n')
+    : `No DailyReport submitted for ${dateLabel} — field reports will create a draft.`
+
+  const prompt = [
+    'Write a **Field Sales Daily Summary** — a concise, manager-ready briefing of today\'s field sales work.',
+    'Required structure (use exactly these ## headings in order):',
+    '## 1. TL;DR — 2 sentences: top win today and single biggest follow-up risk.',
+    '## 2. Visits Today — markdown table | Visit | Company | Purpose | Key Discussion | Requirements | Next Step | (one row per field report; if none, write "No reports filed" and suggest filing).',
+    '## 3. What Was Discussed — bullets per visit (customer need, objection, interest). Use the discussion text verbatim where possible.',
+    '## 4. Customer Requirements & Feedback — grouped bullets (pricing, feature, volume, competitor mentions).',
+    '## 5. Sales Actions for Tomorrow — numbered 1–5: the exact 5 follow-ups to do tomorrow (what, who/visit, by when). Derive from nextSteps.',
+    '## 6. Daily Sales Pulse — markdown table | Metric | Today | Note | rows: Visits Scheduled, Field Reports Filed, Check-ins (Verified/Pending), Open Deals (top 5 by value) — use CRM snapshot numbers below.',
+    'Formatting: Use **bold** for every count, company, and monetary value. Keep scannable; no paragraph >3 lines. Never invent visits or requirements not listed.',
+    '',
+    `Date: ${dateLabel}`,
+    `Rep: ${session.user.name ?? session.user.email}`,
+    `Visits scheduled today: ${visitsToday} | Visit reports filed: ${visitReports.length} | Check-ins today: ${checkIns.length}`,
+    '',
+    'Field visit reports (today, by this rep):',
+    visitReportLines,
+    '',
+    'Check-ins today:',
+    checkInLines,
+    '',
+    dailyBlock,
+    '',
+    'Top open deals (context):',
+    openDeals.length ? openDeals.map((d) => `- ${d.name}: ${d.stage} worth ₹${Number(d.value).toLocaleString('en-IN')}`).join('\n') : '- none',
+  ].join('\n')
+
+  const content = await generateCompletion([{ role: 'user', content: prompt }], systemPrompt(orgContext))
+  // field_sales_daily_summary is NOT linked via dailyReportId (that FK is @unique for employee_daily_summary) — keep it standalone.
+  const row = await prisma.aIReport.create({
+    data: {
+      type: 'field_sales_daily_summary',
+      title: `Field Sales Daily Summary — ${dateLabel} — ${session.user.name ?? session.user.email}`,
       content,
       organizationId,
       generatedById: session.user.id,

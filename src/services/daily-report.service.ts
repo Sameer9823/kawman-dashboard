@@ -110,7 +110,14 @@ function resolveTargetUserId(session: Awaited<ReturnType<typeof requireApiSessio
 }
 
 function requireTeamView(session: Awaited<ReturnType<typeof requireApiSession>>) {
-  if (!(session.user.permissions as string[]).includes('team.view') && !(session.user.permissions as string[]).includes('team.view_all')) {
+  const perms = session.user.permissions as string[]
+  if (
+    !perms.includes('team.view') &&
+    !perms.includes('team.view_all') &&
+    !perms.includes('reports.view') &&
+    !perms.includes('reports.view_all') &&
+    !perms.includes('reports.submit')
+  ) {
     throw new Error('Forbidden: missing team.view')
   }
 }
@@ -139,14 +146,22 @@ export async function getTodayReportDraft(targetUserId?: string): Promise<DailyR
       select: { leadId: true },
     }),
     prisma.file.count({ where: { organizationId, uploadedById: userId, createdAt: { gte: today, lt: tomorrow } } }),
-    prisma.session.findMany({ where: { userId, createdAt: { gte: today } }, select: { createdAt: true, lastSeenAt: true, updatedAt: true } }),
+    prisma.session.findMany({
+      where: {
+        userId,
+        OR: [{ lastSeenAt: { gte: today } }, { createdAt: { gte: today } }],
+      },
+      select: { createdAt: true, lastSeenAt: true, updatedAt: true },
+    }),
   ])
 
   const leadsWorkedOnCount = new Set(distinctLeadIds.map((r) => r.leadId).filter(Boolean)).size
   const heuristicMinutes = Math.min(480, activityCount * 8)
   let sessionMinutes = 0
   if (activeSessions.length) {
-    const earliest = Math.min(...activeSessions.map((s) => s.createdAt.getTime()))
+    const todayMs = today.getTime()
+    const earliestRaw = Math.min(...activeSessions.map((s) => s.createdAt.getTime()))
+    const earliest = Math.max(earliestRaw, todayMs)
     const latest = Math.max(...activeSessions.map((s) => (s.lastSeenAt ?? s.updatedAt).getTime()))
     sessionMinutes = Math.min(480, Math.max(0, Math.round((latest - earliest) / 60000)))
   }
@@ -214,7 +229,6 @@ export async function submitDailyReport(input: DailyReportInput & { targetUserId
 
   const existing = await prisma.dailyReport.findFirst({ where: { organizationId, userId, date: { gte: day, lt: nextDay } } })
 
-  const isFirstCreation = !existing
   const row = existing
     ? await prisma.dailyReport.update({
         where: { id: existing.id },
@@ -226,9 +240,12 @@ export async function submitDailyReport(input: DailyReportInput & { targetUserId
         include: { user: { select: { id: true, name: true, email: true } }, aiReport: { select: { id: true, content: true } } },
       })
 
-  // Only on first creation for that day (not on edit/resubmit): notify every ADMIN / SUPER_ADMIN in the org.
-  // Best-effort — a notification failure must never block the report from saving or throw to the caller.
-  if (isFirstCreation) {
+  // Notify every ADMIN / SUPER_ADMIN in the org on every transition to SUBMITTED
+  // (first creation OR DRAFT→SUBMITTED). Resubmits of an already-SUBMITTED report are not renotified
+  // to avoid spam, but the first submit for the day — even if a DRAFT already existed from a
+  // field visit — must still notify. Best-effort: never block the report save.
+  const shouldNotify = !existing || existing.status !== 'SUBMITTED'
+  if (shouldNotify) {
     try {
       const { createNotification } = await import('@/services/notification.service')
       const adminRoleIds = await prisma.role.findMany({

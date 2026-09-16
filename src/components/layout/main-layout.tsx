@@ -16,6 +16,14 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   useHeartbeat(true)
   const { sidebarCollapsed, mobileDrawerOpen, setMobileDrawerOpen } = useUIStore()
+  const [isMobile, setIsMobile] = React.useState(false)
+  React.useEffect(() => {
+    const mql = window.matchMedia('(max-width: 1023px)')
+    const update = () => setIsMobile(mql.matches)
+    update()
+    mql.addEventListener('change', update)
+    return () => mql.removeEventListener('change', update)
+  }, [])
 
   // Lock body scroll when drawer is open on mobile
   React.useEffect(() => {
@@ -58,7 +66,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           sidebarCollapsed ? 'lg:w-16' : 'lg:w-[220px]',
           mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
-        aria-hidden={!mobileDrawerOpen && typeof window !== 'undefined' && window.innerWidth < 1024 ? true : undefined}
+        aria-hidden={!mobileDrawerOpen && isMobile ? true : undefined}
       >
         <Sidebar />
       </div>

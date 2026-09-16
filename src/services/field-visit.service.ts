@@ -66,6 +66,7 @@ function mapVisit(row: VisitRow): FieldVisit {
       ? {
           verificationStatus: lastCheckIn.verificationStatus,
           distanceFromCustomer: toNum(lastCheckIn.distanceFromCustomer),
+          photoUrl: lastCheckIn.photoUrl ?? null,
           createdAt: lastCheckIn.createdAt.toISOString(),
         }
       : null,
@@ -75,6 +76,13 @@ function mapVisit(row: VisitRow): FieldVisit {
 export async function getFieldVisits(): Promise<FieldVisit[]> {
   const session = await requireApiSession()
   const rows = await fetchVisits(session.user.organizationId)
+  return rows.map(mapVisit)
+}
+
+/** Visits assigned to the current user — powers /field-sales/assigned + the notification target. */
+export async function getAssignedVisits(): Promise<FieldVisit[]> {
+  const session = await requireApiSession()
+  const rows = await fetchVisits(session.user.organizationId, { assigneeId: session.user.id })
   return rows.map(mapVisit)
 }
 

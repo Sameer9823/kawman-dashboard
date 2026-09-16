@@ -48,7 +48,8 @@ export function DailyReportForm({ draft, aiConfigured }: { draft: DailyReportDra
           <span className="text-sm">Report submitted successfully.</span>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => router.push('/admin/my-team/reports')}>View reports</Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard/my-profile')}>View my profile</Button>
+          <Button variant="outline" onClick={() => router.push('/admin/my-team/reports')}>View team reports</Button>
           <Button
             onClick={handleGenerateSummary}
             disabled={!aiConfigured || aiLoading}

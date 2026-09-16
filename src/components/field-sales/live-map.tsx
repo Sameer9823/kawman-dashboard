@@ -19,10 +19,22 @@ import { Button } from '@/components/ui/button'
 import { useFieldTracking } from '@/hooks/use-field-tracking'
 import type { LiveMapVisit, VisitStatus, ActiveUserPin } from '@/types/field-sales'
 
-// MapLibre style — free, no token. Dark Matter fits the app's dark palette;
-// OpenFreeMap Liberty is an equally good token-free fallback.
+// MapLibre style — free, no token. Dark Matter fits the app's dark palette.
+// Fallback is an INLINE raster style (no second fetch) so "Failed to fetch
+// style.json" on a flaky/corporate network doesn't brick the map.
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
-const FALLBACK_STYLE = 'https://demotiles.maplibre.org/style.json'
+const RASTER_FALLBACK_STYLE = {
+  version: 8 as const,
+  sources: {
+    osm: {
+      type: 'raster' as const,
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors',
+    },
+  },
+  layers: [{ id: 'osm', type: 'raster' as const, source: 'osm' }],
+} as unknown as maplibregl.StyleSpecification
 
 const STATUS_COLOR: Record<VisitStatus, string> = {
   SCHEDULED: '#6b7280',
@@ -95,50 +107,85 @@ export function LiveMap({
   const userMarkersRef = React.useRef<Record<string, { marker: maplibregl.Marker; el: HTMLDivElement }>>({})
   const [visits, setVisits] = React.useState(initialVisits)
   const [activeUsers, setActiveUsers] = React.useState(initialActiveUsers)
-  const [lastUpdated, setLastUpdated] = React.useState(new Date())
+  const [lastUpdated, setLastUpdated] = React.useState<Date | null>(null)
+  React.useEffect(() => setLastUpdated(new Date()), [])
   const [showActive, setShowActive] = React.useState(true)
   const [showVisits, setShowVisits] = React.useState(true)
   const [mapError, setMapError] = React.useState<string | null>(null)
+  const [mounted, setMounted] = React.useState(false)
+  React.useEffect(() => setMounted(true), [])
   const tracking = useFieldTracking()
 
-  // ---- Map init (MapLibre, no token) ----
+  // ---- Map init (MapLibre, no token) — deferred + single fallback to avoid freeze ----
+  const fallbackTriedRef = React.useRef(false)
+  const mountedRef = React.useRef(true)
+  React.useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
   React.useEffect(() => {
     if (!containerRef.current || mapRef.current) return
+    let map: maplibregl.Map | null = null
+    let raf = 0
+    let onError: ((e: unknown) => void) | null = null
 
-    const all = [
-      ...initialVisits.map((v) => [v.longitude, v.latitude] as [number, number]),
-      ...initialActiveUsers.map((u) => [u.longitude, u.latitude] as [number, number]),
-    ]
-    let center: [number, number] = [72.8777, 19.076] // Mumbai fallback
-    if (initialVisits.length > 0) center = [initialVisits[0].longitude, initialVisits[0].latitude]
-    else if (initialActiveUsers.length > 0) center = [initialActiveUsers[0].longitude, initialActiveUsers[0].latitude]
+    const init = () => {
+      if (!mountedRef.current || !containerRef.current || mapRef.current) return
+      const all = [
+        ...initialVisits.map((v) => [v.longitude, v.latitude] as [number, number]),
+        ...initialActiveUsers.map((u) => [u.longitude, u.latitude] as [number, number]),
+      ]
+      let center: [number, number] = [72.8777, 19.076] // Mumbai fallback
+      if (initialVisits.length > 0) center = [initialVisits[0].longitude, initialVisits[0].latitude]
+      else if (initialActiveUsers.length > 0) center = [initialActiveUsers[0].longitude, initialActiveUsers[0].latitude]
 
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: MAP_STYLE,
-      center,
-      zoom: all.length > 0 ? 11 : 4,
-      attributionControl: false,
-    })
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
-
-    map.on('error', (e) => {
-      // If primary style fails, try fallback once
-      const msg = String((e as unknown as { error?: { message?: string } })?.error?.message ?? e)
-      if (msg.includes('Failed to fetch') || msg.includes('style')) {
-        try {
-          map.setStyle(FALLBACK_STYLE)
-          setMapError(null)
-          return
-        } catch {}
+      try {
+        map = new maplibregl.Map({
+          container: containerRef.current!,
+          style: MAP_STYLE,
+          center,
+          zoom: all.length > 0 ? 11 : 4,
+          attributionControl: false,
+          fadeDuration: 0,
+        })
+      } catch (err) {
+        setMapError(String((err as Error)?.message ?? err).slice(0, 220))
+        return
       }
-      setMapError(msg.slice(0, 220))
-    })
+      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+      map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
 
-    mapRef.current = map
+      onError = (e: unknown) => {
+        const msg = String((e as unknown as { error?: { message?: string } })?.error?.message ?? (e as Error)?.message ?? e)
+        // Prevent infinite setStyle loop that freezes the tab (Wait/Close dialog)
+        const isStyleFetchError = msg.includes('Failed to fetch') || msg.includes('style') || msg.includes('Style')
+        if (isStyleFetchError && !fallbackTriedRef.current) {
+          fallbackTriedRef.current = true
+          try { map!.setStyle(RASTER_FALLBACK_STYLE); setMapError(null); return } catch {}
+        }
+        // Don't spam state if already showing same error — avoids render loop
+        setMapError((prev) => (prev === msg.slice(0, 220) ? prev : msg.slice(0, 220)))
+      }
+      map.on('error', onError as never)
+
+      // Resize after container settles (fixes 0-size init when page transition animates)
+      map.once('load', () => { try { map!.resize() } catch {} })
+      mapRef.current = map
+    }
+
+    // Defer to next frame so page paint + auth/queries settle first — avoids "Page Unresponsive"
+    raf = requestAnimationFrame(() => { raf = requestAnimationFrame(init) })
     return () => {
-      map.remove()
+      cancelAnimationFrame(raf)
+      if (map) {
+        try { if (onError) map.off('error', onError as never) } catch {}
+        try { map.remove() } catch {}
+      }
+      // Also handle case where map was assigned to ref after closure
+      const refMap = mapRef.current
+      if (refMap && refMap !== map) {
+        try { refMap.remove() } catch {}
+      }
       mapRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -264,11 +311,16 @@ export function LiveMap({
 
   // ---- Poll live-map endpoint (visits + live locations) ----
   React.useEffect(() => {
+    let cancelled = false
     const interval = setInterval(async () => {
+      if (cancelled) return
+      const ctrl = new AbortController()
+      const t = setTimeout(() => ctrl.abort(), 8000)
       try {
-        const res = await fetch('/api/field-sales/live-map', { cache: 'no-store' })
-        if (!res.ok) return
+        const res = await fetch('/api/field-sales/live-map', { cache: 'no-store', signal: ctrl.signal })
+        if (!res.ok || cancelled) return
         const data = await res.json()
+        if (cancelled) return
         if (Array.isArray(data)) {
           setVisits(data)
         } else {
@@ -277,8 +329,9 @@ export function LiveMap({
         }
         setLastUpdated(new Date())
       } catch {}
+      finally { clearTimeout(t) }
     }, POLL_INTERVAL_MS)
-    return () => clearInterval(interval)
+    return () => { cancelled = true; clearInterval(interval) }
   }, [])
 
   return (
@@ -324,8 +377,8 @@ export function LiveMap({
 
       {/* Header row: refresh + toggles */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-        <span className="flex items-center gap-1.5 text-white/40">
-          <RefreshCw className="h-3 w-3" /> Live every ~12s · last sync {lastUpdated.toLocaleTimeString()}
+        <span className="flex items-center gap-1.5 text-white/40" suppressHydrationWarning>
+          <RefreshCw className="h-3 w-3" /> Live every ~12s · last sync {mounted && lastUpdated ? lastUpdated.toLocaleTimeString() : '—'}
         </span>
         <div className="flex items-center gap-3">
           <label className="flex items-center gap-1.5 text-white/70 cursor-pointer select-none">
@@ -387,11 +440,12 @@ export function LiveMap({
               return (
                 <span
                   key={u.id}
+                  suppressHydrationWarning
                   className={cn(
                     'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs',
                     u.isStale ? 'border-white/5 bg-white/[0.02] text-white/30' : 'border-white/10 bg-white/[0.04] text-white/70'
                   )}
-                  title={`${u.name} · ${u.updatedAt ? relTime(u.updatedAt) : relTime(u.lastSeenAt)} · ${formatAccuracy(u.accuracy)}${u.isTracking ? ' · live' : ''}${u.isStale ? ' · stale' : ''}`}
+                  title={mounted ? `${u.name} · ${u.updatedAt ? relTime(u.updatedAt) : relTime(u.lastSeenAt)} · ${formatAccuracy(u.accuracy)}${u.isTracking ? ' · live' : ''}${u.isStale ? ' · stale' : ''}` : u.name}
                 >
                   <span
                     className="h-5 w-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center shrink-0 border border-white/20"
@@ -414,8 +468,8 @@ export function LiveMap({
                     <span className={cn('h-1.5 w-1.5 rounded-full', u.isTracking ? 'bg-emerald-400 animate-pulse' : u.isStale ? 'bg-white/20' : 'bg-white/30')} />
                     {u.isTracking ? 'live' : u.isStale ? 'stale' : 'idle'}
                   </span>
-                  <span className="text-[11px] text-white/25 hidden sm:inline">
-                    {formatAccuracy(u.accuracy)} · {u.updatedAt ? relTime(u.updatedAt) : relTime(u.lastCheckInAt ?? u.lastSeenAt)}
+                  <span suppressHydrationWarning className="text-[11px] text-white/25 hidden sm:inline">
+                    {mounted ? `${formatAccuracy(u.accuracy)} · ${u.updatedAt ? relTime(u.updatedAt) : relTime(u.lastCheckInAt ?? u.lastSeenAt)}` : formatAccuracy(u.accuracy)}
                   </span>
                 </span>
               )

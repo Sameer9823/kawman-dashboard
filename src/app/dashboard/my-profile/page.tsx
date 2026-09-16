@@ -1,19 +1,16 @@
-import { notFound } from 'next/navigation'
 import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { getEmployeeProfile } from '@/services/daily-report.service'
-import { listReports } from '@/services/ai.service'
 import { isAIConfigured } from '@/lib/ai'
 import { getInitials } from '@/lib/utils'
-import { logAudit } from '@/lib/audit-log'
 import { requireSession } from '@/lib/session'
 import { prisma } from '@/lib/db'
-import { EmployeeTabs } from './employee-tabs'
-import { TeamDateFilter } from '../team-date-filter'
+import { EmployeeTabs } from '@/app/admin/my-team/[userId]/employee-tabs'
+import { TeamDateFilter } from '@/app/admin/my-team/team-date-filter'
 
-export const metadata = { title: 'Employee Profile | Kawman ExAct' }
+export const metadata = { title: 'My Profile | Kawman ExAct' }
 
 function parseDateRange(sp: Record<string, string | string[] | undefined>) {
   const rawPreset = typeof sp.preset === 'string' ? sp.preset : undefined
@@ -43,41 +40,35 @@ function parseDateRange(sp: Record<string, string | string[] | undefined>) {
   return { from: undefined, to: undefined, preset: 'week' as string }
 }
 
-export default async function EmployeeProfilePage({ params, searchParams }: { params: Promise<{ userId: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function MyProfilePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const session = await requireSession()
-
-  const { userId } = await params
   const sp = await searchParams
   const { from, to, preset } = parseDateRange(sp)
-  const isSelf = session.user.id === userId
-  const canViewAll = (session.user.permissions as string[]).includes('team.view_all')
-  if (!isSelf && !canViewAll) {
-    // server-side gate (not just hidden UI) — only owner or admins can view others' profiles/reports
-    throw new Error('Forbidden: missing team.view_all')
-  }
-  const user = await prisma.user.findFirst({ where: { id: userId, organizationId: session.user.organizationId }, select: { id: true, name: true } })
-  if (!user) notFound()
-  // Audit every cross-employee view by a manager/admin
-  if (!isSelf) {
-    await logAudit({
-      organizationId: session.user.organizationId,
-      actorId: session.user.id,
-      action: 'ADMIN_CHANGES',
-      resource: 'daily_report',
-      resourceId: userId,
-      metadata: { event: 'employee_profile_viewed', targetUserId: userId },
-    }).catch(() => {})
-  }
-  const [profile, aiConfigured, employeeReports] = await Promise.all([
-    getEmployeeProfile(userId, from && to ? { from, to } : undefined),
+
+  // Self only — no team.view_all needed; getEmployeeProfile allows self via reports.submit/team.view etc.
+  const [profile, aiConfigured, myReports] = await Promise.all([
+    getEmployeeProfile(session.user.id, from && to ? { from, to } : undefined),
     Promise.resolve(isAIConfigured()),
-    listReports().then((rows) => rows.filter((r) => r.type === 'employee_daily_summary').slice(0, 10)).catch(() => []),
+    prisma.aIReport.findMany({
+      where: { organizationId: session.user.organizationId, generatedById: session.user.id, type: 'employee_daily_summary' },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: { id: true, type: true, title: true, createdAt: true, generatedBy: { select: { name: true } } },
+    }),
   ])
+
+  const employeeReports = myReports.map((r) => ({
+    id: r.id,
+    type: r.type,
+    title: r.title,
+    createdAt: r.createdAt.toISOString(),
+    generatedByName: r.generatedBy.name ?? 'Unknown',
+  }))
 
   return (
     <MainLayout>
       <div className="space-y-6">
-        <PageHeader title={profile.user.name ?? 'Employee'} subtitle={profile.user.email} />
+        <PageHeader title={profile.user.name ?? 'My Profile'} subtitle={profile.user.email} />
 
         <Card className="p-5 bg-[#0a111c]/80 border-white/[0.08]">
           <div className="flex flex-wrap gap-6 items-start">

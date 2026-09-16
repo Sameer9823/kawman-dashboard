@@ -1,17 +1,17 @@
 'use client'
-
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Search, MapPin, Navigation2, Loader2, Building2, ChevronLeft, ChevronRight, Camera, ImageIcon, X } from 'lucide-react'
+import { Search, MapPin, Navigation2, Loader2, Building2, ChevronLeft, ChevronRight, Camera, ImageIcon, X, VideoOff } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge, type BadgeVariant } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { DeleteRowButton } from '@/components/crm/delete-row-button'
 import { format } from 'date-fns'
 import type { FieldVisit, VisitStatus } from '@/types/field-sales'
 import type { FieldVisitPageResult } from '@/services/field-visit.service'
-import { checkInAction, updateVisitStatusAction } from '@/app/field-sales/actions'
+import { checkInAction, deleteFieldVisitAction, updateVisitStatusAction } from '@/app/field-sales/actions'
 
 const STATUS_LABEL: Record<VisitStatus, string> = {
   SCHEDULED: 'Scheduled',
@@ -40,10 +40,14 @@ function CheckInButton({ visitId }: { visitId: string }) {
   const [locLoading, setLocLoading] = useState(false)
   const [notes, setNotes] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
-  const cameraRef = useRef<HTMLInputElement>(null)
+  const cameraFallbackRef = useRef<HTMLInputElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
   const [photo, setPhoto] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const previewUrlRef = useRef<string | null>(null)
+  const [cameraActive, setCameraActive] = useState(false)
+  const [cameraError, setCameraError] = useState<string | null>(null)
 
   function captureLocation() {
     setLocError(null)
@@ -71,6 +75,81 @@ function CheckInButton({ visitId }: { visitId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
+  function stopCamera() {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop())
+      streamRef.current = null
+    }
+    if (videoRef.current) videoRef.current.srcObject = null
+    setCameraActive(false)
+  }
+
+  useEffect(() => {
+    if (!open) stopCamera()
+    return () => stopCamera()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
+  async function openCamera() {
+    if (preview) return
+    setCameraError(null)
+    if (!navigator.mediaDevices?.getUserMedia) {
+      // Fallback to file picker with capture (mobile)
+      cameraFallbackRef.current?.click()
+      return
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false,
+      })
+      streamRef.current = stream
+      setCameraActive(true)
+      // assign on next tick so video element exists
+      requestAnimationFrame(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          videoRef.current.play().catch(() => {})
+        }
+      })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('Permission') || msg.includes('NotAllowed') || msg.includes('denied')) {
+        setCameraError('Camera permission denied. Allow camera in browser settings, or use Gallery.')
+      } else if (msg.includes('NotFound') || msg.includes('DevicesNotFound')) {
+        setCameraError('No camera found on this device. Use Gallery instead.')
+      } else {
+        setCameraError(msg || 'Could not open camera. Use Gallery or try again.')
+      }
+      // Still offer fallback picker
+    }
+  }
+
+  function captureFromCamera() {
+    const video = videoRef.current
+    if (!video || video.readyState < 2) return
+    const canvas = document.createElement('canvas')
+    canvas.width = video.videoWidth || 1280
+    canvas.height = video.videoHeight || 720
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return
+        const file = new File([blob], `checkin-${Date.now()}.jpg`, { type: 'image/jpeg' })
+        if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+        const url = URL.createObjectURL(file)
+        previewUrlRef.current = url
+        setPhoto(file)
+        setPreview(url)
+        stopCamera()
+      },
+      'image/jpeg',
+      0.85
+    )
+  }
+
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
     if (!f) return
@@ -79,6 +158,7 @@ function CheckInButton({ visitId }: { visitId: string }) {
     previewUrlRef.current = url
     setPhoto(f)
     setPreview(url)
+    stopCamera()
   }
 
   function clearPhoto() {
@@ -87,7 +167,8 @@ function CheckInButton({ visitId }: { visitId: string }) {
     setPhoto(null)
     setPreview(null)
     if (fileRef.current) fileRef.current.value = ''
-    if (cameraRef.current) cameraRef.current.value = ''
+    if (cameraFallbackRef.current) cameraFallbackRef.current.value = ''
+    setCameraError(null)
   }
 
   useEffect(() => () => { if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current) }, [])
@@ -95,7 +176,7 @@ function CheckInButton({ visitId }: { visitId: string }) {
   function submit() {
     setError(null)
     if (!loc) {
-      setError('Location not captured yet. Tap "Use my location" and allow the browser prompt.')
+      setError('Location not captured yet. Tap \"Use my location\" and allow the browser prompt.')
       return
     }
     startTransition(async () => {
@@ -117,15 +198,13 @@ function CheckInButton({ visitId }: { visitId: string }) {
       <Button size="sm" variant="secondary" className="gap-1.5 h-7 text-xs" onClick={() => setOpen(true)}>
         <Navigation2 className="h-3 w-3" /> Check in
       </Button>
-
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setOpen(false)}>
-          <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#0d1622] p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-xl border border-white/10 bg-[#0d1622] p-5 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white font-semibold">Check in</h3>
               <button onClick={() => setOpen(false)} className="text-white/40 hover:text-white p-1"><X className="h-4 w-4" /></button>
             </div>
-
             <div className="space-y-3">
               {/* Location */}
               <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-3">
@@ -143,10 +222,11 @@ function CheckInButton({ visitId }: { visitId: string }) {
                 <p className="text-[11px] text-white/30 mt-1.5">Enable location in your browser/device. The visit record will be updated with this location.</p>
               </div>
 
-              {/* Photo — camera or gallery */}
+              {/* Photo — live camera or gallery */}
               <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-3">
                 <p className="text-xs font-medium text-white/70 mb-2">Photo (optional but recommended)</p>
-                <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFile} />
+                {/* Fallback file inputs (hidden) */}
+                <input ref={cameraFallbackRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFile} />
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
                 {preview ? (
                   <div className="relative">
@@ -154,17 +234,41 @@ function CheckInButton({ visitId }: { visitId: string }) {
                     <img src={preview} alt="Preview" className="w-full h-40 object-cover rounded-lg border border-white/10" />
                     <button onClick={clearPhoto} className="absolute top-1.5 right-1.5 h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80"><X className="h-3.5 w-3.5" /></button>
                   </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button type="button" size="sm" variant="secondary" className="flex-1 gap-1.5 h-8 text-xs" onClick={() => cameraRef.current?.click()}>
-                      <Camera className="h-3.5 w-3.5" /> Camera
-                    </Button>
-                    <Button type="button" size="sm" variant="outline" className="flex-1 gap-1.5 h-8 text-xs border-white/10" onClick={() => fileRef.current?.click()}>
-                      <ImageIcon className="h-3.5 w-3.5" /> Gallery
-                    </Button>
+                ) : cameraActive ? (
+                  <div className="space-y-2">
+                    <div className="relative overflow-hidden rounded-lg border border-white/10 bg-black">
+                      <video ref={videoRef} autoPlay playsInline muted className="w-full h-48 object-cover" />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="button" size="sm" onClick={captureFromCamera} className="flex-1 gap-1.5 h-8 bg-violet-600 hover:bg-violet-500 text-white">
+                        <Camera className="h-3.5 w-3.5" /> Capture photo
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={stopCamera} className="h-8 border-white/10">
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    <p className="text-[11px] text-white/30">Live camera — tap Capture. On desktop this opens your webcam; on mobile the rear camera.</p>
                   </div>
+                ) : (
+                  <>
+                    <div className="flex gap-2">
+                      <Button type="button" size="sm" variant="secondary" className="flex-1 gap-1.5 h-8 text-xs" onClick={openCamera}>
+                        <Camera className="h-3.5 w-3.5" /> Camera
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" className="flex-1 gap-1.5 h-8 text-xs border-white/10" onClick={() => fileRef.current?.click()}>
+                        <ImageIcon className="h-3.5 w-3.5" /> Gallery
+                      </Button>
+                    </div>
+                    {cameraError && (
+                      <div className="mt-2 flex gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-2 text-xs text-amber-200">
+                        <VideoOff className="h-4 w-4 shrink-0 mt-0.5" />
+                        <span className="flex-1">{cameraError}</span>
+                        <button onClick={() => fileRef.current?.click()} className="shrink-0 underline">Use Gallery</button>
+                      </div>
+                    )}
+                    <p className="text-[11px] text-white/30 mt-1.5">Camera opens live preview (allow permission) — if blocked, use Gallery. JPG/PNG/WEBP, 5MB.</p>
+                  </>
                 )}
-                <p className="text-[11px] text-white/30 mt-1.5">Camera uses device camera when available; gallery lets you pick an existing image. JPG/PNG/WEBP, 5MB.</p>
               </div>
 
               <div className="space-y-1.5">
@@ -173,7 +277,6 @@ function CheckInButton({ visitId }: { visitId: string }) {
               </div>
 
               {error && <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</p>}
-
               <div className="flex justify-end gap-2 pt-1">
                 <Button variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={pending}>Cancel</Button>
                 <Button size="sm" onClick={submit} disabled={pending || !loc} className="gap-1.5">
@@ -207,7 +310,6 @@ function StatusSelect({ visitId, status }: { visitId: string; status: VisitStatu
 }
 
 type FieldVisitsTableProps = { visits: FieldVisit[]; result?: undefined } | { result: FieldVisitPageResult; visits?: undefined }
-
 /**
  * Two modes, sharing all row-rendering and interactive-action markup
  * (check-in button, status dropdown):
@@ -375,6 +477,7 @@ export function FieldVisitsTable(props: FieldVisitsTableProps) {
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-2">
                     {v.status !== 'COMPLETED' && v.status !== 'CANCELLED' && <CheckInButton visitId={v.id} />}
+                    <DeleteRowButton action={deleteFieldVisitAction.bind(null, v.id)} confirmLabel={`Delete "${v.title}"? Its check-ins and reports will be removed.`} />
                     <Link href={`/field-sales/live-map`} className="text-xs text-purple-400 hover:text-purple-300">
                       Map
                     </Link>

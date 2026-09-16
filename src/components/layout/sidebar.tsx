@@ -31,6 +31,7 @@ import {
   Navigation,
   UserCheck,
   ClipboardCheck,
+  ShieldCheck,
   Users,
   Briefcase,
   Building,
@@ -116,6 +117,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Field Sales',
     badge: 'New',
     items: [
+      { name: 'Assigned to Me', href: '/field-sales/assigned', icon: ShieldCheck },
       { name: 'Live Map', href: '/field-sales/live-map', icon: Navigation },
       { name: "Today's Visits", href: '/field-sales/visits', icon: MapPin },
       { name: 'Check-ins', href: '/field-sales/checkins', icon: UserCheck },
@@ -123,11 +125,18 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: 'My Team',
-    requiresAnyPermission: ['team.view', 'team.view_all'],
+    label: 'My Workspace',
     items: [
-      { name: 'Team Dashboard', href: '/admin/my-team', icon: Users, permission: 'team.view' },
-      { name: 'Daily Reports', href: '/admin/my-team/reports', icon: ClipboardCheck, permission: 'team.view' },
+      { name: 'My Profile', href: '/dashboard/my-profile', icon: User },
+      { name: 'Submit Daily Report', href: '/dashboard/daily-report', icon: ClipboardCheck },
+    ],
+  },
+  {
+    label: 'My Team',
+    requiresAnyPermission: ['team.view_all'],
+    items: [
+      { name: 'Team Dashboard', href: '/admin/my-team', icon: Users, permission: 'team.view_all' },
+      { name: 'Daily Reports', href: '/admin/my-team/reports', icon: ClipboardCheck, permission: 'team.view_all' },
       { name: 'Team Members', href: '/admin/my-team/members', icon: UserCog, permission: 'team.view_all' },
     ],
   },

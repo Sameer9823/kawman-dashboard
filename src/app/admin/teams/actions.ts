@@ -18,6 +18,7 @@ const schema = z.object({
 export interface TeamFormState {
   error?: string
   fieldErrors?: Record<string, string>
+  success?: boolean
 }
 
 async function assertPermission() {
@@ -60,7 +61,7 @@ export async function createTeamAction(_prev: TeamFormState, formData: FormData)
   })
 
   revalidatePath('/admin/teams')
-  return {}
+  return { success: true }
 }
 
 export async function deleteTeamAction(id: string): Promise<void> {

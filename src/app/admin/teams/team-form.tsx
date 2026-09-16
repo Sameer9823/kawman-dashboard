@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { createTeamAction, type TeamFormState } from './actions'
@@ -16,9 +17,18 @@ export function TeamForm({
   departments: { id: string; name: string }[]
 }) {
   const [state, formAction, pending] = useActionState(createTeamAction, initialState)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    if (state.success) {
+      toast.success('Team created')
+      formRef.current?.reset()
+    }
+    if (state.error) toast.error(state.error)
+  }, [state.success, state.error])
 
   return (
-    <form action={formAction} className="flex flex-wrap items-end gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+    <form ref={formRef} action={formAction} className="flex flex-wrap items-end gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
       <div className="space-y-1.5">
         <label className="text-xs text-white/60">Team name</label>
         <Input name="name" placeholder="Field Sales - North" className="w-48" required />

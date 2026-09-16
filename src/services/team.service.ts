@@ -61,13 +61,13 @@ function formatDateKey(date: Date): string {
 
 export async function getTeamDashboardMetrics(dateRange?: DateRange): Promise<TeamDashboardMetrics> {
   const session = await requireApiSession()
-  if (!(session.user.permissions as string[]).includes('team.view') && !(session.user.permissions as string[]).includes('team.view_all')) {
-    throw new Error('Forbidden: missing team.view')
+  if (!(session.user.permissions as string[]).includes('team.view_all')) {
+    throw new Error('Forbidden: missing team.view_all')
   }
   const organizationId = session.user.organizationId
 
-  const canViewAll = (session.user.permissions as string[]).includes('team.view_all')
-  const targetUserId = canViewAll ? undefined : session.user.id
+  const canViewAll = true
+  const targetUserId: string | undefined = undefined
 
   const from = dateRange?.from ?? daysAgo(6)
   const to = dateRange?.to ?? endOfDay()
@@ -248,18 +248,41 @@ export async function getTeamMembers(): Promise<TeamMemberRow[]> {
   const today = startOfDay()
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
-  const todayReports = await prisma.dailyReport.findMany({
-    where: { organizationId, userId: { in: userIds }, date: { gte: today, lt: tomorrow } },
-    select: { userId: true, activeWorkingTimeMinutes: true, status: true, tasksCompletedCount: true, crmRecordsUpdatedCount: true, leadsWorkedOnCount: true },
-  })
+  const [todayReports, liveSessions] = await Promise.all([
+    prisma.dailyReport.findMany({
+      where: { organizationId, userId: { in: userIds }, date: { gte: today, lt: tomorrow } },
+      select: { userId: true, activeWorkingTimeMinutes: true, status: true, tasksCompletedCount: true, crmRecordsUpdatedCount: true, leadsWorkedOnCount: true },
+    }),
+    prisma.session.findMany({
+      where: {
+        userId: { in: userIds },
+        OR: [{ lastSeenAt: { gte: today } }, { createdAt: { gte: today } }],
+      },
+      select: { userId: true, createdAt: true, lastSeenAt: true, updatedAt: true },
+    }),
+  ])
   const reportByUserId = new Map(todayReports.map((r) => [r.userId, r]))
+  const todayMs = today.getTime()
+  const liveMinutesByUserId = new Map<string, number>()
+  for (const uid of userIds) {
+    const rows = liveSessions.filter((s) => s.userId === uid)
+    if (!rows.length) continue
+    const earliestRaw = Math.min(...rows.map((s) => s.createdAt.getTime()))
+    const earliest = Math.max(earliestRaw, todayMs)
+    const latest = Math.max(...rows.map((s) => (s.lastSeenAt ?? s.updatedAt).getTime()))
+    const mins = Math.min(480, Math.max(0, Math.round((latest - earliest) / 60000)))
+    if (mins > 0) liveMinutesByUserId.set(uid, mins)
+  }
 
   return users.map((u) => {
     const report = reportByUserId.get(u.id) ?? null
     const hasSubmittedTodayReport = report?.status === 'SUBMITTED'
-    // Active time comes from today's DailyReport (computed via getTodayReportDraft-style session/activity logic at submit time).
-    // If the user hasn't submitted today there is no persisted active time yet, so show placeholder.
-    const activeTimeToday = report ? formatActiveTime(report.activeWorkingTimeMinutes) : '—'
+    const liveMins = liveMinutesByUserId.get(u.id) ?? 0
+    const persistedMins = report?.activeWorkingTimeMinutes ?? 0
+    // Show live heartbeat time even before submit; after submit show the larger of persisted vs live
+    // so the row doesn't freeze at the moment of submission.
+    const effectiveMins = Math.max(persistedMins, liveMins)
+    const activeTimeToday = effectiveMins > 0 ? formatActiveTime(effectiveMins) : report ? formatActiveTime(persistedMins) : liveMins > 0 ? formatActiveTime(liveMins) : '—'
     return {
       id: u.id,
       name: u.name ?? 'Unnamed',

@@ -43,6 +43,7 @@ const NOTIF_COLOR: Record<string, string> = {
   CHECK_IN_COMPLETED: 'bg-emerald-500/15 text-emerald-400',
   SECURITY_EVENT: 'bg-red-500/15 text-red-400',
   DAILY_REPORT_SUBMITTED: 'bg-indigo-500/15 text-indigo-400',
+  VISIT_ASSIGNED: 'bg-amber-500/15 text-amber-400',
 }
 
 interface NotificationDTO {
@@ -50,12 +51,13 @@ interface NotificationDTO {
   type: string
   title: string
   message: string
-  data?: { dailyReportId?: string; userId?: string } | null
+  data?: { dailyReportId?: string; userId?: string; visitId?: string; assignedById?: string; scheduledAt?: string } | null
   createdAt: string
   read: boolean
 }
 
 function notifHref(n: NotificationDTO): string {
+  if (n.type === 'VISIT_ASSIGNED' && n.data?.visitId) return '/field-sales/assigned'
   if (n.type === 'DAILY_REPORT_SUBMITTED' && n.data?.userId) return `/admin/my-team/${n.data.userId}`
   return '/notifications'
 }
@@ -88,22 +90,22 @@ export function Header() {
 
   const unreadCount = notifications.filter((n) => !n.read).length
 
-  function markRead(id: string) {
-    // optimistic: flip the one notification to read in cache immediately
-    queryClient.setQueryData<NotificationDTO[]>(['notifications'], (prev) =>
-      prev ? prev.map((n) => (n.id === id ? { ...n, read: true } : n)) : prev
-    )
-    fetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+  function removeNotification(id: string) {
+    queryClient.setQueryData<NotificationDTO[]>(['notifications'], (prev) => (prev ? prev.filter((n) => n.id !== id) : prev))
+    fetch('/api/notifications', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
       .then(() => queryClient.invalidateQueries({ queryKey: ['notifications'] }))
       .catch(() => queryClient.invalidateQueries({ queryKey: ['notifications'] }))
   }
 
+  function markRead(id: string) {
+    // After super admin / admin has seen and opened the notification, remove it (don't keep it as read)
+    removeNotification(id)
+  }
+
   function markAllRead() {
     if (unreadCount === 0) return
-    queryClient.setQueryData<NotificationDTO[]>(['notifications'], (prev) =>
-      prev ? prev.map((n) => ({ ...n, read: true })) : prev
-    )
-    fetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+    queryClient.setQueryData<NotificationDTO[]>(['notifications'], () => [])
+    fetch('/api/notifications', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
       .then(() => queryClient.invalidateQueries({ queryKey: ['notifications'] }))
       .catch(() => queryClient.invalidateQueries({ queryKey: ['notifications'] }))
   }
@@ -207,7 +209,7 @@ export function Header() {
                     onClick={(e) => { e.preventDefault(); markAllRead() }}
                     className="text-xs text-purple-300 hover:text-purple-200 font-medium"
                   >
-                    Mark all read
+                    Clear all
                   </button>
                 )}
               </div>

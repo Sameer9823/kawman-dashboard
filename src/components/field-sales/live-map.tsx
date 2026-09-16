@@ -107,10 +107,13 @@ export function LiveMap({
   const userMarkersRef = React.useRef<Record<string, { marker: maplibregl.Marker; el: HTMLDivElement }>>({})
   const [visits, setVisits] = React.useState(initialVisits)
   const [activeUsers, setActiveUsers] = React.useState(initialActiveUsers)
-  const [lastUpdated, setLastUpdated] = React.useState(new Date())
+  const [lastUpdated, setLastUpdated] = React.useState<Date | null>(null)
+  React.useEffect(() => setLastUpdated(new Date()), [])
   const [showActive, setShowActive] = React.useState(true)
   const [showVisits, setShowVisits] = React.useState(true)
   const [mapError, setMapError] = React.useState<string | null>(null)
+  const [mounted, setMounted] = React.useState(false)
+  React.useEffect(() => setMounted(true), [])
   const tracking = useFieldTracking()
 
   // ---- Map init (MapLibre, no token) — deferred + single fallback to avoid freeze ----
@@ -374,8 +377,8 @@ export function LiveMap({
 
       {/* Header row: refresh + toggles */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-        <span className="flex items-center gap-1.5 text-white/40">
-          <RefreshCw className="h-3 w-3" /> Live every ~12s · last sync {lastUpdated.toLocaleTimeString()}
+        <span className="flex items-center gap-1.5 text-white/40" suppressHydrationWarning>
+          <RefreshCw className="h-3 w-3" /> Live every ~12s · last sync {mounted && lastUpdated ? lastUpdated.toLocaleTimeString() : '—'}
         </span>
         <div className="flex items-center gap-3">
           <label className="flex items-center gap-1.5 text-white/70 cursor-pointer select-none">

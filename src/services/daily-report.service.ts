@@ -214,7 +214,6 @@ export async function submitDailyReport(input: DailyReportInput & { targetUserId
 
   const existing = await prisma.dailyReport.findFirst({ where: { organizationId, userId, date: { gte: day, lt: nextDay } } })
 
-  const isFirstCreation = !existing
   const row = existing
     ? await prisma.dailyReport.update({
         where: { id: existing.id },
@@ -226,9 +225,12 @@ export async function submitDailyReport(input: DailyReportInput & { targetUserId
         include: { user: { select: { id: true, name: true, email: true } }, aiReport: { select: { id: true, content: true } } },
       })
 
-  // Only on first creation for that day (not on edit/resubmit): notify every ADMIN / SUPER_ADMIN in the org.
-  // Best-effort — a notification failure must never block the report from saving or throw to the caller.
-  if (isFirstCreation) {
+  // Notify every ADMIN / SUPER_ADMIN in the org on every transition to SUBMITTED
+  // (first creation OR DRAFT→SUBMITTED). Resubmits of an already-SUBMITTED report are not renotified
+  // to avoid spam, but the first submit for the day — even if a DRAFT already existed from a
+  // field visit — must still notify. Best-effort: never block the report save.
+  const shouldNotify = !existing || existing.status !== 'SUBMITTED'
+  if (shouldNotify) {
     try {
       const { createNotification } = await import('@/services/notification.service')
       const adminRoleIds = await prisma.role.findMany({

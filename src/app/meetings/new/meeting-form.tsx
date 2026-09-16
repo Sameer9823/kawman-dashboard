@@ -2,6 +2,8 @@
 
 import * as React from 'react'
 import { useActionState, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -18,9 +20,15 @@ export function NewMeetingForm({
   currentUserId: string
 }) {
   const [state, formAction, pending] = useActionState(createMeetingWithVideoAction, initialState)
+  const router = useRouter()
   useEffect(() => {
-    if (state.meetingId) window.dispatchEvent(new Event('storage:refresh'))
-  }, [state.meetingId])
+    if (state.error) toast.error(state.error)
+    if (state.meetingId) {
+      window.dispatchEvent(new Event('storage:refresh'))
+      toast.success('Meeting uploaded — opening MoM…')
+      router.push(`/meetings/${state.meetingId}`)
+    }
+  }, [state.error, state.meetingId, router])
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([currentUserId])
 
   function toggleParticipant(id: string) {

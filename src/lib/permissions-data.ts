@@ -132,15 +132,21 @@ export const ROLE_PERMISSIONS: Record<string, PermissionKey[]> = {
   HR: [
     'users.view',
     'team.view',
+    'reports.view', 'reports.submit',
+    'ai.use',
     'files.view', 'files.download',
     'settings.view',
   ],
   FINANCE: [
     'files.view', 'files.download',
-    'reports.view', 'reports.export',
+    'reports.view', 'reports.export', 'reports.submit',
+    'team.view',
+    'ai.use',
   ],
   VIEWER: [
     'team.view',
+    'reports.view', 'reports.submit',
+    'ai.use',
     'files.view', 'files.download',
     'leads.view',
     'companies.view',

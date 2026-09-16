@@ -110,7 +110,14 @@ function resolveTargetUserId(session: Awaited<ReturnType<typeof requireApiSessio
 }
 
 function requireTeamView(session: Awaited<ReturnType<typeof requireApiSession>>) {
-  if (!(session.user.permissions as string[]).includes('team.view') && !(session.user.permissions as string[]).includes('team.view_all')) {
+  const perms = session.user.permissions as string[]
+  if (
+    !perms.includes('team.view') &&
+    !perms.includes('team.view_all') &&
+    !perms.includes('reports.view') &&
+    !perms.includes('reports.view_all') &&
+    !perms.includes('reports.submit')
+  ) {
     throw new Error('Forbidden: missing team.view')
   }
 }

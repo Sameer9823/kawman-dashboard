@@ -396,7 +396,10 @@ export async function generateReport(type: ReportType) {
 
 export async function generateEmployeeDailySummary(dailyReportId: string): Promise<{ id: string }> {
   const session = await requireApiSession()
-  if (!(session.user.permissions as string[]).includes('team.view') && !(session.user.permissions as string[]).includes('team.view_all')) throw new Error('Forbidden: missing team.view')
+  {
+    const perms = session.user.permissions as string[]
+    if (!perms.includes('team.view') && !perms.includes('team.view_all') && !perms.includes('reports.view') && !perms.includes('reports.view_all') && !perms.includes('reports.submit')) throw new Error('Forbidden: missing team.view')
+  }
   const report = await prisma.dailyReport.findFirst({
     where: { id: dailyReportId, organizationId: session.user.organizationId },
     include: { user: { select: { name: true, email: true } } },

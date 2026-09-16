@@ -125,6 +125,13 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: 'My Workspace',
+    items: [
+      { name: 'My Profile', href: '/dashboard/my-profile', icon: User },
+      { name: 'Submit Daily Report', href: '/dashboard/daily-report', icon: ClipboardCheck },
+    ],
+  },
+  {
     label: 'My Team',
     requiresAnyPermission: ['team.view_all'],
     items: [

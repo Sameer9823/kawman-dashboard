@@ -9,7 +9,7 @@ import { Badge, type BadgeVariant } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import type { FieldVisit, VisitStatus } from '@/types/field-sales'
-import { checkInAction, deleteFieldVisitAction } from '@/app/field-sales/actions'
+import { checkInAction, deleteFieldVisitAction, updateVisitStatusAction } from '@/app/field-sales/actions'
 import { DeleteRowButton } from '@/components/crm/delete-row-button'
 
 const STATUS_LABEL: Record<VisitStatus, string> = {
@@ -27,6 +27,24 @@ const STATUS_VARIANT: Record<VisitStatus, BadgeVariant> = {
   IN_MEETING: 'default',
   COMPLETED: 'success',
   CANCELLED: 'danger',
+}
+
+function StatusSelect({ visitId, status }: { visitId: string; status: VisitStatus }) {
+  const [pending, startTransition] = useTransition()
+  return (
+    <select
+      value={status}
+      disabled={pending}
+      onChange={(e) => startTransition(() => updateVisitStatusAction(visitId, e.target.value as VisitStatus))}
+      className="mt-1.5 h-7 w-full rounded-md border border-white/[0.08] bg-white/[0.04] px-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+    >
+      {(Object.keys(STATUS_LABEL) as VisitStatus[]).map((s) => (
+        <option key={s} value={s} className="bg-[#0d1622]">
+          {STATUS_LABEL[s]}
+        </option>
+      ))}
+    </select>
+  )
 }
 
 function FaceVerifyCheckIn({ visitId }: { visitId: string }) {
@@ -318,7 +336,7 @@ export function AssignedVisitsTable({ visits }: { visits: FieldVisit[] }) {
                     {v.company ? <span className="flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5 text-white/30" />{v.company}</span> : <span className="text-white/30">—</span>}
                   </td>
                   <td className="px-4 py-3 text-white/60">{format(new Date(v.scheduledAt), 'd MMM, h:mm a')}</td>
-                  <td className="px-4 py-3"><Badge variant={STATUS_VARIANT[v.status]}>{STATUS_LABEL[v.status]}</Badge></td>
+                  <td className="px-4 py-3"><div className="flex flex-col gap-1"><Badge variant={STATUS_VARIANT[v.status]}>{STATUS_LABEL[v.status]}</Badge><StatusSelect visitId={v.id} status={v.status} /></div></td>
                   <td className="px-4 py-3">
                     {v.lastCheckIn ? (
                       <div className="flex items-center gap-2">

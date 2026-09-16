@@ -139,14 +139,22 @@ export async function getTodayReportDraft(targetUserId?: string): Promise<DailyR
       select: { leadId: true },
     }),
     prisma.file.count({ where: { organizationId, uploadedById: userId, createdAt: { gte: today, lt: tomorrow } } }),
-    prisma.session.findMany({ where: { userId, createdAt: { gte: today } }, select: { createdAt: true, lastSeenAt: true, updatedAt: true } }),
+    prisma.session.findMany({
+      where: {
+        userId,
+        OR: [{ lastSeenAt: { gte: today } }, { createdAt: { gte: today } }],
+      },
+      select: { createdAt: true, lastSeenAt: true, updatedAt: true },
+    }),
   ])
 
   const leadsWorkedOnCount = new Set(distinctLeadIds.map((r) => r.leadId).filter(Boolean)).size
   const heuristicMinutes = Math.min(480, activityCount * 8)
   let sessionMinutes = 0
   if (activeSessions.length) {
-    const earliest = Math.min(...activeSessions.map((s) => s.createdAt.getTime()))
+    const todayMs = today.getTime()
+    const earliestRaw = Math.min(...activeSessions.map((s) => s.createdAt.getTime()))
+    const earliest = Math.max(earliestRaw, todayMs)
     const latest = Math.max(...activeSessions.map((s) => (s.lastSeenAt ?? s.updatedAt).getTime()))
     sessionMinutes = Math.min(480, Math.max(0, Math.round((latest - earliest) / 60000)))
   }

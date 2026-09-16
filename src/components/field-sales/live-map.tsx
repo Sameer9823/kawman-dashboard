@@ -101,44 +101,76 @@ export function LiveMap({
   const [mapError, setMapError] = React.useState<string | null>(null)
   const tracking = useFieldTracking()
 
-  // ---- Map init (MapLibre, no token) ----
+  // ---- Map init (MapLibre, no token) — deferred + single fallback to avoid freeze ----
+  const fallbackTriedRef = React.useRef(false)
+  const mountedRef = React.useRef(true)
+  React.useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
   React.useEffect(() => {
     if (!containerRef.current || mapRef.current) return
+    let map: maplibregl.Map | null = null
+    let raf = 0
+    let onError: ((e: unknown) => void) | null = null
 
-    const all = [
-      ...initialVisits.map((v) => [v.longitude, v.latitude] as [number, number]),
-      ...initialActiveUsers.map((u) => [u.longitude, u.latitude] as [number, number]),
-    ]
-    let center: [number, number] = [72.8777, 19.076] // Mumbai fallback
-    if (initialVisits.length > 0) center = [initialVisits[0].longitude, initialVisits[0].latitude]
-    else if (initialActiveUsers.length > 0) center = [initialActiveUsers[0].longitude, initialActiveUsers[0].latitude]
+    const init = () => {
+      if (!mountedRef.current || !containerRef.current || mapRef.current) return
+      const all = [
+        ...initialVisits.map((v) => [v.longitude, v.latitude] as [number, number]),
+        ...initialActiveUsers.map((u) => [u.longitude, u.latitude] as [number, number]),
+      ]
+      let center: [number, number] = [72.8777, 19.076] // Mumbai fallback
+      if (initialVisits.length > 0) center = [initialVisits[0].longitude, initialVisits[0].latitude]
+      else if (initialActiveUsers.length > 0) center = [initialActiveUsers[0].longitude, initialActiveUsers[0].latitude]
 
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: MAP_STYLE,
-      center,
-      zoom: all.length > 0 ? 11 : 4,
-      attributionControl: false,
-    })
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
-
-    map.on('error', (e) => {
-      // If primary style fails, try fallback once
-      const msg = String((e as unknown as { error?: { message?: string } })?.error?.message ?? e)
-      if (msg.includes('Failed to fetch') || msg.includes('style')) {
-        try {
-          map.setStyle(FALLBACK_STYLE)
-          setMapError(null)
-          return
-        } catch {}
+      try {
+        map = new maplibregl.Map({
+          container: containerRef.current!,
+          style: MAP_STYLE,
+          center,
+          zoom: all.length > 0 ? 11 : 4,
+          attributionControl: false,
+          fadeDuration: 0,
+        })
+      } catch (err) {
+        setMapError(String((err as Error)?.message ?? err).slice(0, 220))
+        return
       }
-      setMapError(msg.slice(0, 220))
-    })
+      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+      map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
 
-    mapRef.current = map
+      onError = (e: unknown) => {
+        const msg = String((e as unknown as { error?: { message?: string } })?.error?.message ?? (e as Error)?.message ?? e)
+        // Prevent infinite setStyle loop that freezes the tab (Wait/Close dialog)
+        const isStyleFetchError = msg.includes('Failed to fetch') || msg.includes('style') || msg.includes('Style')
+        if (isStyleFetchError && !fallbackTriedRef.current) {
+          fallbackTriedRef.current = true
+          try { map!.setStyle(FALLBACK_STYLE); setMapError(null); return } catch {}
+        }
+        // Don't spam state if already showing same error — avoids render loop
+        setMapError((prev) => (prev === msg.slice(0, 220) ? prev : msg.slice(0, 220)))
+      }
+      map.on('error', onError as never)
+
+      // Resize after container settles (fixes 0-size init when page transition animates)
+      map.once('load', () => { try { map!.resize() } catch {} })
+      mapRef.current = map
+    }
+
+    // Defer to next frame so page paint + auth/queries settle first — avoids "Page Unresponsive"
+    raf = requestAnimationFrame(() => { raf = requestAnimationFrame(init) })
     return () => {
-      map.remove()
+      cancelAnimationFrame(raf)
+      if (map) {
+        try { if (onError) map.off('error', onError as never) } catch {}
+        try { map.remove() } catch {}
+      }
+      // Also handle case where map was assigned to ref after closure
+      const refMap = mapRef.current
+      if (refMap && refMap !== map) {
+        try { refMap.remove() } catch {}
+      }
       mapRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -264,11 +296,16 @@ export function LiveMap({
 
   // ---- Poll live-map endpoint (visits + live locations) ----
   React.useEffect(() => {
+    let cancelled = false
     const interval = setInterval(async () => {
+      if (cancelled) return
+      const ctrl = new AbortController()
+      const t = setTimeout(() => ctrl.abort(), 8000)
       try {
-        const res = await fetch('/api/field-sales/live-map', { cache: 'no-store' })
-        if (!res.ok) return
+        const res = await fetch('/api/field-sales/live-map', { cache: 'no-store', signal: ctrl.signal })
+        if (!res.ok || cancelled) return
         const data = await res.json()
+        if (cancelled) return
         if (Array.isArray(data)) {
           setVisits(data)
         } else {
@@ -277,8 +314,9 @@ export function LiveMap({
         }
         setLastUpdated(new Date())
       } catch {}
+      finally { clearTimeout(t) }
     }, POLL_INTERVAL_MS)
-    return () => clearInterval(interval)
+    return () => { cancelled = true; clearInterval(interval) }
   }, [])
 
   return (

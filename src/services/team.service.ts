@@ -61,13 +61,13 @@ function formatDateKey(date: Date): string {
 
 export async function getTeamDashboardMetrics(dateRange?: DateRange): Promise<TeamDashboardMetrics> {
   const session = await requireApiSession()
-  if (!(session.user.permissions as string[]).includes('team.view') && !(session.user.permissions as string[]).includes('team.view_all')) {
-    throw new Error('Forbidden: missing team.view')
+  if (!(session.user.permissions as string[]).includes('team.view_all')) {
+    throw new Error('Forbidden: missing team.view_all')
   }
   const organizationId = session.user.organizationId
 
-  const canViewAll = (session.user.permissions as string[]).includes('team.view_all')
-  const targetUserId = canViewAll ? undefined : session.user.id
+  const canViewAll = true
+  const targetUserId: string | undefined = undefined
 
   const from = dateRange?.from ?? daysAgo(6)
   const to = dateRange?.to ?? endOfDay()

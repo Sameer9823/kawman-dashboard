@@ -62,7 +62,7 @@ function parseDateRange(searchParams: Record<string, string | string[] | undefin
 }
 
 export default async function MyTeamPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  await requirePermission('team.view')
+  await requirePermission('team.view_all')
 
   const sp = await searchParams
   const { from, to, preset } = parseDateRange(sp)

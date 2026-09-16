@@ -19,10 +19,22 @@ import { Button } from '@/components/ui/button'
 import { useFieldTracking } from '@/hooks/use-field-tracking'
 import type { LiveMapVisit, VisitStatus, ActiveUserPin } from '@/types/field-sales'
 
-// MapLibre style — free, no token. Dark Matter fits the app's dark palette;
-// OpenFreeMap Liberty is an equally good token-free fallback.
+// MapLibre style — free, no token. Dark Matter fits the app's dark palette.
+// Fallback is an INLINE raster style (no second fetch) so "Failed to fetch
+// style.json" on a flaky/corporate network doesn't brick the map.
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
-const FALLBACK_STYLE = 'https://demotiles.maplibre.org/style.json'
+const RASTER_FALLBACK_STYLE = {
+  version: 8 as const,
+  sources: {
+    osm: {
+      type: 'raster' as const,
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors',
+    },
+  },
+  layers: [{ id: 'osm', type: 'raster' as const, source: 'osm' }],
+} as unknown as maplibregl.StyleSpecification
 
 const STATUS_COLOR: Record<VisitStatus, string> = {
   SCHEDULED: '#6b7280',
@@ -146,7 +158,7 @@ export function LiveMap({
         const isStyleFetchError = msg.includes('Failed to fetch') || msg.includes('style') || msg.includes('Style')
         if (isStyleFetchError && !fallbackTriedRef.current) {
           fallbackTriedRef.current = true
-          try { map!.setStyle(FALLBACK_STYLE); setMapError(null); return } catch {}
+          try { map!.setStyle(RASTER_FALLBACK_STYLE); setMapError(null); return } catch {}
         }
         // Don't spam state if already showing same error — avoids render loop
         setMapError((prev) => (prev === msg.slice(0, 220) ? prev : msg.slice(0, 220)))

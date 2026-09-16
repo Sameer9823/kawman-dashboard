@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { createGeoFenceAction, type GeoFenceFormState } from '../actions'
@@ -8,10 +9,19 @@ import { createGeoFenceAction, type GeoFenceFormState } from '../actions'
 const initialState: GeoFenceFormState = {}
 
 export function GeoFenceForm() {
+  const formRef = useRef<HTMLFormElement>(null)
   const [state, formAction, pending] = useActionState(createGeoFenceAction, initialState)
 
+  useEffect(() => {
+    if (state.success) {
+      toast.success('Geofence created')
+      formRef.current?.reset()
+    }
+    if (state.error) toast.error(state.error)
+  }, [state.success, state.error])
+
   return (
-    <form action={formAction} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <form ref={formRef} action={formAction} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <Field label="Fence name *" error={state.fieldErrors?.name}>
         <Input name="name" placeholder="Acme HQ perimeter" required />
       </Field>

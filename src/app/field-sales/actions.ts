@@ -231,6 +231,7 @@ const geoFenceSchema = z.object({
 export interface GeoFenceFormState {
   error?: string
   fieldErrors?: Record<string, string>
+  success?: boolean
 }
 
 export async function createGeoFenceAction(_prev: GeoFenceFormState, formData: FormData): Promise<GeoFenceFormState> {
@@ -263,7 +264,7 @@ export async function createGeoFenceAction(_prev: GeoFenceFormState, formData: F
   })
   revalidatePath('/field-sales/geofencing')
   revalidatePath('/field-sales/live-map')
-  return {}
+  return { success: true }
 }
 
 export async function toggleGeoFenceAction(id: string, isActive: boolean): Promise<void> {

@@ -203,6 +203,7 @@ const categorySchema = z.object({
 export interface CategoryFormState {
   error?: string
   fieldErrors?: Record<string, string>
+  success?: boolean
 }
 
 export async function createCategoryAction(_prev: CategoryFormState, formData: FormData): Promise<CategoryFormState> {
@@ -216,7 +217,7 @@ export async function createCategoryAction(_prev: CategoryFormState, formData: F
   }
   await createCategory(parsed.data)
   revalidatePath('/files/categories')
-  return {}
+  return { success: true }
 }
 
 export async function deleteCategoryAction(id: string): Promise<void> {

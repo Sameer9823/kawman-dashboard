@@ -31,8 +31,18 @@ const visitSchema = z.object({
   contact: z.string().trim().optional(),
   assigneeId: z.string().trim().optional(),
   address: z.string().trim().optional(),
-  latitude: z.coerce.number().min(-90).max(90).optional(),
-  longitude: z.coerce.number().min(-180).max(180).optional(),
+  // Empty string from the form means "no coordinate" — not 0. Without the
+  // preprocess, z.coerce.number() turns "" into 0 (Number("") === 0), so
+  // an address-only visit would be saved at 0,0 in the Gulf of Guinea
+  // and fail to show where you expect. Treat "" as undefined.
+  latitude: z.preprocess(
+    (v) => (v === '' || v === null ? undefined : v),
+    z.coerce.number().min(-90).max(90).optional()
+  ),
+  longitude: z.preprocess(
+    (v) => (v === '' || v === null ? undefined : v),
+    z.coerce.number().min(-180).max(180).optional()
+  ),
 })
 
 export interface VisitFormState {

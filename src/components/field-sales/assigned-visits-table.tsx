@@ -1,8 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { MapPin, Navigation2, Loader2, Building2, Camera, ImageIcon, X, VideoOff, ShieldCheck, ShieldAlert } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -10,7 +9,8 @@ import { Badge, type BadgeVariant } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import type { FieldVisit, VisitStatus } from '@/types/field-sales'
-import { checkInAction } from '@/app/field-sales/actions'
+import { checkInAction, deleteFieldVisitAction } from '@/app/field-sales/actions'
+import { DeleteRowButton } from '@/components/crm/delete-row-button'
 
 const STATUS_LABEL: Record<VisitStatus, string> = {
   SCHEDULED: 'Scheduled',
@@ -340,6 +340,7 @@ export function AssignedVisitsTable({ visits }: { visits: FieldVisit[] }) {
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
                       {v.status !== 'COMPLETED' && v.status !== 'CANCELLED' && !verified && <FaceVerifyCheckIn visitId={v.id} />}
+                      <DeleteRowButton action={deleteFieldVisitAction.bind(null, v.id)} confirmLabel={`Delete "${v.title}"? Its check-ins and reports will be removed.`} />
                       {verified && <span className="text-xs text-emerald-400">Done ✓</span>}
                     </div>
                   </td>

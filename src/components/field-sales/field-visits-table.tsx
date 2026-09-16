@@ -7,10 +7,11 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge, type BadgeVariant } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { DeleteRowButton } from '@/components/crm/delete-row-button'
 import { format } from 'date-fns'
 import type { FieldVisit, VisitStatus } from '@/types/field-sales'
 import type { FieldVisitPageResult } from '@/services/field-visit.service'
-import { checkInAction, updateVisitStatusAction } from '@/app/field-sales/actions'
+import { checkInAction, deleteFieldVisitAction, updateVisitStatusAction } from '@/app/field-sales/actions'
 
 const STATUS_LABEL: Record<VisitStatus, string> = {
   SCHEDULED: 'Scheduled',
@@ -476,6 +477,7 @@ export function FieldVisitsTable(props: FieldVisitsTableProps) {
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-2">
                     {v.status !== 'COMPLETED' && v.status !== 'CANCELLED' && <CheckInButton visitId={v.id} />}
+                    <DeleteRowButton action={deleteFieldVisitAction.bind(null, v.id)} confirmLabel={`Delete "${v.title}"? Its check-ins and reports will be removed.`} />
                     <Link href={`/field-sales/live-map`} className="text-xs text-purple-400 hover:text-purple-300">
                       Map
                     </Link>

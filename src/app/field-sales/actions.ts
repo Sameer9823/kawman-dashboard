@@ -186,6 +186,23 @@ export async function createFieldVisitAction(_prev: VisitFormState, formData: Fo
 
 const VISIT_STATUSES = ['SCHEDULED', 'ON_THE_WAY', 'CHECKED_IN', 'IN_MEETING', 'COMPLETED', 'CANCELLED'] as const
 
+export async function deleteFieldVisitAction(id: string): Promise<{ success?: boolean; error?: string }> {
+  await validateCsrf()
+  const session = await assertPermission(PERMISSIONS['field_visits.delete'].name)
+  const existing = await prisma.fieldVisit.findFirst({ where: { id, organizationId: session.user.organizationId } })
+  if (!existing) return { error: 'Visit not found.' }
+  // Allow: owner (assignee), creator is not tracked separately, or anyone with field_visits.delete (admin/leader)
+  // Org scoping above is the real guard — any delete-capable user in the org may remove it.
+  await prisma.fieldVisit.delete({ where: { id } })
+  revalidatePath('/field-sales')
+  revalidatePath('/field-sales/visits')
+  revalidatePath('/field-sales/assigned')
+  revalidatePath('/field-sales/checkins')
+  revalidatePath('/field-sales/live-map')
+  revalidatePath('/field-sales/reports')
+  return { success: true }
+}
+
 export async function updateVisitStatusAction(visitId: string, status: (typeof VISIT_STATUSES)[number]): Promise<void> {
   await validateCsrf()
   const session = await assertPermission(PERMISSIONS['field_visits.update'].name)

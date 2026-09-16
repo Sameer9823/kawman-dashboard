@@ -127,7 +127,7 @@ const NAV_GROUPS: NavGroup[] = [
     requiresAnyPermission: ['team.view', 'team.view_all'],
     items: [
       { name: 'Team Dashboard', href: '/admin/my-team', icon: Users, permission: 'team.view' },
-      { name: 'Daily Reports', href: '/admin/my-team/reports', icon: ClipboardCheck, permission: 'team.view' },
+      { name: 'Daily Reports', href: '/admin/my-team/reports', icon: ClipboardCheck, permission: 'team.view_all' },
       { name: 'Team Members', href: '/admin/my-team/members', icon: UserCog, permission: 'team.view_all' },
     ],
   },

@@ -440,11 +440,12 @@ export function LiveMap({
               return (
                 <span
                   key={u.id}
+                  suppressHydrationWarning
                   className={cn(
                     'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs',
                     u.isStale ? 'border-white/5 bg-white/[0.02] text-white/30' : 'border-white/10 bg-white/[0.04] text-white/70'
                   )}
-                  title={`${u.name} · ${u.updatedAt ? relTime(u.updatedAt) : relTime(u.lastSeenAt)} · ${formatAccuracy(u.accuracy)}${u.isTracking ? ' · live' : ''}${u.isStale ? ' · stale' : ''}`}
+                  title={mounted ? `${u.name} · ${u.updatedAt ? relTime(u.updatedAt) : relTime(u.lastSeenAt)} · ${formatAccuracy(u.accuracy)}${u.isTracking ? ' · live' : ''}${u.isStale ? ' · stale' : ''}` : u.name}
                 >
                   <span
                     className="h-5 w-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center shrink-0 border border-white/20"
@@ -467,8 +468,8 @@ export function LiveMap({
                     <span className={cn('h-1.5 w-1.5 rounded-full', u.isTracking ? 'bg-emerald-400 animate-pulse' : u.isStale ? 'bg-white/20' : 'bg-white/30')} />
                     {u.isTracking ? 'live' : u.isStale ? 'stale' : 'idle'}
                   </span>
-                  <span className="text-[11px] text-white/25 hidden sm:inline">
-                    {formatAccuracy(u.accuracy)} · {u.updatedAt ? relTime(u.updatedAt) : relTime(u.lastCheckInAt ?? u.lastSeenAt)}
+                  <span suppressHydrationWarning className="text-[11px] text-white/25 hidden sm:inline">
+                    {mounted ? `${formatAccuracy(u.accuracy)} · ${u.updatedAt ? relTime(u.updatedAt) : relTime(u.lastCheckInAt ?? u.lastSeenAt)}` : formatAccuracy(u.accuracy)}
                   </span>
                 </span>
               )

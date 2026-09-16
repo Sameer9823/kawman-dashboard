@@ -24,6 +24,7 @@ export interface FieldVisit {
   lastCheckIn: {
     verificationStatus: string
     distanceFromCustomer: number | null
+    photoUrl: string | null
     createdAt: string
   } | null
 }

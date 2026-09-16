@@ -1086,6 +1086,7 @@ enum NotificationType {
   CHECK_IN_COMPLETED
   SECURITY_EVENT
   DAILY_REPORT_SUBMITTED
+  VISIT_ASSIGNED
 }
 
 enum DailyReportStatus {

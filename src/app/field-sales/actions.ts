@@ -140,8 +140,28 @@ export async function createFieldVisitAction(_prev: VisitFormState, formData: Fo
     console.error('[createFieldVisitAction] photo upload failed:', e)
   }
 
+  // Notify assignee when a leader assigns them a visit — bell + assigned list for face verification
+  if (visit.assigneeId !== session.user.id) {
+    try {
+      const assigner = session.user.name ?? session.user.email ?? 'A team member'
+      await prisma.notification.create({
+        data: {
+          type: 'VISIT_ASSIGNED',
+          title: 'New visit assigned to you',
+          message: `${assigner} assigned "${visit.title}"${visit.scheduledAt ? ` for ${new Date(visit.scheduledAt).toLocaleString()}` : ''}${data.address ? ` — ${data.address}` : ''}. Open your Assigned visits to verify on-site with a face photo.`,
+          data: { visitId: visit.id, assignedById: session.user.id, scheduledAt: visit.scheduledAt.toISOString() },
+          organizationId: session.user.organizationId,
+          userId: visit.assigneeId,
+        },
+      })
+    } catch (e) {
+      console.error('[createFieldVisitAction] VISIT_ASSIGNED notification failed:', e)
+    }
+  }
+
   revalidatePath('/field-sales')
   revalidatePath('/field-sales/visits')
+  revalidatePath('/field-sales/assigned')
   revalidatePath('/field-sales/checkins')
   revalidatePath('/field-sales/live-map')
   redirect('/field-sales')

@@ -31,6 +31,7 @@ import {
   Navigation,
   UserCheck,
   ClipboardCheck,
+  ShieldCheck,
   Users,
   Briefcase,
   Building,
@@ -116,6 +117,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Field Sales',
     badge: 'New',
     items: [
+      { name: 'Assigned to Me', href: '/field-sales/assigned', icon: ShieldCheck },
       { name: 'Live Map', href: '/field-sales/live-map', icon: Navigation },
       { name: "Today's Visits", href: '/field-sales/visits', icon: MapPin },
       { name: 'Check-ins', href: '/field-sales/checkins', icon: UserCheck },

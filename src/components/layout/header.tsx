@@ -43,6 +43,7 @@ const NOTIF_COLOR: Record<string, string> = {
   CHECK_IN_COMPLETED: 'bg-emerald-500/15 text-emerald-400',
   SECURITY_EVENT: 'bg-red-500/15 text-red-400',
   DAILY_REPORT_SUBMITTED: 'bg-indigo-500/15 text-indigo-400',
+  VISIT_ASSIGNED: 'bg-amber-500/15 text-amber-400',
 }
 
 interface NotificationDTO {
@@ -50,12 +51,13 @@ interface NotificationDTO {
   type: string
   title: string
   message: string
-  data?: { dailyReportId?: string; userId?: string } | null
+  data?: { dailyReportId?: string; userId?: string; visitId?: string; assignedById?: string; scheduledAt?: string } | null
   createdAt: string
   read: boolean
 }
 
 function notifHref(n: NotificationDTO): string {
+  if (n.type === 'VISIT_ASSIGNED' && n.data?.visitId) return '/field-sales/assigned'
   if (n.type === 'DAILY_REPORT_SUBMITTED' && n.data?.userId) return `/admin/my-team/${n.data.userId}`
   return '/notifications'
 }

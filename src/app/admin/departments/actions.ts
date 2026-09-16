@@ -17,6 +17,7 @@ const schema = z.object({
 export interface DeptFormState {
   error?: string
   fieldErrors?: Record<string, string>
+  success?: boolean
 }
 
 async function assertPermission() {
@@ -58,7 +59,7 @@ export async function createDepartmentAction(_prev: DeptFormState, formData: For
   })
 
   revalidatePath('/admin/departments')
-  return {}
+  return { success: true }
 }
 
 export async function deleteDepartmentAction(id: string): Promise<void> {

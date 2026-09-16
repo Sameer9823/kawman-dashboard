@@ -187,10 +187,10 @@ export function NewVisitForm({ owners }: { owners: UserOption[] }) {
         </Field>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Latitude" error={state.fieldErrors?.latitude}>
-            <Input name="latitude" type="number" step="0.000001" placeholder="19.119677" value={latInput} onChange={(e) => setLatInput(e.target.value)} />
+            <Input name="latitude" inputMode="decimal" placeholder="19.119677" value={latInput} onChange={(e) => setLatInput(e.target.value)} />
           </Field>
           <Field label="Longitude" error={state.fieldErrors?.longitude}>
-            <Input name="longitude" type="number" step="0.000001" placeholder="72.846878" value={lngInput} onChange={(e) => setLngInput(e.target.value)} />
+            <Input name="longitude" inputMode="decimal" placeholder="72.846878" value={lngInput} onChange={(e) => setLngInput(e.target.value)} />
           </Field>
         </div>
 

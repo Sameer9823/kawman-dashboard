@@ -34,13 +34,30 @@ const visitSchema = z.object({
   // Empty string from the form means "no coordinate" — not 0. Without the
   // preprocess, z.coerce.number() turns "" into 0 (Number("") === 0), so
   // an address-only visit would be saved at 0,0 in the Gulf of Guinea
-  // and fail to show where you expect. Treat "" as undefined.
+  // and fail to show where you expect. Treat "" / whitespace / null as undefined.
+  // Also normalize comma decimals (19,07 -> 19.07) for locales that type comma.
   latitude: z.preprocess(
-    (v) => (v === '' || v === null ? undefined : v),
+    (v) => {
+      if (v === '' || v === null || v === undefined) return undefined
+      if (typeof v === 'string') {
+        const t = v.trim().replace(',', '.')
+        if (t === '') return undefined
+        return t
+      }
+      return v
+    },
     z.coerce.number().min(-90).max(90).optional()
   ),
   longitude: z.preprocess(
-    (v) => (v === '' || v === null ? undefined : v),
+    (v) => {
+      if (v === '' || v === null || v === undefined) return undefined
+      if (typeof v === 'string') {
+        const t = v.trim().replace(',', '.')
+        if (t === '') return undefined
+        return t
+      }
+      return v
+    },
     z.coerce.number().min(-180).max(180).optional()
   ),
 })

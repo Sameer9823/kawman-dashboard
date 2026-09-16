@@ -12,10 +12,16 @@ import { isCloudinaryConfigured, uploadToCloudinary } from '@/lib/cloudinary'
 import { findOrCreateCompanyByName } from '@/services/company.service'
 import { findOrCreateContactByName } from '@/services/contact.service'
 import { createCheckIn as createCheckInRow } from '@/services/field-visit.service'
+import { getUserPermissions } from '@/services/permission.service'
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
-  if (!(session.user.permissions as string[]).includes(permission)) throw new Error('You do not have permission to do this.')
+  // Live DB check — session.user.permissions is cached for up to 60s
+  // via better-auth cookieCache, so a freshly-seeded permission
+  // (e.g. field_visits.delete) would otherwise still read as denied
+  // until the cookie refreshes or the user re-logs in.
+  const live = await getUserPermissions(session.user.id, session.user.organizationId)
+  if (!live.includes(permission)) throw new Error('You do not have permission to do this.')
   return session
 }
 

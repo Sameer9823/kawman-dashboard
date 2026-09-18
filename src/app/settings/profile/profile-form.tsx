@@ -32,12 +32,12 @@ export function ProfileForm({ user }: { user: ProfileUser }) {
     if (state.success) {
       if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current)
       objectUrlRef.current = null
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPreview(null)
       setFileName(null)
       setRemoved(false)
       if (fileRef.current) fileRef.current.value = ''
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success])
 
   useEffect(() => {

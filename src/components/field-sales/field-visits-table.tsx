@@ -71,6 +71,7 @@ function CheckInButton({ visitId }: { visitId: string }) {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (open && !loc && !locLoading) captureLocation()
   }, [open])
 

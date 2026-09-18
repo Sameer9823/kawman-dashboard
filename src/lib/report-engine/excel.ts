@@ -309,7 +309,7 @@ export async function generateReportExcelBuffer(def: UniversalReportDefinition):
 
   if (!tables.length) {
     const ws = wb.addWorksheet(sanitizeSheetName(report.name || 'Report'))
-    let row = addReportHeader(ws, report)
+    const row = addReportHeader(ws, report)
     ws.getCell(`A${row}`).value = 'No tabular data for this report.'
     ws.getCell(`A${row}`).font = { italic: true, color: { argb: 'FF64748B' }, name: 'Calibri' }
     ws.getColumn(1).width = 50

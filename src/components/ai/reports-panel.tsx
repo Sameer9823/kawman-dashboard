@@ -42,6 +42,7 @@ export function ReportsPanel({
   const [exportingId, setExportingId] = React.useState<string | null>(null)
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setReports(() => initialReports)
   }, [initialReports])
 

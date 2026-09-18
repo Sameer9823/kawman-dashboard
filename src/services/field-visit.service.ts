@@ -244,7 +244,7 @@ export async function getActiveUsersForMap(): Promise<ActiveUserPin[]> {
 
   // Also include users who are actively streaming even if heartbeat is slightly stale (race)
   // — any UserLiveLocation in this org touched in last 10 min and still isTracking
-  let liveExtras: typeof recentSessions = []
+  const _liveExtras: typeof recentSessions = []
   try {
     const extraLocs = await prisma.userLiveLocation.findMany({
       where: { organizationId, updatedAt: { gte: liveCutoff }, isTracking: true },

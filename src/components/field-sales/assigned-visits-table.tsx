@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
-import { MapPin, Navigation2, Loader2, Building2, Camera, ImageIcon, X, VideoOff, ShieldCheck, ShieldAlert } from 'lucide-react'
+import { MapPin, Loader2, Building2, Camera, ImageIcon, X, VideoOff, ShieldCheck, ShieldAlert } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge, type BadgeVariant } from '@/components/ui/badge'
@@ -89,7 +89,6 @@ function FaceVerifyCheckIn({ visitId }: { visitId: string }) {
 
   useEffect(() => {
     if (open && !loc && !locLoading) captureLocation()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   function stopCamera() {
@@ -100,9 +99,7 @@ function FaceVerifyCheckIn({ visitId }: { visitId: string }) {
   }
 
   useEffect(() => {
-    if (!open) stopCamera()
     return () => stopCamera()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   async function openCamera() {

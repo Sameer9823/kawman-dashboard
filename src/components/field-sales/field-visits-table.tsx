@@ -72,7 +72,6 @@ function CheckInButton({ visitId }: { visitId: string }) {
 
   useEffect(() => {
     if (open && !loc && !locLoading) captureLocation()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   function stopCamera() {
@@ -85,9 +84,7 @@ function CheckInButton({ visitId }: { visitId: string }) {
   }
 
   useEffect(() => {
-    if (!open) stopCamera()
     return () => stopCamera()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   async function openCamera() {

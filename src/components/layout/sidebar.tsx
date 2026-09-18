@@ -219,8 +219,8 @@ export function Sidebar() {
     } catch {}
   }, [])
 
+  // Initial load + listeners + interval
   React.useEffect(() => {
-    refreshStorage()
     const onRefresh = () => refreshStorage()
     window.addEventListener('storage:refresh', onRefresh)
     window.addEventListener('focus', onRefresh)
@@ -234,8 +234,10 @@ export function Sidebar() {
     }
   }, [refreshStorage])
 
+  // Refresh on pathname change
   React.useEffect(() => {
-    refreshStorage()
+    const onRefresh = () => refreshStorage()
+    onRefresh()
   }, [pathname, refreshStorage])
 
   const closeDrawer = React.useCallback(() => setMobileDrawerOpen(false), [setMobileDrawerOpen])

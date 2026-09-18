@@ -37,6 +37,7 @@ export function ProfileForm({ user }: { user: ProfileUser }) {
       setRemoved(false)
       if (fileRef.current) fileRef.current.value = ''
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success])
 
   useEffect(() => {

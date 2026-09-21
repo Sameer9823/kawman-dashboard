@@ -5,6 +5,7 @@ import { generateCompletion, isAIConfigured, type AIChatMessage } from '@/lib/ai
 import { getRecordScope } from '@/lib/record-scope'
 import type { Session } from '@/lib/auth'
 import type { Prisma } from '@/generated/prisma'
+import { ok, err, Result } from '@/lib/result'
 
 // ============================================================
 // Org data grounding — pulls a real CRM snapshot so the model
@@ -701,14 +702,20 @@ export async function generateFieldSalesDailySummary(opts?: { date?: Date }): Pr
   return { id: row.id }
 }
 
-export async function deleteReport(id: string): Promise<void> {
-  const session = await requireApiSession()
-  const existing = await prisma.aIReport.findFirst({
-    where: { id, organizationId: session.user.organizationId },
-    select: { id: true },
-  })
-  if (!existing) throw new Error('Report not found')
-  await prisma.aIReport.delete({ where: { id } })
+export async function deleteReport(id: string): Promise<Result<void>> {
+  try {
+    const session = await requireApiSession()
+    const existing = await prisma.aIReport.findFirst({
+      where: { id, organizationId: session.user.organizationId },
+      select: { id: true },
+    })
+    if (!existing) return err('Report not found')
+    await prisma.aIReport.delete({ where: { id } })
+    return ok(undefined)
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Failed to delete report'
+    return err(msg)
+  }
 }
 
 export { isAIConfigured }

@@ -2,6 +2,7 @@ import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import type { Prisma } from '@/generated/prisma'
+import { ok, err, Result } from '@/lib/result'
 
 export interface DailyReportDraft {
   tasksCompletedCount: number
@@ -103,13 +104,13 @@ function canViewAllFor(session: Awaited<ReturnType<typeof requireApiSession>>): 
   return (session.user.permissions as string[]).includes('team.view_all') || (session.user.permissions as string[]).includes('reports.view_all')
 }
 
-function resolveTargetUserId(session: Awaited<ReturnType<typeof requireApiSession>>, requestedUserId?: string): string {
+function resolveTargetUserId(session: Awaited<ReturnType<typeof requireApiSession>>, requestedUserId?: string): Result<string> {
   const target = requestedUserId ?? session.user.id
-  if (target !== session.user.id && !canViewAllFor(session)) throw new Error('Forbidden: missing team.view_all')
-  return target
+  if (target !== session.user.id && !canViewAllFor(session)) return err('Forbidden: missing team.view_all')
+  return ok(target)
 }
 
-function requireTeamView(session: Awaited<ReturnType<typeof requireApiSession>>) {
+function requireTeamView(session: Awaited<ReturnType<typeof requireApiSession>>): Result<void> {
   const perms = session.user.permissions as string[]
   if (
     !perms.includes('team.view') &&
@@ -118,16 +119,20 @@ function requireTeamView(session: Awaited<ReturnType<typeof requireApiSession>>)
     !perms.includes('reports.view_all') &&
     !perms.includes('reports.submit')
   ) {
-    throw new Error('Forbidden: missing team.view')
+    return err('Forbidden: missing team.view')
   }
+  return ok(undefined)
 }
 
-export async function getTodayReportDraft(targetUserId?: string): Promise<DailyReportDraft> {
+export async function getTodayReportDraft(targetUserId?: string): Promise<Result<DailyReportDraft>> {
   const session = await requireApiSession()
-  requireTeamView(session)
+  const teamViewResult = requireTeamView(session)
+  if (!teamViewResult.success) return err(teamViewResult.error)
   // reports.submit is also sufficient for own draft
   const organizationId = session.user.organizationId
-  const userId = resolveTargetUserId(session, targetUserId)
+  const userIdResult = resolveTargetUserId(session, targetUserId)
+  if (!userIdResult.success) return err(userIdResult.error)
+  const userId = userIdResult.data
 
   const today = startOfDay()
   const tomorrow = new Date(today)
@@ -191,27 +196,31 @@ export async function getTodayReportDraft(targetUserId?: string): Promise<DailyR
       }
     : null
 
-  return {
+  return ok({
     tasksCompletedCount: followUpsCompleted,
     crmRecordsUpdatedCount: activityCount,
     leadsWorkedOnCount,
     filesUploadedCount: filesUploaded,
     activeWorkingTimeMinutes,
     existingReport: base,
-  }
+  })
 }
 
-export async function submitDailyReport(input: DailyReportInput & { targetUserId?: string }): Promise<DailyReportWithRelations> {
+export async function submitDailyReport(input: DailyReportInput & { targetUserId?: string }): Promise<Result<DailyReportWithRelations>> {
   const session = await requireApiSession()
-  if (!(session.user.permissions as string[]).includes('reports.submit')) throw new Error('Forbidden: missing reports.submit')
+  if (!(session.user.permissions as string[]).includes('reports.submit')) return err('Forbidden: missing reports.submit')
   const organizationId = session.user.organizationId
-  const userId = resolveTargetUserId(session, input.targetUserId)
+  const userIdResult = resolveTargetUserId(session, input.targetUserId)
+  if (!userIdResult.success) return err(userIdResult.error)
+  const userId = userIdResult.data
 
   const day = startOfDay(input.date)
   const nextDay = new Date(day)
   nextDay.setDate(nextDay.getDate() + 1)
 
-  const draft = await getTodayReportDraft(userId)
+  const draftResult = await getTodayReportDraft(userId)
+  if (!draftResult.success) return err(draftResult.error)
+  const draft = draftResult.data
 
   const data = {
     workDescription: input.workDescription ?? null,
@@ -281,7 +290,7 @@ export async function submitDailyReport(input: DailyReportInput & { targetUserId
     }
   }
 
-  return {
+  return ok({
     id: row.id,
     userId: row.userId,
     organizationId: row.organizationId,
@@ -301,16 +310,19 @@ export async function submitDailyReport(input: DailyReportInput & { targetUserId
     updatedAt: row.updatedAt,
     user: row.user,
     aiReport: row.aiReport,
-  }
+  })
 }
 
-export async function listDailyReports(filters?: { from?: Date; to?: Date; status?: string; targetUserId?: string }): Promise<DailyReportWithRelations[]> {
+export async function listDailyReports(filters?: { from?: Date; to?: Date; status?: string; targetUserId?: string }): Promise<Result<DailyReportWithRelations[]>> {
   const session = await requireApiSession()
-  requireTeamView(session)
+  const teamViewResult = requireTeamView(session)
+  if (!teamViewResult.success) return err(teamViewResult.error)
   const organizationId = session.user.organizationId
   const where: Prisma.DailyReportWhereInput = { organizationId }
   if (filters?.targetUserId) {
-    where.userId = resolveTargetUserId(session, filters.targetUserId)
+    const userIdResult = resolveTargetUserId(session, filters.targetUserId)
+    if (!userIdResult.success) return err(userIdResult.error)
+    where.userId = userIdResult.data
   } else if (!canViewAllFor(session)) {
     where.userId = session.user.id
   }
@@ -327,7 +339,7 @@ export async function listDailyReports(filters?: { from?: Date; to?: Date; statu
     orderBy: { date: 'desc' },
     take: 100,
   })
-  return rows.map((r) => ({
+  return ok(rows.map((r) => ({
     id: r.id,
     userId: r.userId,
     organizationId: r.organizationId,
@@ -347,14 +359,15 @@ export async function listDailyReports(filters?: { from?: Date; to?: Date; statu
     updatedAt: r.updatedAt,
     user: { id: r.user.id, name: r.user.name ?? null, email: r.user.email } as unknown as { id: string; name: string | null; email: string },
     aiReport: r.aiReport,
-  } as DailyReportWithRelations))
+  } as DailyReportWithRelations)))
 }
 
-export async function getEmployeeProfile(userId: string, dateRange?: { from: Date; to: Date }): Promise<EmployeeProfileData> {
+export async function getEmployeeProfile(userId: string, dateRange?: { from: Date; to: Date }): Promise<Result<EmployeeProfileData>> {
   const session = await requireApiSession()
-  requireTeamView(session)
+  const teamViewResult = requireTeamView(session)
+  if (!teamViewResult.success) return err(teamViewResult.error)
   const organizationId = session.user.organizationId
-  if (userId !== session.user.id && !canViewAllFor(session)) throw new Error('Forbidden: missing team.view_all')
+  if (userId !== session.user.id && !canViewAllFor(session)) return err('Forbidden: missing team.view_all')
 
   const target = await prisma.user.findFirst({
     where: { id: userId, organizationId },
@@ -423,7 +436,7 @@ export async function getEmployeeProfile(userId: string, dateRange?: { from: Dat
   }
   const performanceAnalytics = Array.from(perfMap.entries()).map(([date, v]) => ({ date, ...v }))
 
-  return {
+  return ok({
     user: {
       id: target.id,
       name: target.name,
@@ -464,7 +477,7 @@ export async function getEmployeeProfile(userId: string, dateRange?: { from: Dat
     activityTimeline: activities.map((a) => ({ id: a.id, type: a.type, description: a.description, createdAt: a.createdAt })),
     loginHistory: sessions.map((s) => ({ id: s.id, createdAt: s.createdAt, endedAt: s.endedAt, ipAddress: s.ipAddress, userAgent: s.userAgent })),
     performanceAnalytics,
-  }
+  })
 }
 
 export interface TeamDailyReportsParams {
@@ -503,15 +516,18 @@ export interface TeamDailyReportsResult {
   totalPages: number
 }
 
-export async function getTeamDailyReports(params: TeamDailyReportsParams): Promise<TeamDailyReportsResult> {
+export async function getTeamDailyReports(params: TeamDailyReportsParams): Promise<Result<TeamDailyReportsResult>> {
   const session = await requireApiSession()
-  requireTeamView(session)
+  const teamViewResult = requireTeamView(session)
+  if (!teamViewResult.success) return err(teamViewResult.error)
   const organizationId = session.user.organizationId
   const { from, to, userId, status, search, page, pageSize } = params
 
   const baseWhere: Prisma.DailyReportWhereInput = { organizationId }
   if (userId) {
-    baseWhere.userId = resolveTargetUserId(session, userId)
+    const userIdResult = resolveTargetUserId(session, userId)
+    if (!userIdResult.success) return err(userIdResult.error)
+    baseWhere.userId = userIdResult.data
   } else if (!canViewAllFor(session)) {
     baseWhere.userId = session.user.id
   }
@@ -565,7 +581,7 @@ export async function getTeamDailyReports(params: TeamDailyReportsParams): Promi
       userEmail: r.user.email,
       aiSummary: r.aiReport?.content ?? null,
     }))
-    return { reports: formatted, total, page, pageSize, totalPages: Math.ceil(total / Math.max(1, pageSize)) }
+    return ok({ reports: formatted, total, page, pageSize, totalPages: Math.ceil(total / Math.max(1, pageSize)) })
   }
 
   const [total, reports] = await Promise.all([
@@ -599,5 +615,5 @@ export async function getTeamDailyReports(params: TeamDailyReportsParams): Promi
     aiSummary: r.aiReport?.content ?? null,
   }))
 
-  return { reports: formatted, total, page, pageSize, totalPages: Math.ceil(total / Math.max(1, pageSize)) }
+  return ok({ reports: formatted, total, page, pageSize, totalPages: Math.ceil(total / Math.max(1, pageSize)) })
 }

@@ -46,7 +46,7 @@ export default async function MyProfilePage({ searchParams }: { searchParams: Pr
   const { from, to, preset } = parseDateRange(sp)
 
   // Self only — no team.view_all needed; getEmployeeProfile allows self via reports.submit/team.view etc.
-  const [profile, aiConfigured, myReports] = await Promise.all([
+  const [profileResult, aiConfigured, myReports] = await Promise.all([
     getEmployeeProfile(session.user.id, from && to ? { from, to } : undefined),
     Promise.resolve(isAIConfigured()),
     prisma.aIReport.findMany({
@@ -56,6 +56,21 @@ export default async function MyProfilePage({ searchParams }: { searchParams: Pr
       select: { id: true, type: true, title: true, createdAt: true, generatedBy: { select: { name: true } } },
     }),
   ])
+
+  if (!profileResult.success) {
+    return (
+      <MainLayout>
+        <div className="space-y-6">
+          <PageHeader title="My Profile" subtitle="Unable to load profile" />
+          <Card className="p-5 bg-red-500/10 border-red-500/20">
+            <p className="text-red-400">{profileResult.error}</p>
+          </Card>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  const profile = profileResult.data
 
   const employeeReports = myReports.map((r) => ({
     id: r.id,

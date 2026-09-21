@@ -66,12 +66,10 @@ export async function getTeamDashboardMetrics(dateRange?: DateRange): Promise<Te
   }
   const organizationId = session.user.organizationId
 
-  const targetUserId: string | undefined = undefined
-
   const from = dateRange?.from ?? daysAgo(6)
   const to = dateRange?.to ?? endOfDay()
 
-  const userWhere: Prisma.UserWhereInput = { organizationId, status: 'ACTIVE', ...(targetUserId ? { id: targetUserId } : {}) }
+  const userWhere: Prisma.UserWhereInput = { organizationId, status: 'ACTIVE' }
   const users = await prisma.user.findMany({
     where: userWhere,
     select: { id: true, name: true, email: true, lastLoginAt: true },

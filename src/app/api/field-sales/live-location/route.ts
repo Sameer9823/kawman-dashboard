@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 
-const MIN_INTERVAL_MS = 8_000 // server-side throttle: ignore bursts <8s from same user
+const STALE_MS = 8_000 // server-side throttle: ignore bursts <8s from same user
 
 export async function POST(req: Request) {
   let session
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   // Server-side throttle: if last update < MIN_INTERVAL_MS ago, return ok without write (client throttles too, but this prevents abuse)
   try {
     const existing = await prisma.userLiveLocation.findUnique({ where: { userId: session.user.id }, select: { updatedAt: true } })
-    if (existing && now.getTime() - new Date(existing.updatedAt).getTime() < MIN_INTERVAL_MS) {
+    if (existing && now.getTime() - new Date(existing.updatedAt).getTime() < STALE_MS) {
       // Still refresh heartbeat
       const row = await prisma.session.findFirst({ where: { userId: session.user.id }, orderBy: { updatedAt: 'desc' }, select: { id: true } })
       if (row) await prisma.session.update({ where: { id: row.id }, data: { lastSeenAt: now, updatedAt: now } }).catch(() => {})

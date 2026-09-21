@@ -119,8 +119,10 @@ describe('daily-report.service', () => {
         aiReport: null,
       })
 
-      const draft = await getTodayReportDraft()
+      const draftResult = await getTodayReportDraft()
 
+      expect(draftResult.success).toBe(true)
+      const draft = draftResult.data
       expect(draft).not.toBeNull()
       expect(draft.existingReport).not.toBeNull()
       expect(draft.existingReport?.workDescription).toBe('Draft work')
@@ -135,8 +137,10 @@ describe('daily-report.service', () => {
       mockPrisma.file.count.mockResolvedValue(2)
       mockPrisma.session.findMany.mockResolvedValue([])
 
-      const draft = await getTodayReportDraft()
+      const draftResult = await getTodayReportDraft()
 
+      expect(draftResult.success).toBe(true)
+      const draft = draftResult.data
       expect(draft).not.toBeNull()
       expect(draft.existingReport).toBeNull()
       expect(draft.tasksCompletedCount).toBe(3)
@@ -182,7 +186,8 @@ describe('daily-report.service', () => {
 
       const result = await submitDailyReport({ date: today })
 
-      expect(result.status).toBe('SUBMITTED')
+      expect(result.success).toBe(true)
+      expect(result.data.status).toBe('SUBMITTED')
       expect(mockPrisma.dailyReport.update).toHaveBeenCalled()
     })
 
@@ -232,8 +237,9 @@ describe('daily-report.service', () => {
         tomorrowPlan: 'More work',
       })
 
-      expect(result.status).toBe('SUBMITTED')
-      expect(result.id).toBe('report-new')
+      expect(result.success).toBe(true)
+      expect(result.data.status).toBe('SUBMITTED')
+      expect(result.data.id).toBe('report-new')
       expect(mockPrisma.dailyReport.create).toHaveBeenCalled()
     })
   })

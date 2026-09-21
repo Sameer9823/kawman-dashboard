@@ -22,7 +22,13 @@ export async function GET(request: NextRequest) {
       pageSize,
     })
 
-    return NextResponse.json(result)
+    if (!result.success) {
+      const msg = result.error
+      const status = msg.startsWith('Forbidden') ? 403 : msg === 'Not authenticated' ? 401 : 500
+      return NextResponse.json({ error: msg }, { status })
+    }
+
+    return NextResponse.json(result.data)
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Failed to fetch reports'
     const status = msg.startsWith('Forbidden') ? 403 : msg === 'Not authenticated' ? 401 : 500

@@ -108,7 +108,7 @@ export async function generateReportPdfBuffer(
       await page.evaluateHandle('document.fonts.ready')
       // evaluateHandle returns a JSHandle; await it to settle.
       await page.evaluate(() => document.fonts.ready)
-    } catch {
+    } catch (_) {
       // Fonts API may not be available in some Chromium builds — non-fatal
     }
 

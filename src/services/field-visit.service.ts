@@ -2,6 +2,7 @@ import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import type { FieldVisit, CheckIn, GeoFence, VisitReport, LiveMapVisit, VisitStatus, ActiveUserPin } from '@/types/field-sales'
+import { ok, err, Result, tryCatch } from '@/lib/result'
 
 function initials(name: string): string {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -243,8 +244,7 @@ export async function getActiveUsersForMap(): Promise<ActiveUserPin[]> {
   }
 
   // Also include users who are actively streaming even if heartbeat is slightly stale (race)
-  // — any UserLiveLocation in this org touched in last 10 min and still isTracking
-  try {
+    // — any UserLiveLocation in this org touched in last 10 min and still isTracking
     const extraLocs = await prisma.userLiveLocation.findMany({
       where: { organizationId, updatedAt: { gte: liveCutoff }, isTracking: true },
       select: { userId: true, updatedAt: true, user: { select: { name: true } } },
@@ -255,11 +255,10 @@ export async function getActiveUsersForMap(): Promise<ActiveUserPin[]> {
         byUser.set(e.userId, { lastSeenAt: e.updatedAt, name: e.user.name })
       }
     }
-  } catch {}
 
-  if (byUser.size === 0) return []
+    if (byUser.size === 0) return []
 
-  const userIds = [...byUser.keys()]
+    const userIds = [...byUser.keys()]
 
   // 2) Primary: live tracking table — current rep locations per spec
   let liveRows: Awaited<ReturnType<typeof prisma.userLiveLocation.findMany<{ include: { user: { select: { name: true } } } }>>> = []
@@ -401,13 +400,13 @@ export async function createCheckIn(input: {
   accuracy?: number
   notes?: string
   photoUrl?: string | null
-}) {
+}): Promise<Result<{ id: string; verificationStatus: string; distanceFromCustomer: null }>> {
   const session = await requireApiSession()
   const visit = await prisma.fieldVisit.findFirst({
     where: { id: input.visitId, organizationId: session.user.organizationId },
     select: { id: true },
   })
-  if (!visit) throw new Error('Visit not found')
+  if (!visit) return err('Visit not found')
 
   // Geo-fencing is retired — every on-site photo check-in is VERIFIED.
   const verificationStatus = 'VERIFIED'
@@ -431,7 +430,7 @@ export async function createCheckIn(input: {
     data: { status: 'CHECKED_IN', latitude: input.latitude, longitude: input.longitude },
   })
 
-  return { id: checkIn.id, verificationStatus, distanceFromCustomer: null }
+  return ok({ id: checkIn.id, verificationStatus, distanceFromCustomer: null })
 }
 
 // ============================================================

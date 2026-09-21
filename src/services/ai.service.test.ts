@@ -228,21 +228,28 @@ describe('ai.service', () => {
       mockPrisma.aIReport.findFirst.mockResolvedValue({ id: 'report-1' })
       mockPrisma.aIReport.delete.mockResolvedValue({})
 
-      await deleteReport('report-1')
+      const result = await deleteReport('report-1')
 
+      expect(result.success).toBe(true)
       expect(mockPrisma.aIReport.delete).toHaveBeenCalledWith({ where: { id: 'report-1' } })
     })
 
-    it('throws when report not found', async () => {
+    it('returns error when report not found', async () => {
       mockPrisma.aIReport.findFirst.mockResolvedValue(null)
 
-      await expect(deleteReport('report-1')).rejects.toThrow('Report not found')
+      const result = await deleteReport('report-1')
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Report not found')
     })
 
-    it('throws when not authenticated', async () => {
+    it('returns error when not authenticated', async () => {
       mockRequireApiSession.mockRejectedValue(new Error('Not authenticated'))
 
-      await expect(deleteReport('report-1')).rejects.toThrow('Not authenticated')
+      const result = await deleteReport('report-1')
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('Not authenticated')
     })
   })
 })

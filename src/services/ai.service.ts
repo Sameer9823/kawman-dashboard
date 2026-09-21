@@ -13,15 +13,16 @@ import type { Prisma } from '@/generated/prisma'
 // non-admin never sees org-wide aggregates via the AI.
 // ============================================================
 
-function scopeFilterForAI(user: Session['user']): { ownerFilter: Prisma.LeadWhereInput; dealOwnerFilter: Prisma.DealWhereInput; followUpOwnerFilter: Prisma.FollowUpWhereInput; visitAssigneeFilter: Prisma.FieldVisitWhereInput } {
+function scopeFilterForAI(user: Session['user']): { ownerFilter: Prisma.LeadWhereInput; dealOwnerFilter: Prisma.DealWhereInput; followUpOwnerFilter: Prisma.FollowUpWhereInput; visitAssigneeFilter: Prisma.FieldVisitWhereInput; meetingOwnerFilter: Prisma.MeetingWhereInput } {
   const scope = getRecordScope(user)
-  if (scope === 'ALL') return { ownerFilter: {}, dealOwnerFilter: {}, followUpOwnerFilter: {}, visitAssigneeFilter: {} }
+  if (scope === 'ALL') return { ownerFilter: {}, dealOwnerFilter: {}, followUpOwnerFilter: {}, visitAssigneeFilter: {}, meetingOwnerFilter: {} }
   if (scope === 'DEPARTMENT' && user.department?.id) {
     const deptLead = { owner: { departmentId: user.department.id } } as unknown as Prisma.LeadWhereInput
     const deptAssignee = { assignee: { departmentId: user.department.id } } as unknown as Prisma.FieldVisitWhereInput
-    return { ownerFilter: deptLead, dealOwnerFilter: deptLead as unknown as Prisma.DealWhereInput, followUpOwnerFilter: { owner: { departmentId: user.department.id } } as unknown as Prisma.FollowUpWhereInput, visitAssigneeFilter: deptAssignee }
+    const deptMeeting = { createdBy: { departmentId: user.department.id } } as unknown as Prisma.MeetingWhereInput
+    return { ownerFilter: deptLead, dealOwnerFilter: deptLead as unknown as Prisma.DealWhereInput, followUpOwnerFilter: { owner: { departmentId: user.department.id } } as unknown as Prisma.FollowUpWhereInput, visitAssigneeFilter: deptAssignee, meetingOwnerFilter: deptMeeting }
   }
-  return { ownerFilter: { ownerId: user.id } as Prisma.LeadWhereInput, dealOwnerFilter: { ownerId: user.id } as Prisma.DealWhereInput, followUpOwnerFilter: { ownerId: user.id } as Prisma.FollowUpWhereInput, visitAssigneeFilter: { assigneeId: user.id } as Prisma.FieldVisitWhereInput }
+  return { ownerFilter: { ownerId: user.id } as Prisma.LeadWhereInput, dealOwnerFilter: { ownerId: user.id } as Prisma.DealWhereInput, followUpOwnerFilter: { ownerId: user.id } as Prisma.FollowUpWhereInput, visitAssigneeFilter: { assigneeId: user.id } as Prisma.FieldVisitWhereInput, meetingOwnerFilter: { createdById: user.id } as Prisma.MeetingWhereInput }
 }
 
 async function buildOrgContext(organizationId: string, user?: Session['user']): Promise<string> {
@@ -30,11 +31,17 @@ async function buildOrgContext(organizationId: string, user?: Session['user']): 
   today.setHours(0, 0, 0, 0)
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
+  const weekStart = new Date(today)
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay())
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekEnd.getDate() + 7)
+
   const s = user ? scopeFilterForAI(user) : null
   const leadWhere: Prisma.LeadWhereInput = { organizationId, ...(s?.ownerFilter ?? {}) }
   const dealWhere: Prisma.DealWhereInput = { organizationId, ...(s?.dealOwnerFilter ?? {}) }
   const followUpWhere: Prisma.FollowUpWhereInput = { organizationId, ...(s?.followUpOwnerFilter ?? {}) }
   const visitWhere: Prisma.FieldVisitWhereInput = { organizationId, ...(s?.visitAssigneeFilter ?? {}) }
+  const meetingWhere: Prisma.MeetingWhereInput = { organizationId, ...(s?.meetingOwnerFilter ?? {}) }
 
   const [
     leadsByStatus,
@@ -44,35 +51,28 @@ async function buildOrgContext(organizationId: string, user?: Session['user']): 
     topOpenDeals,
     recentLeads,
     todaysVisits,
+    upcomingVisits,
+    completedVisitsToday,
+    visitsThisWeek,
+    todaysCheckIns,
+    todaysVisitReports,
+    todaysMeetings,
+    upcomingMeetings,
   ] = await Promise.all([
     prisma.lead.groupBy({ by: ['status'], where: leadWhere, _count: { _all: true } }),
-    prisma.deal.groupBy({
-      by: ['stage'],
-      where: dealWhere,
-      _count: { _all: true },
-      _sum: { value: true },
-    }),
-    prisma.deal.aggregate({
-      where: { ...dealWhere, stage: 'WON', closedAt: { gte: monthStart } },
-      _sum: { value: true },
-      _count: { _all: true },
-    }),
-    prisma.followUp.count({
-      where: { ...followUpWhere, status: { in: ['PENDING', 'OVERDUE'] }, dueDate: { lt: tomorrow } },
-    }),
-    prisma.deal.findMany({
-      where: { ...dealWhere, stage: { notIn: ['WON', 'LOST'] } },
-      orderBy: { value: 'desc' },
-      take: 8,
-      select: { name: true, value: true, stage: true, probability: true, expectedClose: true },
-    }),
-    prisma.lead.findMany({
-      where: leadWhere,
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: { name: true, company: true, status: true, source: true, createdAt: true },
-    }),
-    prisma.fieldVisit.count({ where: { ...visitWhere, scheduledAt: { gte: today, lt: tomorrow } } }),
+    prisma.deal.groupBy({ by: ['stage'], where: dealWhere, _count: { _all: true }, _sum: { value: true } }),
+    prisma.deal.aggregate({ where: { ...dealWhere, stage: 'WON', closedAt: { gte: monthStart } }, _sum: { value: true }, _count: { _all: true } }),
+    prisma.followUp.count({ where: { ...followUpWhere, status: { in: ['PENDING', 'OVERDUE'] }, dueDate: { lt: tomorrow } } }),
+    prisma.deal.findMany({ where: { ...dealWhere, stage: { notIn: ['WON', 'LOST'] } }, orderBy: { value: 'desc' }, take: 8, select: { name: true, value: true, stage: true, probability: true, expectedClose: true } }),
+    prisma.lead.findMany({ where: leadWhere, orderBy: { createdAt: 'desc' }, take: 5, select: { name: true, company: true, status: true, source: true, createdAt: true } }),
+    prisma.fieldVisit.findMany({ where: { ...visitWhere, scheduledAt: { gte: today, lt: tomorrow } }, include: { assignee: { select: { id: true, name: true, email: true } }, company: { select: { name: true } }, contact: { select: { name: true } }, deal: { select: { name: true, value: true } } }, orderBy: { scheduledAt: 'asc' } }),
+    prisma.fieldVisit.findMany({ where: { ...visitWhere, scheduledAt: { gte: tomorrow, lt: weekEnd }, status: { in: ['SCHEDULED', 'ON_THE_WAY'] } }, include: { assignee: { select: { id: true, name: true } }, company: { select: { name: true } } }, orderBy: { scheduledAt: 'asc' }, take: 10 }),
+    prisma.fieldVisit.findMany({ where: { ...visitWhere, scheduledAt: { gte: today, lt: tomorrow }, status: 'COMPLETED' }, include: { assignee: { select: { id: true, name: true } }, company: { select: { name: true } }, visitReports: { select: { purpose: true, discussion: true, nextSteps: true, createdAt: true } } } }),
+    prisma.fieldVisit.groupBy({ by: ['status'], where: { ...visitWhere, scheduledAt: { gte: weekStart, lt: weekEnd } }, _count: { _all: true } }),
+    prisma.checkIn.findMany({ where: { createdAt: { gte: today, lt: tomorrow } }, include: { user: { select: { id: true, name: true } }, visit: { select: { id: true, title: true, company: { select: { name: true } }, assignee: { select: { name: true } } } } }, orderBy: { createdAt: 'desc' } }),
+    prisma.visitReport.findMany({ where: { createdAt: { gte: today, lt: tomorrow } }, include: { visit: { select: { id: true, title: true, assignee: { select: { name: true } }, company: { select: { name: true } } } }, createdBy: { select: { name: true } } } }),
+    prisma.meeting.findMany({ where: { ...meetingWhere, scheduledAt: { gte: today, lt: tomorrow } }, include: { createdBy: { select: { name: true } }, company: { select: { name: true } }, participants: { include: { user: { select: { name: true } } } } }, orderBy: { scheduledAt: 'asc' } }),
+    prisma.meeting.findMany({ where: { ...meetingWhere, scheduledAt: { gte: tomorrow, lt: weekEnd }, status: { in: ['PROCESSING', 'SCHEDULED'] } }, include: { createdBy: { select: { name: true } }, company: { select: { name: true } } }, orderBy: { scheduledAt: 'asc' }, take: 10 }),
   ])
 
   const fmt = (n: number) => `₹${Number(n).toLocaleString('en-IN')}`
@@ -81,26 +81,128 @@ async function buildOrgContext(organizationId: string, user?: Session['user']): 
   lines.push('=== Live CRM Snapshot (Kawman ExAct) ===')
   lines.push(`Generated: ${new Date().toISOString()}`)
   lines.push('')
+
   lines.push('Leads by status: ' + (leadsByStatus.map((r) => `${r.status}=${r._count._all}`).join(', ') || 'none'))
-  lines.push(
-    'Deal pipeline by stage: ' +
-      (dealsByStage
-        .map((r) => `${r.stage}=${r._count._all} deals worth ${fmt(Number(r._sum.value ?? 0))}`)
-        .join('; ') || 'none')
-  )
+  lines.push('Deal pipeline by stage: ' + (dealsByStage.map((r) => `${r.stage}=${r._count._all} deals worth ${fmt(Number(r._sum.value ?? 0))}`).join('; ') || 'none'))
   lines.push(`Won this month: ${wonThisMonth._count._all} deals worth ${fmt(Number(wonThisMonth._sum.value ?? 0))}`)
   lines.push(`Follow-ups overdue or due today: ${followUpsOverdue}`)
-  lines.push(`Field visits scheduled today: ${todaysVisits}`)
   lines.push('')
+
+  // Field Visits Today
+  lines.push(`Field visits scheduled today: ${todaysVisits.length}`)
+  if (todaysVisits.length > 0) {
+    lines.push("Today's visits:")
+    for (const v of todaysVisits) {
+      const assignee = v.assignee?.name ?? 'Unassigned'
+      const company = v.company?.name ?? v.contact?.name ?? 'No company'
+      const deal = v.deal ? ` (Deal: ${v.deal.name}, ${fmt(Number(v.deal.value))})` : ''
+      lines.push(`  - ${v.title} @ ${v.scheduledAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} — ${assignee} → ${company}${deal} [${v.status}]`)
+      if (v.purpose) lines.push(`    Purpose: ${v.purpose}`)
+      if (v.address) lines.push(`    Address: ${v.address}`)
+    }
+  }
+  lines.push('')
+
+  // Upcoming Visits This Week
+  if (upcomingVisits.length > 0) {
+    lines.push(`Upcoming visits this week: ${upcomingVisits.length}`)
+    for (const v of upcomingVisits) {
+      const assignee = v.assignee?.name ?? 'Unassigned'
+      const company = v.company?.name ?? 'No company'
+      const day = v.scheduledAt.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })
+      lines.push(`  - ${day} ${v.scheduledAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} — ${assignee} → ${company} [${v.status}]`)
+    }
+    lines.push('')
+  }
+
+  // Completed Visits Today
+  if (completedVisitsToday.length > 0) {
+    lines.push(`Visits completed today: ${completedVisitsToday.length}`)
+    for (const v of completedVisitsToday) {
+      const assignee = v.assignee?.name ?? 'Unknown'
+      const company = v.company?.name ?? 'No company'
+      lines.push(`  - ${v.title} — ${assignee} → ${company}`)
+      for (const r of v.visitReports) {
+        lines.push(`    Report: ${r.purpose}`)
+        if (r.discussion) lines.push(`    Discussion: ${r.discussion.slice(0, 200)}`)
+        if (r.nextSteps) lines.push(`    Next steps: ${r.nextSteps.slice(0, 200)}`)
+      }
+    }
+    lines.push('')
+  }
+
+  // Visits This Week Summary
+  if (visitsThisWeek.length > 0) {
+    lines.push('Visits this week by status: ' + visitsThisWeek.map((r) => `${r.status}=${r._count._all}`).join(', '))
+    lines.push('')
+  }
+
+  // Check-ins Today
+  if (todaysCheckIns.length > 0) {
+    lines.push(`Check-ins today: ${todaysCheckIns.length}`)
+    const verified = todaysCheckIns.filter((c) => c.verificationStatus === 'VERIFIED').length
+    const pending = todaysCheckIns.filter((c) => c.verificationStatus === 'PENDING').length
+    lines.push(`  Verified: ${verified} | Pending: ${pending}`)
+    for (const c of todaysCheckIns.slice(0, 5)) {
+      const user = c.user?.name ?? 'Unknown'
+      const visit = c.visit?.title ?? 'Unknown visit'
+      const company = c.visit?.company?.name ?? 'No company'
+      lines.push(`  - ${user} checked in at "${visit}" (${company}) [${c.verificationStatus}]`)
+    }
+  }
+
+  // Visit Reports Today
+  if (todaysVisitReports.length > 0) {
+    lines.push(`Visit reports filed today: ${todaysVisitReports.length}`)
+    for (const r of todaysVisitReports) {
+      const visit = r.visit?.title ?? 'Unknown visit'
+      const assignee = r.visit?.assignee?.name ?? 'Unknown'
+      const company = r.visit?.company?.name ?? 'No company'
+      const createdBy = r.createdBy?.name ?? 'Unknown'
+      lines.push(`  - "${visit}" by ${assignee} (${company}) — Filed by ${createdBy}`)
+      if (r.purpose) lines.push(`    Purpose: ${r.purpose}`)
+      if (r.discussion) lines.push(`    Discussion: ${r.discussion.slice(0, 200)}`)
+      if (r.requirements) lines.push(`    Requirements: ${r.requirements.slice(0, 200)}`)
+      if (r.nextSteps) lines.push(`    Next steps: ${r.nextSteps.slice(0, 200)}`)
+    }
+    lines.push('')
+  }
+
+  // Meetings Today
+  if (todaysMeetings.length > 0) {
+    lines.push(`Meetings today: ${todaysMeetings.length}`)
+    for (const m of todaysMeetings) {
+      const time = m.scheduledAt ? m.scheduledAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : 'TBD'
+      const participants = m.participants?.map((p) => p.user?.name).filter(Boolean).join(', ') ?? 'None'
+      const company = m.company?.name ?? 'No company'
+      lines.push(`  - ${time} — ${m.title} (${m.type}) [${m.status}] — ${company}`)
+      lines.push(`    Organizer: ${m.createdBy?.name ?? 'Unknown'} | Participants: ${participants}`)
+      if (m.notes) lines.push(`    Notes: ${m.notes.slice(0, 200)}`)
+    }
+    lines.push('')
+  }
+
+  // Upcoming Meetings This Week
+  if (upcomingMeetings.length > 0) {
+    lines.push(`Upcoming meetings this week: ${upcomingMeetings.length}`)
+    for (const m of upcomingMeetings) {
+      const day = m.scheduledAt ? m.scheduledAt.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) : 'TBD'
+      const time = m.scheduledAt ? m.scheduledAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''
+      const company = m.company?.name ?? 'No company'
+      lines.push(`  - ${day} ${time} — ${m.title} (${m.type}) [${m.status}] — ${company}`)
+    }
+    lines.push('')
+  }
+
+  // Top Open Deals
   lines.push('Top open deals by value:')
   for (const d of topOpenDeals) {
-    lines.push(
-      `- ${d.name}: ${fmt(Number(d.value))}, stage ${d.stage}, ${d.probability}% probability` +
-        (d.expectedClose ? `, expected close ${d.expectedClose.toISOString().slice(0, 10)}` : '')
-    )
+    lines.push(`- ${d.name}: ${fmt(Number(d.value))}, stage ${d.stage}, ${d.probability}% probability` + (d.expectedClose ? `, expected close ${d.expectedClose.toISOString().slice(0, 10)}` : ''))
   }
   if (topOpenDeals.length === 0) lines.push('- none')
   lines.push('')
+
+  // Recent Leads
   lines.push('Most recent leads:')
   for (const l of recentLeads) {
     lines.push(`- ${l.name} (${l.company ?? 'no company'}), status ${l.status}, source ${l.source ?? 'unknown'}`)

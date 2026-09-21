@@ -18,10 +18,13 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    globals: true,
+    setupFiles: ['./vitest.setup.ts'],
   },
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
+      'server-only': path.resolve(import.meta.dirname, './vitest.mocks.ts'),
     },
   },
 })

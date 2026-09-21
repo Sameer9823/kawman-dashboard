@@ -21,7 +21,7 @@ async function getBrowser(): Promise<import('puppeteer').Browser> {
   let puppeteer: typeof import('puppeteer')
   try {
     puppeteer = await import('puppeteer')
-  } catch (e) {
+  } catch {
     throw new Error(
       'puppeteer is not installed. Run `npm install puppeteer` (or `puppeteer-core` + browser) to enable PDF export.',
     )

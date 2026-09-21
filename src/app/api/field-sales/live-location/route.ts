@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 
-const STALE_MS = 10 * 60 * 1000 // 10 min — beyond this we treat as stale/inactive in list
 const MIN_INTERVAL_MS = 8_000 // server-side throttle: ignore bursts <8s from same user
 
 export async function POST(req: Request) {

@@ -66,7 +66,6 @@ export async function getTeamDashboardMetrics(dateRange?: DateRange): Promise<Te
   }
   const organizationId = session.user.organizationId
 
-  const canViewAll = true
   const targetUserId: string | undefined = undefined
 
   const from = dateRange?.from ?? daysAgo(6)

@@ -4,8 +4,6 @@ import type {
   ReportTable,
   ReportChart,
   ReportInsight,
-  ReportSection,
-  ReportColumn,
 } from './types'
 import { normalizeReport } from './types'
 
@@ -90,7 +88,7 @@ function metricsHtml(metrics: ReportMetric[]): string {
 // ---------------------------------------------------------------------------
 // Tables HTML
 // ---------------------------------------------------------------------------
-function tableHtml(t: ReportTable, idx: number): string {
+function tableHtml(t: ReportTable): string {
   const rows = t.rows ?? []
   const cols = t.columns ?? []
   if (!cols.length) return ''
@@ -140,13 +138,11 @@ function chartHtml(c: ReportChart): string {
   }
   if (c.type === 'donut' || c.type === 'pie') {
     const total = c.data.reduce((a, d) => a + (Number(d[c.series[0].key]) || 0), 0) || 1
-    let acc = 0
     const slices = c.data.slice(0, 8).map((row, i) => {
       const v = Number(row[c.series[0].key]) || 0
       const pct = (v / total) * 100
       const col = colors[i % colors.length]
       const seg = `<div class="pie-row"><span class="pie-dot" style="background:${col}"></span><span class="pie-label">${esc(String(row[c.xKey]))}</span><span class="pie-val">${pct.toFixed(1)}%</span></div>`
-      acc += pct
       return seg
     }).join('')
     return `<div class="chart-card"><div class="chart-title">${esc(c.title)}</div>${c.subtitle ? `<div class="chart-sub">${esc(c.subtitle)}</div>` : ''}<div class="pie-list">${slices}</div></div>`
@@ -373,7 +369,7 @@ export function buildReportHtml(input: UniversalReportDefinition): { html: strin
     if (def.insights?.length) body += insightsHtml(def.insights)
     if (def.highlights?.length) body += insightsHtml(def.highlights)
     if (def.charts?.length) body += `<div class="charts-grid cols-${Math.min(2, def.charts.length)}">${def.charts.map(chartHtml).join('')}</div>`
-    for (const t of topTables) body += tableHtml(t, 0)
+    for (const t of topTables) body += tableHtml(t)
     if (def.sections?.length) {
       for (const sec of def.sections) {
         body += `<section class="report-section">

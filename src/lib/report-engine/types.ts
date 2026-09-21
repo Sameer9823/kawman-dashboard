@@ -149,10 +149,16 @@ export function normalizeReport(
 ): UniversalReportDefinition {
   const d = def as UniversalReportDefinition
   if (d.columns && d.rows && !d.tables && !d.sections) {
+    const legacy = def as LegacyReportDefinition
     return {
       ...d,
       title: d.title ?? d.name,
       tables: [{ columns: d.columns, rows: d.rows }],
+      metadata: {
+        generatedAt: legacy.generatedAt,
+        generatedBy: legacy.generatedBy,
+        organizationName: legacy.organizationName,
+      },
     }
   }
   return { ...d, title: d.title ?? d.name }

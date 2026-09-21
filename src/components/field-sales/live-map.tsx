@@ -107,13 +107,12 @@ export function LiveMap({
   const userMarkersRef = React.useRef<Record<string, { marker: maplibregl.Marker; el: HTMLDivElement }>>({})
   const [visits, setVisits] = React.useState(initialVisits)
   const [activeUsers, setActiveUsers] = React.useState(initialActiveUsers)
-  const [lastUpdated, setLastUpdated] = React.useState<Date | null>(null)
-  React.useEffect(() => setLastUpdated(new Date()), [])
+  const [lastUpdated, setLastUpdated] = React.useState<Date | null>(() => new Date())
   const [showActive, setShowActive] = React.useState(true)
   const [showVisits, setShowVisits] = React.useState(true)
   const [mapError, setMapError] = React.useState<string | null>(null)
-  const [mounted, setMounted] = React.useState(false)
-  React.useEffect(() => setMounted(true), [])
+  const mounted = true  // always true after initial render
+  const [mapReady, setMapReady] = React.useState(false)
   const tracking = useFieldTracking()
 
   // ---- Map init (MapLibre, no token) — deferred + single fallback to avoid freeze ----
@@ -171,6 +170,7 @@ export function LiveMap({
       // Resize after container settles (fixes 0-size init when page transition animates)
       map.once('load', () => { try { map!.resize() } catch {} })
       mapRef.current = map
+      setMapReady(true)
     }
 
     // Defer to next frame so page paint + auth/queries settle first — avoids "Page Unresponsive"
@@ -187,6 +187,7 @@ export function LiveMap({
         try { refMap.remove() } catch {}
       }
       mapRef.current = null
+      setMapReady(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -418,7 +419,7 @@ export function LiveMap({
       </div>
 
       <div ref={containerRef} className="h-[560px] w-full rounded-xl border border-white/10 overflow-hidden relative">
-        {!mapRef.current && !mapError && (
+        {!mapReady && !mapError && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#0a0f1c] text-white/30 text-xs gap-2">
             <RefreshCw className="h-4 w-4 animate-spin" /> Loading map…
           </div>
@@ -505,7 +506,7 @@ function popupForUser(u: ActiveUserPin): string {
 }
 
 function FieldSessionBar({ tracking }: { tracking: ReturnType<typeof useFieldTracking> }) {
-  const { status, error, lastPos, lastSentAt } = tracking
+  const { status, lastPos, lastSentAt } = tracking
   const isLive = status === 'tracking' || status === 'paused'
   const acc = lastPos ? Math.round(lastPos.coords.accuracy) : null
 

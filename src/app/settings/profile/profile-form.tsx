@@ -32,6 +32,7 @@ export function ProfileForm({ user }: { user: ProfileUser }) {
     if (state.success) {
       if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current)
       objectUrlRef.current = null
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPreview(null)
       setFileName(null)
       setRemoved(false)

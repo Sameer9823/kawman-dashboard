@@ -68,11 +68,26 @@ export default async function EmployeeProfilePage({ params, searchParams }: { pa
       metadata: { event: 'employee_profile_viewed', targetUserId: userId },
     }).catch(() => {})
   }
-  const [profile, aiConfigured, employeeReports] = await Promise.all([
+  const [profileResult, aiConfigured, employeeReports] = await Promise.all([
     getEmployeeProfile(userId, from && to ? { from, to } : undefined),
     Promise.resolve(isAIConfigured()),
     listReports().then((rows) => rows.filter((r) => r.type === 'employee_daily_summary').slice(0, 10)).catch(() => []),
   ])
+
+  if (!profileResult.success) {
+    return (
+      <MainLayout>
+        <div className="space-y-6">
+          <PageHeader title="Employee Profile" subtitle="Unable to load profile" />
+          <Card className="p-5 bg-red-500/10 border-red-500/20">
+            <p className="text-red-400">{profileResult.error}</p>
+          </Card>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  const profile = profileResult.data
 
   return (
     <MainLayout>

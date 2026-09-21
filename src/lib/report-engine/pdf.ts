@@ -21,7 +21,7 @@ async function getBrowser(): Promise<import('puppeteer').Browser> {
   let puppeteer: typeof import('puppeteer')
   try {
     puppeteer = await import('puppeteer')
-  } catch (e) {
+  } catch {
     throw new Error(
       'puppeteer is not installed. Run `npm install puppeteer` (or `puppeteer-core` + browser) to enable PDF export.',
     )
@@ -108,7 +108,7 @@ export async function generateReportPdfBuffer(
       await page.evaluateHandle('document.fonts.ready')
       // evaluateHandle returns a JSHandle; await it to settle.
       await page.evaluate(() => document.fonts.ready)
-    } catch {
+    } catch (_) {
       // Fonts API may not be available in some Chromium builds — non-fatal
     }
 

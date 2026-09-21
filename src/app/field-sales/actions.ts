@@ -239,36 +239,34 @@ export async function checkInAction(
   coords: { latitude: number; longitude: number; accuracy?: number; notes?: string },
   photo?: File | null
 ): Promise<CheckInState> {
-  try {
-    await validateCsrf()
-    await assertPermission(PERMISSIONS['field_visits.update'].name)
+  await validateCsrf()
+  await assertPermission(PERMISSIONS['field_visits.update'].name)
 
-    let photoUrl: string | null = null
-    if (photo && photo.size > 0) {
-      const allowed = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-      if (!allowed.has(photo.type)) return { error: 'Photo must be JPG, PNG, WEBP or GIF.' }
-      if (photo.size > 5 * 1024 * 1024) return { error: 'Photo must be under 5MB.' }
-      if (!isCloudinaryConfigured()) return { error: 'Image storage is not configured (CLOUDINARY_*).' }
-      const session = await requireApiSession()
-      const buf = Buffer.from(await photo.arrayBuffer())
-      const safe = photo.name.replace(/[\r\n]/g, '').slice(0, 80) || 'checkin'
-      const up = await uploadToCloudinary(buf, {
-        organizationId: session.user.organizationId,
-        fileName: `checkin-${visitId}-${Date.now()}-${safe}`,
-        mimeType: photo.type,
-      })
-      photoUrl = up.secureUrl
-    }
-
-    const result = await createCheckInRow({ visitId, ...coords, notes: coords.notes, photoUrl })
-    revalidatePath('/field-sales')
-    revalidatePath('/field-sales/visits')
-    revalidatePath('/field-sales/checkins')
-    revalidatePath('/field-sales/live-map')
-    return { success: true, verificationStatus: result.verificationStatus }
-  } catch (err) {
-    return { error: err instanceof Error ? err.message : 'Check-in failed' }
+  let photoUrl: string | null = null
+  if (photo && photo.size > 0) {
+    const allowed = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+    if (!allowed.has(photo.type)) return { error: 'Photo must be JPG, PNG, WEBP or GIF.' }
+    if (photo.size > 5 * 1024 * 1024) return { error: 'Photo must be under 5MB.' }
+    if (!isCloudinaryConfigured()) return { error: 'Image storage is not configured (CLOUDINARY_*).' }
+    const session = await requireApiSession()
+    const buf = Buffer.from(await photo.arrayBuffer())
+    const safe = photo.name.replace(/[\r\n]/g, '').slice(0, 80) || 'checkin'
+    const up = await uploadToCloudinary(buf, {
+      organizationId: session.user.organizationId,
+      fileName: `checkin-${visitId}-${Date.now()}-${safe}`,
+      mimeType: photo.type,
+    })
+    photoUrl = up.secureUrl
   }
+
+  const result = await createCheckInRow({ visitId, ...coords, notes: coords.notes, photoUrl })
+  if (!result.success) return { error: result.error }
+
+  revalidatePath('/field-sales')
+  revalidatePath('/field-sales/visits')
+  revalidatePath('/field-sales/checkins')
+  revalidatePath('/field-sales/live-map')
+  return { success: true, verificationStatus: result.data.verificationStatus }
 }
 
 /** Form-based check-in so file uploads survive Server Actions (photo via multipart). */

@@ -5,6 +5,7 @@ import { Badge, type BadgeVariant } from '@/components/ui/badge'
 import { UserCheck, MapPin, ImageIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { getCheckIns } from '@/services/field-visit.service'
+import Image from 'next/image'
 
 export const metadata = { title: 'Check-ins | Kawman ExAct' }
 
@@ -67,9 +68,15 @@ export default async function CheckInsPage() {
                       </td>
                       <td className="px-4 py-3">
                         {c.photoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
+                           
                           <a href={c.photoUrl} target="_blank" rel="noreferrer">
-                            <img src={c.photoUrl} alt="Check-in photo" className="h-12 w-12 rounded-lg object-cover border border-white/10 hover:opacity-90" />
+                            <Image
+                               src={c.photoUrl}
+                               alt="Check-in photo"
+                               width={48}
+                               height={48}
+                               className="h-12 w-12 rounded-lg object-cover border border-white/10 hover:opacity-90"
+                             />
                           </a>
                         ) : (
                           <span className="inline-flex h-12 w-12 items-center justify-center rounded-lg border border-white/5 bg-white/[0.02] text-white/20">

@@ -163,6 +163,7 @@ export function useFieldTracking() {
   React.useEffect(() => {
     try {
       if (localStorage.getItem('fieldTrackingEnabled') === '1') {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         start()
       }
     } catch {}

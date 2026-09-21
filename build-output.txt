@@ -1,0 +1,129 @@
+npm notice run dashboard@0.1.0 build
+npm notice run next build
+▲ Next.js 16.3.3 (Turbopack)
+- Environments: .env
+✓ Running next.config.ts took 95ms
+- Experiments (use with caution):
+  · proxyClientMaxBodySize: "500mb"
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 16.9s
+  Running TypeScript ...
+  Finished TypeScript in 5.8s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/88) ...
+  Generating static pages using 11 workers (22/88) 
+  Generating static pages using 11 workers (44/88) 
+  Generating static pages using 11 workers (66/88) 
+✓ Generating static pages using 11 workers (88/88) in 3.1s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /admin/activity
+├ ƒ /admin/dashboard
+├ ƒ /admin/departments
+├ ƒ /admin/integrations
+├ ƒ /admin/my-team
+├ ƒ /admin/my-team/[userId]
+├ ƒ /admin/my-team/members
+├ ƒ /admin/my-team/reports
+├ ƒ /admin/organizations
+├ ƒ /admin/roles
+├ ƒ /admin/roles/[id]
+├ ƒ /admin/settings
+├ ƒ /admin/storage
+├ ƒ /admin/teams
+├ ƒ /admin/users
+├ ƒ /admin/users/[id]
+├ ƒ /admin/users/new
+├ ƒ /ai/chat
+├ ○ /ai/data-analysis
+├ ƒ /ai/reports
+├ ƒ /ai/reports/[id]
+├ ƒ /ai/summary
+├ ƒ /api/admin/audit-logs/export
+├ ƒ /api/admin/my-team/members
+├ ƒ /api/admin/my-team/reports
+├ ƒ /api/ai/chat
+├ ƒ /api/ai/conversations
+├ ƒ /api/ai/conversations/[id]
+├ ƒ /api/ai/data-analysis
+├ ƒ /api/ai/employee-summary
+├ ƒ /api/ai/field-daily-summary
+├ ƒ /api/ai/reports
+├ ƒ /api/ai/reports/[id]
+├ ƒ /api/ai/upload
+├ ƒ /api/auth/[...all]
+├ ƒ /api/companies/export
+├ ƒ /api/contacts/export
+├ ƒ /api/deals/export
+├ ƒ /api/field-sales/live-location
+├ ƒ /api/field-sales/live-map
+├ ƒ /api/files/[id]/replace
+├ ƒ /api/files/upload
+├ ƒ /api/leads/export
+├ ƒ /api/meetings/[id]/upload-recording
+├ ƒ /api/notifications
+├ ƒ /api/presence/heartbeat
+├ ƒ /api/reports/export
+├ ƒ /api/search
+├ ƒ /api/storage/usage
+├ ƒ /calendar
+├ ƒ /companies
+├ ƒ /companies/[id]
+├ ƒ /companies/new
+├ ƒ /contacts
+├ ƒ /contacts/[id]
+├ ƒ /contacts/new
+├ ƒ /crm
+├ ƒ /dashboard
+├ ƒ /dashboard/daily-report
+├ ƒ /dashboard/my-profile
+├ ƒ /deals
+├ ƒ /deals/[id]
+├ ƒ /deals/new
+├ ƒ /field-sales
+├ ƒ /field-sales/assigned
+├ ƒ /field-sales/checkins
+├ ○ /field-sales/geofencing
+├ ƒ /field-sales/live-map
+├ ƒ /field-sales/new
+├ ƒ /field-sales/reports
+├ ƒ /field-sales/reports/new
+├ ƒ /field-sales/visits
+├ ƒ /files/categories
+├ ƒ /files/folders
+├ ƒ /files/my-files
+├ ƒ /files/recent
+├ ƒ /files/shared
+├ ƒ /files/starred
+├ ƒ /files/trash
+├ ƒ /follow-ups
+├ ○ /forgot-password
+├ ○ /help
+├ ƒ /leads
+├ ƒ /leads/[id]
+├ ○ /leads/import
+├ ƒ /leads/new
+├ ○ /login
+├ ƒ /meetings
+├ ƒ /meetings/[id]
+├ ƒ /meetings/mom
+├ ƒ /meetings/new
+├ ƒ /meetings/videos
+├ ƒ /notifications
+├ ƒ /reports/sales
+├ ○ /reset-password
+├ ○ /settings
+├ ƒ /settings/profile
+└ ○ /superadmin
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

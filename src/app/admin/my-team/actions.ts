@@ -54,7 +54,7 @@ export async function submitDailyReportAction(
     return { error: 'You do not have permission to submit for another user.' }
   }
   try {
-    const row = await submitDailyReport({
+    const result = await submitDailyReport({
       date: new Date(data.date),
       workDescription: data.workDescription,
       completedWork: data.completedWork,
@@ -68,6 +68,9 @@ export async function submitDailyReportAction(
       activeWorkingTimeMinutes: data.activeWorkingTimeMinutes,
       targetUserId,
     })
+
+    if (!result.success) return { error: result.error }
+    const row = result.data
 
     await logAudit({
       organizationId: session.user.organizationId,

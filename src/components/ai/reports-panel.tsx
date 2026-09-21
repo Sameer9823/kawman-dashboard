@@ -41,7 +41,10 @@ export function ReportsPanel({
   const [deleting, startDeleting] = React.useTransition()
   const [exportingId, setExportingId] = React.useState<string | null>(null)
 
-  React.useEffect(() => setReports(initialReports), [initialReports])
+  React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReports(() => initialReports)
+  }, [initialReports])
 
   async function handleGenerate(type: string) {
     setGenerating(type)
@@ -233,7 +236,7 @@ export function ReportsPanel({
         open={!!deleteTarget}
         onOpenChange={(o) => !o && setDeleteTarget(null)}
         title="Delete report?"
-        description={deleteTarget ? `“${deleteTarget.title}” will be permanently deleted.` : ''}
+        description={deleteTarget ? `"${deleteTarget.title}" will be permanently deleted.` : ''}
         confirmLabel="Delete"
         variant="destructive"
         loading={deleting}

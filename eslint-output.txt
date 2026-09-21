@@ -1,0 +1,43 @@
+npm notice run dashboard@0.1.0 npx
+npm notice run eslint .
+
+D:\kawman-final-complete\dashboard\src\app\api\field-sales\live-location\route.ts
+  5:7  warning  'STALE_MS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\kawman-final-complete\dashboard\src\app\field-sales\checkins\page.tsx
+  70:27  warning  Unused eslint-disable directive (no problems were reported from '@next/next/no-img-element')
+  72:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+D:\kawman-final-complete\dashboard\src\app\field-sales\reports\page.tsx
+  5:32  warning  'Sparkles' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\kawman-final-complete\dashboard\src\app\field-sales\reports\summary-button.tsx
+  6:29  warning  'AlertTriangle' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\kawman-final-complete\dashboard\src\components\ai\ai-upload.tsx
+  47:8  warning  Unused eslint-disable directive (no problems were reported from 'jsx-a11y/click-events-have-key-events' or 'jsx-a11y/no-static-element-interactions')
+
+D:\kawman-final-complete\dashboard\src\components\field-sales\assigned-visits-table.tsx
+  93:6  warning  React Hook useEffect has missing dependencies: 'loc' and 'locLoading'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\kawman-final-complete\dashboard\src\components\field-sales\field-visits-table.tsx
+  76:6  warning  React Hook useEffect has missing dependencies: 'loc' and 'locLoading'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\kawman-final-complete\dashboard\src\lib\report-engine\html-template.ts
+    7:3   warning  'ReportSection' is defined but never used  @typescript-eslint/no-unused-vars
+    8:3   warning  'ReportColumn' is defined but never used   @typescript-eslint/no-unused-vars
+   93:36  warning  'idx' is defined but never used            @typescript-eslint/no-unused-vars
+  143:9   warning  'acc' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+D:\kawman-final-complete\dashboard\src\lib\report-engine\pdf.ts
+  24:12  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\kawman-final-complete\dashboard\src\services\field-visit.service.ts
+  247:9  warning  '_liveExtras' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\kawman-final-complete\dashboard\src\services\team.service.ts
+  69:9  warning  'canViewAll' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 15 problems (0 errors, 15 warnings)
+  0 errors and 2 warnings potentially fixable with the `--fix` option.
+

@@ -56,6 +56,10 @@ function estimateCost(model: string, provider: string, inputTokens: number, outp
   return (inputTokens / 1_000_000) * costs.input + (outputTokens / 1_000_000) * costs.output
 }
 
+/**
+ * Persists a single AI usage event to the database, computing the estimated
+ * cost from per-model token pricing. Called after every AI completion.
+ */
 export async function recordAIUsage(params: {
   organizationId: string
   userId: string
@@ -88,6 +92,10 @@ export async function recordAIUsage(params: {
   }
 }
 
+/**
+ * Fetches paginated AI usage records for the session's organization,
+ * scoped by optional filters (userId, model, provider, feature, date range).
+ */
 export async function getAIUsage(filters: AIUsageFilters = {}): Promise<Result<{ data: AIUsageRecord[]; total: number }>> {
   try {
     const session = await requireApiSession()
@@ -126,6 +134,10 @@ export async function getAIUsage(filters: AIUsageFilters = {}): Promise<Result<{
   }
 }
 
+/**
+ * Computes aggregate AI usage metrics (totals, breakdown by model/feature/user,
+ * and daily trends) for the session's organization within optional filters.
+ */
 export async function getAIUsageAggregate(filters: AIUsageFilters = {}): Promise<Result<AIUsageAggregate>> {
   try {
     const session = await requireApiSession()
@@ -230,6 +242,11 @@ export async function getAIUsageAggregate(filters: AIUsageFilters = {}): Promise
   }
 }
 
+/**
+ * Computes a high-level AI usage summary for the session's organization:
+ * today / this-week / this-month totals (requests + cost), plus the top 10
+ * models and top 10 users by request count.
+ */
 export async function getAIUsageSummary(): Promise<Result<{
   today: { requests: number; cost: number }
   thisWeek: { requests: number; cost: number }
@@ -247,52 +264,68 @@ export async function getAIUsageSummary(): Promise<Result<{
     weekStart.setDate(weekStart.getDate() - weekStart.getDay())
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
 
-    const [todayRecords, weekRecords, monthRecords, allRecords] = await Promise.all([
-      prisma.aIUsage.findMany({ where: { organizationId: orgId, createdAt: { gte: todayStart } } }),
-      prisma.aIUsage.findMany({ where: { organizationId: orgId, createdAt: { gte: weekStart } } }),
-      prisma.aIUsage.findMany({ where: { organizationId: orgId, createdAt: { gte: monthStart } } }),
-      prisma.aIUsage.findMany({ where: { organizationId: orgId }, orderBy: { createdAt: 'desc' }, take: 1000 }),
+    const orgWhere = { organizationId: orgId }
+
+    const [todayAgg, weekAgg, monthAgg, topModelsRaw, topUsersRaw] = await Promise.all([
+      prisma.aIUsage.aggregate({
+        where: { ...orgWhere, createdAt: { gte: todayStart } },
+        _count: { _all: true },
+        _sum: { estimatedCost: true },
+      }),
+      prisma.aIUsage.aggregate({
+        where: { ...orgWhere, createdAt: { gte: weekStart } },
+        _count: { _all: true },
+        _sum: { estimatedCost: true },
+      }),
+      prisma.aIUsage.aggregate({
+        where: { ...orgWhere, createdAt: { gte: monthStart } },
+        _count: { _all: true },
+        _sum: { estimatedCost: true },
+      }),
+      prisma.aIUsage.groupBy({
+        by: ['model'],
+        where: orgWhere,
+        _count: { _all: true },
+        _sum: { estimatedCost: true },
+      }),
+      prisma.aIUsage.groupBy({
+        by: ['userId'],
+        where: orgWhere,
+        _count: { _all: true },
+        _sum: { estimatedCost: true },
+      }),
     ])
 
-    const sum = (records: typeof todayRecords) => ({
-      requests: records.length,
-      cost: records.reduce((s, r) => s + r.estimatedCost, 0),
-    })
+    const topModels = topModelsRaw
+      .map((m) => ({ model: m.model, requests: m._count._all, cost: Number(m._sum.estimatedCost ?? 0) }))
+      .sort((a, b) => b.requests - a.requests)
+      .slice(0, 10)
 
-    const modelMap = new Map<string, { requests: number; cost: number }>()
-    const userMap = new Map<string, { requests: number; cost: number }>()
+    const topUsers = topUsersRaw
+      .map((u) => ({ userId: u.userId, requests: u._count._all, cost: Number(u._sum.estimatedCost ?? 0) }))
+      .sort((a, b) => b.requests - a.requests)
+      .slice(0, 10)
 
-    for (const r of allRecords) {
-      const m = modelMap.get(r.model) || { requests: 0, cost: 0 }
-      m.requests++
-      m.cost += r.estimatedCost
-      modelMap.set(r.model, m)
-
-      const u = userMap.get(r.userId) || { requests: 0, cost: 0 }
-      u.requests++
-      u.cost += r.estimatedCost
-      userMap.set(r.userId, u)
-    }
-
-    const userIds = Array.from(userMap.keys())
-    const users = await prisma.user.findMany({
-      where: { id: { in: userIds } },
-      select: { id: true, name: true, email: true },
-    })
-    const userNameMap = new Map(users.map(u => [u.id, u.name || u.email]))
+    const topUserIds = topUsers.map((u) => u.userId)
+    const users = topUserIds.length
+      ? await prisma.user.findMany({
+          where: { id: { in: topUserIds } },
+          select: { id: true, name: true, email: true },
+        })
+      : []
+    const userNameMap = new Map(users.map((u) => [u.id, u.name || u.email]))
 
     return ok({
-      today: sum(todayRecords),
-      thisWeek: sum(weekRecords),
-      thisMonth: sum(monthRecords),
-      topModels: Array.from(modelMap.entries())
-        .map(([model, data]) => ({ model, ...data }))
-        .sort((a, b) => b.requests - a.requests)
-        .slice(0, 10),
-      topUsers: Array.from(userMap.entries())
-        .map(([userId, data]) => ({ userId, name: userNameMap.get(userId) || userId, ...data }))
-        .sort((a, b) => b.requests - a.requests)
-        .slice(0, 10),
+      today: { requests: todayAgg._count._all, cost: Number(todayAgg._sum.estimatedCost ?? 0) },
+      thisWeek: { requests: weekAgg._count._all, cost: Number(weekAgg._sum.estimatedCost ?? 0) },
+      thisMonth: { requests: monthAgg._count._all, cost: Number(monthAgg._sum.estimatedCost ?? 0) },
+      topModels,
+      topUsers: topUsers.map((u) => ({
+        userId: u.userId,
+        name: userNameMap.get(u.userId) || u.userId,
+        requests: u.requests,
+        cost: u.cost,
+      })),
     })
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Failed to get AI usage summary'

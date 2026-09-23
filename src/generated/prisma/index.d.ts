@@ -64,6 +64,11 @@ export type RolePermission = $Result.DefaultSelection<Prisma.$RolePermissionPayl
  */
 export type UserRole = $Result.DefaultSelection<Prisma.$UserRolePayload>
 /**
+ * Model ResourceGrant
+ * 
+ */
+export type ResourceGrant = $Result.DefaultSelection<Prisma.$ResourceGrantPayload>
+/**
  * Model Department
  * 
  */
@@ -682,6 +687,16 @@ export class PrismaClient<
     * ```
     */
   get userRole(): Prisma.UserRoleDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.resourceGrant`: Exposes CRUD operations for the **ResourceGrant** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ResourceGrants
+    * const resourceGrants = await prisma.resourceGrant.findMany()
+    * ```
+    */
+  get resourceGrant(): Prisma.ResourceGrantDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.department`: Exposes CRUD operations for the **Department** model.
@@ -1499,6 +1514,7 @@ export namespace Prisma {
     Permission: 'Permission',
     RolePermission: 'RolePermission',
     UserRole: 'UserRole',
+    ResourceGrant: 'ResourceGrant',
     Department: 'Department',
     Team: 'Team',
     Folder: 'Folder',
@@ -1550,7 +1566,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "organization" | "user" | "session" | "userLiveLocation" | "account" | "verification" | "role" | "permission" | "rolePermission" | "userRole" | "department" | "team" | "folder" | "file" | "fileVersion" | "savedView" | "filePermission" | "fileShare" | "fileCategory" | "fileActivity" | "lead" | "company" | "contact" | "deal" | "activity" | "dailyReport" | "followUp" | "fieldVisit" | "checkIn" | "geoFence" | "visitReport" | "visitReportAttachment" | "meeting" | "meetingParticipant" | "meetingRecording" | "meetingTranscript" | "meetingSummary" | "aIConversation" | "aIMessage" | "aIUsage" | "aIInsight" | "aIReport" | "notification" | "auditLog" | "integration" | "webhookDelivery"
+      modelProps: "organization" | "user" | "session" | "userLiveLocation" | "account" | "verification" | "role" | "permission" | "rolePermission" | "userRole" | "resourceGrant" | "department" | "team" | "folder" | "file" | "fileVersion" | "savedView" | "filePermission" | "fileShare" | "fileCategory" | "fileActivity" | "lead" | "company" | "contact" | "deal" | "activity" | "dailyReport" | "followUp" | "fieldVisit" | "checkIn" | "geoFence" | "visitReport" | "visitReportAttachment" | "meeting" | "meetingParticipant" | "meetingRecording" | "meetingTranscript" | "meetingSummary" | "aIConversation" | "aIMessage" | "aIUsage" | "aIInsight" | "aIReport" | "notification" | "auditLog" | "integration" | "webhookDelivery"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2291,6 +2307,80 @@ export namespace Prisma {
           count: {
             args: Prisma.UserRoleCountArgs<ExtArgs>
             result: $Utils.Optional<UserRoleCountAggregateOutputType> | number
+          }
+        }
+      }
+      ResourceGrant: {
+        payload: Prisma.$ResourceGrantPayload<ExtArgs>
+        fields: Prisma.ResourceGrantFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ResourceGrantFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourceGrantPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ResourceGrantFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourceGrantPayload>
+          }
+          findFirst: {
+            args: Prisma.ResourceGrantFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourceGrantPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ResourceGrantFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourceGrantPayload>
+          }
+          findMany: {
+            args: Prisma.ResourceGrantFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourceGrantPayload>[]
+          }
+          create: {
+            args: Prisma.ResourceGrantCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourceGrantPayload>
+          }
+          createMany: {
+            args: Prisma.ResourceGrantCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ResourceGrantCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourceGrantPayload>[]
+          }
+          delete: {
+            args: Prisma.ResourceGrantDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourceGrantPayload>
+          }
+          update: {
+            args: Prisma.ResourceGrantUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourceGrantPayload>
+          }
+          deleteMany: {
+            args: Prisma.ResourceGrantDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ResourceGrantUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ResourceGrantUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourceGrantPayload>[]
+          }
+          upsert: {
+            args: Prisma.ResourceGrantUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResourceGrantPayload>
+          }
+          aggregate: {
+            args: Prisma.ResourceGrantAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateResourceGrant>
+          }
+          groupBy: {
+            args: Prisma.ResourceGrantGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ResourceGrantGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ResourceGrantCountArgs<ExtArgs>
+            result: $Utils.Optional<ResourceGrantCountAggregateOutputType> | number
           }
         }
       }
@@ -5091,6 +5181,7 @@ export namespace Prisma {
     permission?: PermissionOmit
     rolePermission?: RolePermissionOmit
     userRole?: UserRoleOmit
+    resourceGrant?: ResourceGrantOmit
     department?: DepartmentOmit
     team?: TeamOmit
     folder?: FolderOmit
@@ -5232,6 +5323,7 @@ export namespace Prisma {
     liveLocations: number
     dailyReports: number
     aiUsages: number
+    resourceGrants: number
   }
 
   export type OrganizationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5260,6 +5352,7 @@ export namespace Prisma {
     liveLocations?: boolean | OrganizationCountOutputTypeCountLiveLocationsArgs
     dailyReports?: boolean | OrganizationCountOutputTypeCountDailyReportsArgs
     aiUsages?: boolean | OrganizationCountOutputTypeCountAiUsagesArgs
+    resourceGrants?: boolean | OrganizationCountOutputTypeCountResourceGrantsArgs
   }
 
   // Custom InputTypes
@@ -5448,6 +5541,13 @@ export namespace Prisma {
     where?: AIUsageWhereInput
   }
 
+  /**
+   * OrganizationCountOutputType without action
+   */
+  export type OrganizationCountOutputTypeCountResourceGrantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ResourceGrantWhereInput
+  }
+
 
   /**
    * Count Type UserCountOutputType
@@ -5487,6 +5587,7 @@ export namespace Prisma {
     visitReports: number
     dailyReports: number
     aiUsages: number
+    grantsGiven: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5523,6 +5624,7 @@ export namespace Prisma {
     visitReports?: boolean | UserCountOutputTypeCountVisitReportsArgs
     dailyReports?: boolean | UserCountOutputTypeCountDailyReportsArgs
     aiUsages?: boolean | UserCountOutputTypeCountAiUsagesArgs
+    grantsGiven?: boolean | UserCountOutputTypeCountGrantsGivenArgs
   }
 
   // Custom InputTypes
@@ -5767,6 +5869,13 @@ export namespace Prisma {
     where?: AIUsageWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountGrantsGivenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ResourceGrantWhereInput
+  }
+
 
   /**
    * Count Type RoleCountOutputType
@@ -5775,11 +5884,13 @@ export namespace Prisma {
   export type RoleCountOutputType = {
     permissions: number
     users: number
+    resourceGrants: number
   }
 
   export type RoleCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     permissions?: boolean | RoleCountOutputTypeCountPermissionsArgs
     users?: boolean | RoleCountOutputTypeCountUsersArgs
+    resourceGrants?: boolean | RoleCountOutputTypeCountResourceGrantsArgs
   }
 
   // Custom InputTypes
@@ -5805,6 +5916,13 @@ export namespace Prisma {
    */
   export type RoleCountOutputTypeCountUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserRoleWhereInput
+  }
+
+  /**
+   * RoleCountOutputType without action
+   */
+  export type RoleCountOutputTypeCountResourceGrantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ResourceGrantWhereInput
   }
 
 
@@ -6763,6 +6881,7 @@ export namespace Prisma {
     liveLocations?: boolean | Organization$liveLocationsArgs<ExtArgs>
     dailyReports?: boolean | Organization$dailyReportsArgs<ExtArgs>
     aiUsages?: boolean | Organization$aiUsagesArgs<ExtArgs>
+    resourceGrants?: boolean | Organization$resourceGrantsArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["organization"]>
 
@@ -6847,6 +6966,7 @@ export namespace Prisma {
     liveLocations?: boolean | Organization$liveLocationsArgs<ExtArgs>
     dailyReports?: boolean | Organization$dailyReportsArgs<ExtArgs>
     aiUsages?: boolean | Organization$aiUsagesArgs<ExtArgs>
+    resourceGrants?: boolean | Organization$resourceGrantsArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -6880,6 +7000,7 @@ export namespace Prisma {
       liveLocations: Prisma.$UserLiveLocationPayload<ExtArgs>[]
       dailyReports: Prisma.$DailyReportPayload<ExtArgs>[]
       aiUsages: Prisma.$AIUsagePayload<ExtArgs>[]
+      resourceGrants: Prisma.$ResourceGrantPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7316,6 +7437,7 @@ export namespace Prisma {
     liveLocations<T extends Organization$liveLocationsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$liveLocationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserLiveLocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dailyReports<T extends Organization$dailyReportsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$dailyReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiUsages<T extends Organization$aiUsagesArgs<ExtArgs> = {}>(args?: Subset<T, Organization$aiUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    resourceGrants<T extends Organization$resourceGrantsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$resourceGrantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8353,6 +8475,30 @@ export namespace Prisma {
   }
 
   /**
+   * Organization.resourceGrants
+   */
+  export type Organization$resourceGrantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
+    where?: ResourceGrantWhereInput
+    orderBy?: ResourceGrantOrderByWithRelationInput | ResourceGrantOrderByWithRelationInput[]
+    cursor?: ResourceGrantWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ResourceGrantScalarFieldEnum | ResourceGrantScalarFieldEnum[]
+  }
+
+  /**
    * Organization without action
    */
   export type OrganizationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8669,6 +8815,7 @@ export namespace Prisma {
     visitReports?: boolean | User$visitReportsArgs<ExtArgs>
     dailyReports?: boolean | User$dailyReportsArgs<ExtArgs>
     aiUsages?: boolean | User$aiUsagesArgs<ExtArgs>
+    grantsGiven?: boolean | User$grantsGivenArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -8780,6 +8927,7 @@ export namespace Prisma {
     visitReports?: boolean | User$visitReportsArgs<ExtArgs>
     dailyReports?: boolean | User$dailyReportsArgs<ExtArgs>
     aiUsages?: boolean | User$aiUsagesArgs<ExtArgs>
+    grantsGiven?: boolean | User$grantsGivenArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8836,6 +8984,7 @@ export namespace Prisma {
       visitReports: Prisma.$VisitReportPayload<ExtArgs>[]
       dailyReports: Prisma.$DailyReportPayload<ExtArgs>[]
       aiUsages: Prisma.$AIUsagePayload<ExtArgs>[]
+      grantsGiven: Prisma.$ResourceGrantPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9287,6 +9436,7 @@ export namespace Prisma {
     visitReports<T extends User$visitReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$visitReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VisitReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dailyReports<T extends User$dailyReportsArgs<ExtArgs> = {}>(args?: Subset<T, User$dailyReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiUsages<T extends User$aiUsagesArgs<ExtArgs> = {}>(args?: Subset<T, User$aiUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AIUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    grantsGiven<T extends User$grantsGivenArgs<ExtArgs> = {}>(args?: Subset<T, User$grantsGivenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10599,6 +10749,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AIUsageScalarFieldEnum | AIUsageScalarFieldEnum[]
+  }
+
+  /**
+   * User.grantsGiven
+   */
+  export type User$grantsGivenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
+    where?: ResourceGrantWhereInput
+    orderBy?: ResourceGrantOrderByWithRelationInput | ResourceGrantOrderByWithRelationInput[]
+    cursor?: ResourceGrantWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ResourceGrantScalarFieldEnum | ResourceGrantScalarFieldEnum[]
   }
 
   /**
@@ -15314,6 +15488,7 @@ export namespace Prisma {
     updatedAt?: boolean
     permissions?: boolean | Role$permissionsArgs<ExtArgs>
     users?: boolean | Role$usersArgs<ExtArgs>
+    resourceGrants?: boolean | Role$resourceGrantsArgs<ExtArgs>
     _count?: boolean | RoleCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["role"]>
 
@@ -15348,6 +15523,7 @@ export namespace Prisma {
   export type RoleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     permissions?: boolean | Role$permissionsArgs<ExtArgs>
     users?: boolean | Role$usersArgs<ExtArgs>
+    resourceGrants?: boolean | Role$resourceGrantsArgs<ExtArgs>
     _count?: boolean | RoleCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type RoleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -15358,6 +15534,7 @@ export namespace Prisma {
     objects: {
       permissions: Prisma.$RolePermissionPayload<ExtArgs>[]
       users: Prisma.$UserRolePayload<ExtArgs>[]
+      resourceGrants: Prisma.$ResourceGrantPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -15762,6 +15939,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     permissions<T extends Role$permissionsArgs<ExtArgs> = {}>(args?: Subset<T, Role$permissionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RolePermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     users<T extends Role$usersArgs<ExtArgs> = {}>(args?: Subset<T, Role$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserRolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    resourceGrants<T extends Role$resourceGrantsArgs<ExtArgs> = {}>(args?: Subset<T, Role$resourceGrantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -16235,6 +16413,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: UserRoleScalarFieldEnum | UserRoleScalarFieldEnum[]
+  }
+
+  /**
+   * Role.resourceGrants
+   */
+  export type Role$resourceGrantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
+    where?: ResourceGrantWhereInput
+    orderBy?: ResourceGrantOrderByWithRelationInput | ResourceGrantOrderByWithRelationInput[]
+    cursor?: ResourceGrantWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ResourceGrantScalarFieldEnum | ResourceGrantScalarFieldEnum[]
   }
 
   /**
@@ -19444,6 +19646,1137 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserRoleInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ResourceGrant
+   */
+
+  export type AggregateResourceGrant = {
+    _count: ResourceGrantCountAggregateOutputType | null
+    _min: ResourceGrantMinAggregateOutputType | null
+    _max: ResourceGrantMaxAggregateOutputType | null
+  }
+
+  export type ResourceGrantMinAggregateOutputType = {
+    id: string | null
+    organizationId: string | null
+    roleId: string | null
+    resourceType: string | null
+    resourceId: string | null
+    permission: string | null
+    grantedBy: string | null
+    grantedAt: Date | null
+    expiresAt: Date | null
+  }
+
+  export type ResourceGrantMaxAggregateOutputType = {
+    id: string | null
+    organizationId: string | null
+    roleId: string | null
+    resourceType: string | null
+    resourceId: string | null
+    permission: string | null
+    grantedBy: string | null
+    grantedAt: Date | null
+    expiresAt: Date | null
+  }
+
+  export type ResourceGrantCountAggregateOutputType = {
+    id: number
+    organizationId: number
+    roleId: number
+    resourceType: number
+    resourceId: number
+    permission: number
+    grantedBy: number
+    grantedAt: number
+    expiresAt: number
+    _all: number
+  }
+
+
+  export type ResourceGrantMinAggregateInputType = {
+    id?: true
+    organizationId?: true
+    roleId?: true
+    resourceType?: true
+    resourceId?: true
+    permission?: true
+    grantedBy?: true
+    grantedAt?: true
+    expiresAt?: true
+  }
+
+  export type ResourceGrantMaxAggregateInputType = {
+    id?: true
+    organizationId?: true
+    roleId?: true
+    resourceType?: true
+    resourceId?: true
+    permission?: true
+    grantedBy?: true
+    grantedAt?: true
+    expiresAt?: true
+  }
+
+  export type ResourceGrantCountAggregateInputType = {
+    id?: true
+    organizationId?: true
+    roleId?: true
+    resourceType?: true
+    resourceId?: true
+    permission?: true
+    grantedBy?: true
+    grantedAt?: true
+    expiresAt?: true
+    _all?: true
+  }
+
+  export type ResourceGrantAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ResourceGrant to aggregate.
+     */
+    where?: ResourceGrantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ResourceGrants to fetch.
+     */
+    orderBy?: ResourceGrantOrderByWithRelationInput | ResourceGrantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ResourceGrantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ResourceGrants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ResourceGrants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ResourceGrants
+    **/
+    _count?: true | ResourceGrantCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ResourceGrantMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ResourceGrantMaxAggregateInputType
+  }
+
+  export type GetResourceGrantAggregateType<T extends ResourceGrantAggregateArgs> = {
+        [P in keyof T & keyof AggregateResourceGrant]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateResourceGrant[P]>
+      : GetScalarType<T[P], AggregateResourceGrant[P]>
+  }
+
+
+
+
+  export type ResourceGrantGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ResourceGrantWhereInput
+    orderBy?: ResourceGrantOrderByWithAggregationInput | ResourceGrantOrderByWithAggregationInput[]
+    by: ResourceGrantScalarFieldEnum[] | ResourceGrantScalarFieldEnum
+    having?: ResourceGrantScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ResourceGrantCountAggregateInputType | true
+    _min?: ResourceGrantMinAggregateInputType
+    _max?: ResourceGrantMaxAggregateInputType
+  }
+
+  export type ResourceGrantGroupByOutputType = {
+    id: string
+    organizationId: string
+    roleId: string
+    resourceType: string
+    resourceId: string | null
+    permission: string
+    grantedBy: string
+    grantedAt: Date
+    expiresAt: Date | null
+    _count: ResourceGrantCountAggregateOutputType | null
+    _min: ResourceGrantMinAggregateOutputType | null
+    _max: ResourceGrantMaxAggregateOutputType | null
+  }
+
+  type GetResourceGrantGroupByPayload<T extends ResourceGrantGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ResourceGrantGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ResourceGrantGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ResourceGrantGroupByOutputType[P]>
+            : GetScalarType<T[P], ResourceGrantGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ResourceGrantSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    organizationId?: boolean
+    roleId?: boolean
+    resourceType?: boolean
+    resourceId?: boolean
+    permission?: boolean
+    grantedBy?: boolean
+    grantedAt?: boolean
+    expiresAt?: boolean
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    role?: boolean | RoleDefaultArgs<ExtArgs>
+    grantor?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["resourceGrant"]>
+
+  export type ResourceGrantSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    organizationId?: boolean
+    roleId?: boolean
+    resourceType?: boolean
+    resourceId?: boolean
+    permission?: boolean
+    grantedBy?: boolean
+    grantedAt?: boolean
+    expiresAt?: boolean
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    role?: boolean | RoleDefaultArgs<ExtArgs>
+    grantor?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["resourceGrant"]>
+
+  export type ResourceGrantSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    organizationId?: boolean
+    roleId?: boolean
+    resourceType?: boolean
+    resourceId?: boolean
+    permission?: boolean
+    grantedBy?: boolean
+    grantedAt?: boolean
+    expiresAt?: boolean
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    role?: boolean | RoleDefaultArgs<ExtArgs>
+    grantor?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["resourceGrant"]>
+
+  export type ResourceGrantSelectScalar = {
+    id?: boolean
+    organizationId?: boolean
+    roleId?: boolean
+    resourceType?: boolean
+    resourceId?: boolean
+    permission?: boolean
+    grantedBy?: boolean
+    grantedAt?: boolean
+    expiresAt?: boolean
+  }
+
+  export type ResourceGrantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "organizationId" | "roleId" | "resourceType" | "resourceId" | "permission" | "grantedBy" | "grantedAt" | "expiresAt", ExtArgs["result"]["resourceGrant"]>
+  export type ResourceGrantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    role?: boolean | RoleDefaultArgs<ExtArgs>
+    grantor?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type ResourceGrantIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    role?: boolean | RoleDefaultArgs<ExtArgs>
+    grantor?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type ResourceGrantIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    role?: boolean | RoleDefaultArgs<ExtArgs>
+    grantor?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $ResourceGrantPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ResourceGrant"
+    objects: {
+      organization: Prisma.$OrganizationPayload<ExtArgs>
+      role: Prisma.$RolePayload<ExtArgs>
+      grantor: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      organizationId: string
+      roleId: string
+      resourceType: string
+      resourceId: string | null
+      permission: string
+      grantedBy: string
+      grantedAt: Date
+      expiresAt: Date | null
+    }, ExtArgs["result"]["resourceGrant"]>
+    composites: {}
+  }
+
+  type ResourceGrantGetPayload<S extends boolean | null | undefined | ResourceGrantDefaultArgs> = $Result.GetResult<Prisma.$ResourceGrantPayload, S>
+
+  type ResourceGrantCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ResourceGrantFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ResourceGrantCountAggregateInputType | true
+    }
+
+  export interface ResourceGrantDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ResourceGrant'], meta: { name: 'ResourceGrant' } }
+    /**
+     * Find zero or one ResourceGrant that matches the filter.
+     * @param {ResourceGrantFindUniqueArgs} args - Arguments to find a ResourceGrant
+     * @example
+     * // Get one ResourceGrant
+     * const resourceGrant = await prisma.resourceGrant.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ResourceGrantFindUniqueArgs>(args: SelectSubset<T, ResourceGrantFindUniqueArgs<ExtArgs>>): Prisma__ResourceGrantClient<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ResourceGrant that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ResourceGrantFindUniqueOrThrowArgs} args - Arguments to find a ResourceGrant
+     * @example
+     * // Get one ResourceGrant
+     * const resourceGrant = await prisma.resourceGrant.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ResourceGrantFindUniqueOrThrowArgs>(args: SelectSubset<T, ResourceGrantFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ResourceGrantClient<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ResourceGrant that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResourceGrantFindFirstArgs} args - Arguments to find a ResourceGrant
+     * @example
+     * // Get one ResourceGrant
+     * const resourceGrant = await prisma.resourceGrant.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ResourceGrantFindFirstArgs>(args?: SelectSubset<T, ResourceGrantFindFirstArgs<ExtArgs>>): Prisma__ResourceGrantClient<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ResourceGrant that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResourceGrantFindFirstOrThrowArgs} args - Arguments to find a ResourceGrant
+     * @example
+     * // Get one ResourceGrant
+     * const resourceGrant = await prisma.resourceGrant.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ResourceGrantFindFirstOrThrowArgs>(args?: SelectSubset<T, ResourceGrantFindFirstOrThrowArgs<ExtArgs>>): Prisma__ResourceGrantClient<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ResourceGrants that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResourceGrantFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ResourceGrants
+     * const resourceGrants = await prisma.resourceGrant.findMany()
+     * 
+     * // Get first 10 ResourceGrants
+     * const resourceGrants = await prisma.resourceGrant.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const resourceGrantWithIdOnly = await prisma.resourceGrant.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ResourceGrantFindManyArgs>(args?: SelectSubset<T, ResourceGrantFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ResourceGrant.
+     * @param {ResourceGrantCreateArgs} args - Arguments to create a ResourceGrant.
+     * @example
+     * // Create one ResourceGrant
+     * const ResourceGrant = await prisma.resourceGrant.create({
+     *   data: {
+     *     // ... data to create a ResourceGrant
+     *   }
+     * })
+     * 
+     */
+    create<T extends ResourceGrantCreateArgs>(args: SelectSubset<T, ResourceGrantCreateArgs<ExtArgs>>): Prisma__ResourceGrantClient<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ResourceGrants.
+     * @param {ResourceGrantCreateManyArgs} args - Arguments to create many ResourceGrants.
+     * @example
+     * // Create many ResourceGrants
+     * const resourceGrant = await prisma.resourceGrant.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ResourceGrantCreateManyArgs>(args?: SelectSubset<T, ResourceGrantCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ResourceGrants and returns the data saved in the database.
+     * @param {ResourceGrantCreateManyAndReturnArgs} args - Arguments to create many ResourceGrants.
+     * @example
+     * // Create many ResourceGrants
+     * const resourceGrant = await prisma.resourceGrant.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ResourceGrants and only return the `id`
+     * const resourceGrantWithIdOnly = await prisma.resourceGrant.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ResourceGrantCreateManyAndReturnArgs>(args?: SelectSubset<T, ResourceGrantCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ResourceGrant.
+     * @param {ResourceGrantDeleteArgs} args - Arguments to delete one ResourceGrant.
+     * @example
+     * // Delete one ResourceGrant
+     * const ResourceGrant = await prisma.resourceGrant.delete({
+     *   where: {
+     *     // ... filter to delete one ResourceGrant
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ResourceGrantDeleteArgs>(args: SelectSubset<T, ResourceGrantDeleteArgs<ExtArgs>>): Prisma__ResourceGrantClient<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ResourceGrant.
+     * @param {ResourceGrantUpdateArgs} args - Arguments to update one ResourceGrant.
+     * @example
+     * // Update one ResourceGrant
+     * const resourceGrant = await prisma.resourceGrant.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ResourceGrantUpdateArgs>(args: SelectSubset<T, ResourceGrantUpdateArgs<ExtArgs>>): Prisma__ResourceGrantClient<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ResourceGrants.
+     * @param {ResourceGrantDeleteManyArgs} args - Arguments to filter ResourceGrants to delete.
+     * @example
+     * // Delete a few ResourceGrants
+     * const { count } = await prisma.resourceGrant.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ResourceGrantDeleteManyArgs>(args?: SelectSubset<T, ResourceGrantDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ResourceGrants.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResourceGrantUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ResourceGrants
+     * const resourceGrant = await prisma.resourceGrant.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ResourceGrantUpdateManyArgs>(args: SelectSubset<T, ResourceGrantUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ResourceGrants and returns the data updated in the database.
+     * @param {ResourceGrantUpdateManyAndReturnArgs} args - Arguments to update many ResourceGrants.
+     * @example
+     * // Update many ResourceGrants
+     * const resourceGrant = await prisma.resourceGrant.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ResourceGrants and only return the `id`
+     * const resourceGrantWithIdOnly = await prisma.resourceGrant.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ResourceGrantUpdateManyAndReturnArgs>(args: SelectSubset<T, ResourceGrantUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ResourceGrant.
+     * @param {ResourceGrantUpsertArgs} args - Arguments to update or create a ResourceGrant.
+     * @example
+     * // Update or create a ResourceGrant
+     * const resourceGrant = await prisma.resourceGrant.upsert({
+     *   create: {
+     *     // ... data to create a ResourceGrant
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ResourceGrant we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ResourceGrantUpsertArgs>(args: SelectSubset<T, ResourceGrantUpsertArgs<ExtArgs>>): Prisma__ResourceGrantClient<$Result.GetResult<Prisma.$ResourceGrantPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ResourceGrants.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResourceGrantCountArgs} args - Arguments to filter ResourceGrants to count.
+     * @example
+     * // Count the number of ResourceGrants
+     * const count = await prisma.resourceGrant.count({
+     *   where: {
+     *     // ... the filter for the ResourceGrants we want to count
+     *   }
+     * })
+    **/
+    count<T extends ResourceGrantCountArgs>(
+      args?: Subset<T, ResourceGrantCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ResourceGrantCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ResourceGrant.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResourceGrantAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ResourceGrantAggregateArgs>(args: Subset<T, ResourceGrantAggregateArgs>): Prisma.PrismaPromise<GetResourceGrantAggregateType<T>>
+
+    /**
+     * Group by ResourceGrant.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResourceGrantGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ResourceGrantGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ResourceGrantGroupByArgs['orderBy'] }
+        : { orderBy?: ResourceGrantGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ResourceGrantGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetResourceGrantGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ResourceGrant model
+   */
+  readonly fields: ResourceGrantFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ResourceGrant.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ResourceGrantClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    organization<T extends OrganizationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizationDefaultArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    role<T extends RoleDefaultArgs<ExtArgs> = {}>(args?: Subset<T, RoleDefaultArgs<ExtArgs>>): Prisma__RoleClient<$Result.GetResult<Prisma.$RolePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    grantor<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ResourceGrant model
+   */
+  interface ResourceGrantFieldRefs {
+    readonly id: FieldRef<"ResourceGrant", 'String'>
+    readonly organizationId: FieldRef<"ResourceGrant", 'String'>
+    readonly roleId: FieldRef<"ResourceGrant", 'String'>
+    readonly resourceType: FieldRef<"ResourceGrant", 'String'>
+    readonly resourceId: FieldRef<"ResourceGrant", 'String'>
+    readonly permission: FieldRef<"ResourceGrant", 'String'>
+    readonly grantedBy: FieldRef<"ResourceGrant", 'String'>
+    readonly grantedAt: FieldRef<"ResourceGrant", 'DateTime'>
+    readonly expiresAt: FieldRef<"ResourceGrant", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ResourceGrant findUnique
+   */
+  export type ResourceGrantFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
+    /**
+     * Filter, which ResourceGrant to fetch.
+     */
+    where: ResourceGrantWhereUniqueInput
+  }
+
+  /**
+   * ResourceGrant findUniqueOrThrow
+   */
+  export type ResourceGrantFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
+    /**
+     * Filter, which ResourceGrant to fetch.
+     */
+    where: ResourceGrantWhereUniqueInput
+  }
+
+  /**
+   * ResourceGrant findFirst
+   */
+  export type ResourceGrantFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
+    /**
+     * Filter, which ResourceGrant to fetch.
+     */
+    where?: ResourceGrantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ResourceGrants to fetch.
+     */
+    orderBy?: ResourceGrantOrderByWithRelationInput | ResourceGrantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ResourceGrants.
+     */
+    cursor?: ResourceGrantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ResourceGrants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ResourceGrants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ResourceGrants.
+     */
+    distinct?: ResourceGrantScalarFieldEnum | ResourceGrantScalarFieldEnum[]
+  }
+
+  /**
+   * ResourceGrant findFirstOrThrow
+   */
+  export type ResourceGrantFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
+    /**
+     * Filter, which ResourceGrant to fetch.
+     */
+    where?: ResourceGrantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ResourceGrants to fetch.
+     */
+    orderBy?: ResourceGrantOrderByWithRelationInput | ResourceGrantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ResourceGrants.
+     */
+    cursor?: ResourceGrantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ResourceGrants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ResourceGrants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ResourceGrants.
+     */
+    distinct?: ResourceGrantScalarFieldEnum | ResourceGrantScalarFieldEnum[]
+  }
+
+  /**
+   * ResourceGrant findMany
+   */
+  export type ResourceGrantFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
+    /**
+     * Filter, which ResourceGrants to fetch.
+     */
+    where?: ResourceGrantWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ResourceGrants to fetch.
+     */
+    orderBy?: ResourceGrantOrderByWithRelationInput | ResourceGrantOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ResourceGrants.
+     */
+    cursor?: ResourceGrantWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ResourceGrants from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ResourceGrants.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ResourceGrants.
+     */
+    distinct?: ResourceGrantScalarFieldEnum | ResourceGrantScalarFieldEnum[]
+  }
+
+  /**
+   * ResourceGrant create
+   */
+  export type ResourceGrantCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ResourceGrant.
+     */
+    data: XOR<ResourceGrantCreateInput, ResourceGrantUncheckedCreateInput>
+  }
+
+  /**
+   * ResourceGrant createMany
+   */
+  export type ResourceGrantCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ResourceGrants.
+     */
+    data: ResourceGrantCreateManyInput | ResourceGrantCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ResourceGrant createManyAndReturn
+   */
+  export type ResourceGrantCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * The data used to create many ResourceGrants.
+     */
+    data: ResourceGrantCreateManyInput | ResourceGrantCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ResourceGrant update
+   */
+  export type ResourceGrantUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ResourceGrant.
+     */
+    data: XOR<ResourceGrantUpdateInput, ResourceGrantUncheckedUpdateInput>
+    /**
+     * Choose, which ResourceGrant to update.
+     */
+    where: ResourceGrantWhereUniqueInput
+  }
+
+  /**
+   * ResourceGrant updateMany
+   */
+  export type ResourceGrantUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ResourceGrants.
+     */
+    data: XOR<ResourceGrantUpdateManyMutationInput, ResourceGrantUncheckedUpdateManyInput>
+    /**
+     * Filter which ResourceGrants to update
+     */
+    where?: ResourceGrantWhereInput
+    /**
+     * Limit how many ResourceGrants to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ResourceGrant updateManyAndReturn
+   */
+  export type ResourceGrantUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * The data used to update ResourceGrants.
+     */
+    data: XOR<ResourceGrantUpdateManyMutationInput, ResourceGrantUncheckedUpdateManyInput>
+    /**
+     * Filter which ResourceGrants to update
+     */
+    where?: ResourceGrantWhereInput
+    /**
+     * Limit how many ResourceGrants to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ResourceGrant upsert
+   */
+  export type ResourceGrantUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ResourceGrant to update in case it exists.
+     */
+    where: ResourceGrantWhereUniqueInput
+    /**
+     * In case the ResourceGrant found by the `where` argument doesn't exist, create a new ResourceGrant with this data.
+     */
+    create: XOR<ResourceGrantCreateInput, ResourceGrantUncheckedCreateInput>
+    /**
+     * In case the ResourceGrant was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ResourceGrantUpdateInput, ResourceGrantUncheckedUpdateInput>
+  }
+
+  /**
+   * ResourceGrant delete
+   */
+  export type ResourceGrantDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
+    /**
+     * Filter which ResourceGrant to delete.
+     */
+    where: ResourceGrantWhereUniqueInput
+  }
+
+  /**
+   * ResourceGrant deleteMany
+   */
+  export type ResourceGrantDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ResourceGrants to delete
+     */
+    where?: ResourceGrantWhereInput
+    /**
+     * Limit how many ResourceGrants to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ResourceGrant without action
+   */
+  export type ResourceGrantDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResourceGrant
+     */
+    select?: ResourceGrantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResourceGrant
+     */
+    omit?: ResourceGrantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ResourceGrantInclude<ExtArgs> | null
   }
 
 
@@ -63133,6 +64466,21 @@ export namespace Prisma {
   export type UserRoleScalarFieldEnum = (typeof UserRoleScalarFieldEnum)[keyof typeof UserRoleScalarFieldEnum]
 
 
+  export const ResourceGrantScalarFieldEnum: {
+    id: 'id',
+    organizationId: 'organizationId',
+    roleId: 'roleId',
+    resourceType: 'resourceType',
+    resourceId: 'resourceId',
+    permission: 'permission',
+    grantedBy: 'grantedBy',
+    grantedAt: 'grantedAt',
+    expiresAt: 'expiresAt'
+  };
+
+  export type ResourceGrantScalarFieldEnum = (typeof ResourceGrantScalarFieldEnum)[keyof typeof ResourceGrantScalarFieldEnum]
+
+
   export const DepartmentScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -64110,6 +65458,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationListRelationFilter
     dailyReports?: DailyReportListRelationFilter
     aiUsages?: AIUsageListRelationFilter
+    resourceGrants?: ResourceGrantListRelationFilter
   }
 
   export type OrganizationOrderByWithRelationInput = {
@@ -64153,6 +65502,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationOrderByRelationAggregateInput
     dailyReports?: DailyReportOrderByRelationAggregateInput
     aiUsages?: AIUsageOrderByRelationAggregateInput
+    resourceGrants?: ResourceGrantOrderByRelationAggregateInput
   }
 
   export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -64199,6 +65549,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationListRelationFilter
     dailyReports?: DailyReportListRelationFilter
     aiUsages?: AIUsageListRelationFilter
+    resourceGrants?: ResourceGrantListRelationFilter
   }, "id" | "slug">
 
   export type OrganizationOrderByWithAggregationInput = {
@@ -64302,6 +65653,7 @@ export namespace Prisma {
     visitReports?: VisitReportListRelationFilter
     dailyReports?: DailyReportListRelationFilter
     aiUsages?: AIUsageListRelationFilter
+    grantsGiven?: ResourceGrantListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -64360,6 +65712,7 @@ export namespace Prisma {
     visitReports?: VisitReportOrderByRelationAggregateInput
     dailyReports?: DailyReportOrderByRelationAggregateInput
     aiUsages?: AIUsageOrderByRelationAggregateInput
+    grantsGiven?: ResourceGrantOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -64421,6 +65774,7 @@ export namespace Prisma {
     visitReports?: VisitReportListRelationFilter
     dailyReports?: DailyReportListRelationFilter
     aiUsages?: AIUsageListRelationFilter
+    grantsGiven?: ResourceGrantListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -64809,6 +66163,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Role"> | Date | string
     permissions?: RolePermissionListRelationFilter
     users?: UserRoleListRelationFilter
+    resourceGrants?: ResourceGrantListRelationFilter
   }
 
   export type RoleOrderByWithRelationInput = {
@@ -64820,6 +66175,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     permissions?: RolePermissionOrderByRelationAggregateInput
     users?: UserRoleOrderByRelationAggregateInput
+    resourceGrants?: ResourceGrantOrderByRelationAggregateInput
   }
 
   export type RoleWhereUniqueInput = Prisma.AtLeast<{
@@ -64834,6 +66190,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Role"> | Date | string
     permissions?: RolePermissionListRelationFilter
     users?: UserRoleListRelationFilter
+    resourceGrants?: ResourceGrantListRelationFilter
   }, "id" | "name">
 
   export type RoleOrderByWithAggregationInput = {
@@ -65021,6 +66378,87 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"UserRole"> | string
     roleId?: StringWithAggregatesFilter<"UserRole"> | string
     createdAt?: DateTimeWithAggregatesFilter<"UserRole"> | Date | string
+  }
+
+  export type ResourceGrantWhereInput = {
+    AND?: ResourceGrantWhereInput | ResourceGrantWhereInput[]
+    OR?: ResourceGrantWhereInput[]
+    NOT?: ResourceGrantWhereInput | ResourceGrantWhereInput[]
+    id?: StringFilter<"ResourceGrant"> | string
+    organizationId?: StringFilter<"ResourceGrant"> | string
+    roleId?: StringFilter<"ResourceGrant"> | string
+    resourceType?: StringFilter<"ResourceGrant"> | string
+    resourceId?: StringNullableFilter<"ResourceGrant"> | string | null
+    permission?: StringFilter<"ResourceGrant"> | string
+    grantedBy?: StringFilter<"ResourceGrant"> | string
+    grantedAt?: DateTimeFilter<"ResourceGrant"> | Date | string
+    expiresAt?: DateTimeNullableFilter<"ResourceGrant"> | Date | string | null
+    organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
+    role?: XOR<RoleScalarRelationFilter, RoleWhereInput>
+    grantor?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type ResourceGrantOrderByWithRelationInput = {
+    id?: SortOrder
+    organizationId?: SortOrder
+    roleId?: SortOrder
+    resourceType?: SortOrder
+    resourceId?: SortOrderInput | SortOrder
+    permission?: SortOrder
+    grantedBy?: SortOrder
+    grantedAt?: SortOrder
+    expiresAt?: SortOrderInput | SortOrder
+    organization?: OrganizationOrderByWithRelationInput
+    role?: RoleOrderByWithRelationInput
+    grantor?: UserOrderByWithRelationInput
+  }
+
+  export type ResourceGrantWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ResourceGrantWhereInput | ResourceGrantWhereInput[]
+    OR?: ResourceGrantWhereInput[]
+    NOT?: ResourceGrantWhereInput | ResourceGrantWhereInput[]
+    organizationId?: StringFilter<"ResourceGrant"> | string
+    roleId?: StringFilter<"ResourceGrant"> | string
+    resourceType?: StringFilter<"ResourceGrant"> | string
+    resourceId?: StringNullableFilter<"ResourceGrant"> | string | null
+    permission?: StringFilter<"ResourceGrant"> | string
+    grantedBy?: StringFilter<"ResourceGrant"> | string
+    grantedAt?: DateTimeFilter<"ResourceGrant"> | Date | string
+    expiresAt?: DateTimeNullableFilter<"ResourceGrant"> | Date | string | null
+    organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
+    role?: XOR<RoleScalarRelationFilter, RoleWhereInput>
+    grantor?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type ResourceGrantOrderByWithAggregationInput = {
+    id?: SortOrder
+    organizationId?: SortOrder
+    roleId?: SortOrder
+    resourceType?: SortOrder
+    resourceId?: SortOrderInput | SortOrder
+    permission?: SortOrder
+    grantedBy?: SortOrder
+    grantedAt?: SortOrder
+    expiresAt?: SortOrderInput | SortOrder
+    _count?: ResourceGrantCountOrderByAggregateInput
+    _max?: ResourceGrantMaxOrderByAggregateInput
+    _min?: ResourceGrantMinOrderByAggregateInput
+  }
+
+  export type ResourceGrantScalarWhereWithAggregatesInput = {
+    AND?: ResourceGrantScalarWhereWithAggregatesInput | ResourceGrantScalarWhereWithAggregatesInput[]
+    OR?: ResourceGrantScalarWhereWithAggregatesInput[]
+    NOT?: ResourceGrantScalarWhereWithAggregatesInput | ResourceGrantScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ResourceGrant"> | string
+    organizationId?: StringWithAggregatesFilter<"ResourceGrant"> | string
+    roleId?: StringWithAggregatesFilter<"ResourceGrant"> | string
+    resourceType?: StringWithAggregatesFilter<"ResourceGrant"> | string
+    resourceId?: StringNullableWithAggregatesFilter<"ResourceGrant"> | string | null
+    permission?: StringWithAggregatesFilter<"ResourceGrant"> | string
+    grantedBy?: StringWithAggregatesFilter<"ResourceGrant"> | string
+    grantedAt?: DateTimeWithAggregatesFilter<"ResourceGrant"> | Date | string
+    expiresAt?: DateTimeNullableWithAggregatesFilter<"ResourceGrant"> | Date | string | null
   }
 
   export type DepartmentWhereInput = {
@@ -68347,6 +69785,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateInput = {
@@ -68390,6 +69829,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUpdateInput = {
@@ -68433,6 +69873,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateInput = {
@@ -68476,6 +69917,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationCreateManyInput = {
@@ -68584,6 +70026,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -68638,6 +70081,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUpdateInput = {
@@ -68692,6 +70136,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -68746,6 +70191,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -69180,6 +70626,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     permissions?: RolePermissionCreateNestedManyWithoutRoleInput
     users?: UserRoleCreateNestedManyWithoutRoleInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutRoleInput
   }
 
   export type RoleUncheckedCreateInput = {
@@ -69191,6 +70638,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     permissions?: RolePermissionUncheckedCreateNestedManyWithoutRoleInput
     users?: UserRoleUncheckedCreateNestedManyWithoutRoleInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutRoleInput
   }
 
   export type RoleUpdateInput = {
@@ -69202,6 +70650,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     permissions?: RolePermissionUpdateManyWithoutRoleNestedInput
     users?: UserRoleUpdateManyWithoutRoleNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutRoleNestedInput
   }
 
   export type RoleUncheckedUpdateInput = {
@@ -69213,6 +70662,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     permissions?: RolePermissionUncheckedUpdateManyWithoutRoleNestedInput
     users?: UserRoleUncheckedUpdateManyWithoutRoleNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutRoleNestedInput
   }
 
   export type RoleCreateManyInput = {
@@ -69394,6 +70844,87 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     roleId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ResourceGrantCreateInput = {
+    id?: string
+    resourceType?: string
+    resourceId?: string | null
+    permission: string
+    grantedAt?: Date | string
+    expiresAt?: Date | string | null
+    organization: OrganizationCreateNestedOneWithoutResourceGrantsInput
+    role: RoleCreateNestedOneWithoutResourceGrantsInput
+    grantor: UserCreateNestedOneWithoutGrantsGivenInput
+  }
+
+  export type ResourceGrantUncheckedCreateInput = {
+    id?: string
+    organizationId: string
+    roleId: string
+    resourceType?: string
+    resourceId?: string | null
+    permission: string
+    grantedBy: string
+    grantedAt?: Date | string
+    expiresAt?: Date | string | null
+  }
+
+  export type ResourceGrantUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    organization?: OrganizationUpdateOneRequiredWithoutResourceGrantsNestedInput
+    role?: RoleUpdateOneRequiredWithoutResourceGrantsNestedInput
+    grantor?: UserUpdateOneRequiredWithoutGrantsGivenNestedInput
+  }
+
+  export type ResourceGrantUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    roleId?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedBy?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ResourceGrantCreateManyInput = {
+    id?: string
+    organizationId: string
+    roleId: string
+    resourceType?: string
+    resourceId?: string | null
+    permission: string
+    grantedBy: string
+    grantedAt?: Date | string
+    expiresAt?: Date | string | null
+  }
+
+  export type ResourceGrantUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ResourceGrantUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    roleId?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedBy?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type DepartmentCreateInput = {
@@ -73063,6 +74594,12 @@ export namespace Prisma {
     none?: AIUsageWhereInput
   }
 
+  export type ResourceGrantListRelationFilter = {
+    every?: ResourceGrantWhereInput
+    some?: ResourceGrantWhereInput
+    none?: ResourceGrantWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -73165,6 +74702,10 @@ export namespace Prisma {
   }
 
   export type AIUsageOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ResourceGrantOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -73923,6 +75464,42 @@ export namespace Prisma {
     userId?: SortOrder
     roleId?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type ResourceGrantCountOrderByAggregateInput = {
+    id?: SortOrder
+    organizationId?: SortOrder
+    roleId?: SortOrder
+    resourceType?: SortOrder
+    resourceId?: SortOrder
+    permission?: SortOrder
+    grantedBy?: SortOrder
+    grantedAt?: SortOrder
+    expiresAt?: SortOrder
+  }
+
+  export type ResourceGrantMaxOrderByAggregateInput = {
+    id?: SortOrder
+    organizationId?: SortOrder
+    roleId?: SortOrder
+    resourceType?: SortOrder
+    resourceId?: SortOrder
+    permission?: SortOrder
+    grantedBy?: SortOrder
+    grantedAt?: SortOrder
+    expiresAt?: SortOrder
+  }
+
+  export type ResourceGrantMinOrderByAggregateInput = {
+    id?: SortOrder
+    organizationId?: SortOrder
+    roleId?: SortOrder
+    resourceType?: SortOrder
+    resourceId?: SortOrder
+    permission?: SortOrder
+    grantedBy?: SortOrder
+    grantedAt?: SortOrder
+    expiresAt?: SortOrder
   }
 
   export type DepartmentOrganizationIdNameCompoundUniqueInput = {
@@ -76183,6 +77760,13 @@ export namespace Prisma {
     connect?: AIUsageWhereUniqueInput | AIUsageWhereUniqueInput[]
   }
 
+  export type ResourceGrantCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<ResourceGrantCreateWithoutOrganizationInput, ResourceGrantUncheckedCreateWithoutOrganizationInput> | ResourceGrantCreateWithoutOrganizationInput[] | ResourceGrantUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: ResourceGrantCreateOrConnectWithoutOrganizationInput | ResourceGrantCreateOrConnectWithoutOrganizationInput[]
+    createMany?: ResourceGrantCreateManyOrganizationInputEnvelope
+    connect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+  }
+
   export type AIConversationUncheckedCreateNestedManyWithoutOrganizationInput = {
     create?: XOR<AIConversationCreateWithoutOrganizationInput, AIConversationUncheckedCreateWithoutOrganizationInput> | AIConversationCreateWithoutOrganizationInput[] | AIConversationUncheckedCreateWithoutOrganizationInput[]
     connectOrCreate?: AIConversationCreateOrConnectWithoutOrganizationInput | AIConversationCreateOrConnectWithoutOrganizationInput[]
@@ -76356,6 +77940,13 @@ export namespace Prisma {
     connectOrCreate?: AIUsageCreateOrConnectWithoutOrganizationInput | AIUsageCreateOrConnectWithoutOrganizationInput[]
     createMany?: AIUsageCreateManyOrganizationInputEnvelope
     connect?: AIUsageWhereUniqueInput | AIUsageWhereUniqueInput[]
+  }
+
+  export type ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<ResourceGrantCreateWithoutOrganizationInput, ResourceGrantUncheckedCreateWithoutOrganizationInput> | ResourceGrantCreateWithoutOrganizationInput[] | ResourceGrantUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: ResourceGrantCreateOrConnectWithoutOrganizationInput | ResourceGrantCreateOrConnectWithoutOrganizationInput[]
+    createMany?: ResourceGrantCreateManyOrganizationInputEnvelope
+    connect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -76720,6 +78311,20 @@ export namespace Prisma {
     deleteMany?: AIUsageScalarWhereInput | AIUsageScalarWhereInput[]
   }
 
+  export type ResourceGrantUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<ResourceGrantCreateWithoutOrganizationInput, ResourceGrantUncheckedCreateWithoutOrganizationInput> | ResourceGrantCreateWithoutOrganizationInput[] | ResourceGrantUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: ResourceGrantCreateOrConnectWithoutOrganizationInput | ResourceGrantCreateOrConnectWithoutOrganizationInput[]
+    upsert?: ResourceGrantUpsertWithWhereUniqueWithoutOrganizationInput | ResourceGrantUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: ResourceGrantCreateManyOrganizationInputEnvelope
+    set?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    disconnect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    delete?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    connect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    update?: ResourceGrantUpdateWithWhereUniqueWithoutOrganizationInput | ResourceGrantUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: ResourceGrantUpdateManyWithWhereWithoutOrganizationInput | ResourceGrantUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: ResourceGrantScalarWhereInput | ResourceGrantScalarWhereInput[]
+  }
+
   export type AIConversationUncheckedUpdateManyWithoutOrganizationNestedInput = {
     create?: XOR<AIConversationCreateWithoutOrganizationInput, AIConversationUncheckedCreateWithoutOrganizationInput> | AIConversationCreateWithoutOrganizationInput[] | AIConversationUncheckedCreateWithoutOrganizationInput[]
     connectOrCreate?: AIConversationCreateOrConnectWithoutOrganizationInput | AIConversationCreateOrConnectWithoutOrganizationInput[]
@@ -77070,6 +78675,20 @@ export namespace Prisma {
     deleteMany?: AIUsageScalarWhereInput | AIUsageScalarWhereInput[]
   }
 
+  export type ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<ResourceGrantCreateWithoutOrganizationInput, ResourceGrantUncheckedCreateWithoutOrganizationInput> | ResourceGrantCreateWithoutOrganizationInput[] | ResourceGrantUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: ResourceGrantCreateOrConnectWithoutOrganizationInput | ResourceGrantCreateOrConnectWithoutOrganizationInput[]
+    upsert?: ResourceGrantUpsertWithWhereUniqueWithoutOrganizationInput | ResourceGrantUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: ResourceGrantCreateManyOrganizationInputEnvelope
+    set?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    disconnect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    delete?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    connect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    update?: ResourceGrantUpdateWithWhereUniqueWithoutOrganizationInput | ResourceGrantUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: ResourceGrantUpdateManyWithWhereWithoutOrganizationInput | ResourceGrantUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: ResourceGrantScalarWhereInput | ResourceGrantScalarWhereInput[]
+  }
+
   export type AIConversationCreateNestedManyWithoutUserInput = {
     create?: XOR<AIConversationCreateWithoutUserInput, AIConversationUncheckedCreateWithoutUserInput> | AIConversationCreateWithoutUserInput[] | AIConversationUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AIConversationCreateOrConnectWithoutUserInput | AIConversationCreateOrConnectWithoutUserInput[]
@@ -77331,6 +78950,13 @@ export namespace Prisma {
     connect?: AIUsageWhereUniqueInput | AIUsageWhereUniqueInput[]
   }
 
+  export type ResourceGrantCreateNestedManyWithoutGrantorInput = {
+    create?: XOR<ResourceGrantCreateWithoutGrantorInput, ResourceGrantUncheckedCreateWithoutGrantorInput> | ResourceGrantCreateWithoutGrantorInput[] | ResourceGrantUncheckedCreateWithoutGrantorInput[]
+    connectOrCreate?: ResourceGrantCreateOrConnectWithoutGrantorInput | ResourceGrantCreateOrConnectWithoutGrantorInput[]
+    createMany?: ResourceGrantCreateManyGrantorInputEnvelope
+    connect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+  }
+
   export type AIConversationUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AIConversationCreateWithoutUserInput, AIConversationUncheckedCreateWithoutUserInput> | AIConversationCreateWithoutUserInput[] | AIConversationUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AIConversationCreateOrConnectWithoutUserInput | AIConversationCreateOrConnectWithoutUserInput[]
@@ -77566,6 +79192,13 @@ export namespace Prisma {
     connectOrCreate?: AIUsageCreateOrConnectWithoutUserInput | AIUsageCreateOrConnectWithoutUserInput[]
     createMany?: AIUsageCreateManyUserInputEnvelope
     connect?: AIUsageWhereUniqueInput | AIUsageWhereUniqueInput[]
+  }
+
+  export type ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput = {
+    create?: XOR<ResourceGrantCreateWithoutGrantorInput, ResourceGrantUncheckedCreateWithoutGrantorInput> | ResourceGrantCreateWithoutGrantorInput[] | ResourceGrantUncheckedCreateWithoutGrantorInput[]
+    connectOrCreate?: ResourceGrantCreateOrConnectWithoutGrantorInput | ResourceGrantCreateOrConnectWithoutGrantorInput[]
+    createMany?: ResourceGrantCreateManyGrantorInputEnvelope
+    connect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
   }
 
   export type EnumUserStatusFieldUpdateOperationsInput = {
@@ -78090,6 +79723,20 @@ export namespace Prisma {
     deleteMany?: AIUsageScalarWhereInput | AIUsageScalarWhereInput[]
   }
 
+  export type ResourceGrantUpdateManyWithoutGrantorNestedInput = {
+    create?: XOR<ResourceGrantCreateWithoutGrantorInput, ResourceGrantUncheckedCreateWithoutGrantorInput> | ResourceGrantCreateWithoutGrantorInput[] | ResourceGrantUncheckedCreateWithoutGrantorInput[]
+    connectOrCreate?: ResourceGrantCreateOrConnectWithoutGrantorInput | ResourceGrantCreateOrConnectWithoutGrantorInput[]
+    upsert?: ResourceGrantUpsertWithWhereUniqueWithoutGrantorInput | ResourceGrantUpsertWithWhereUniqueWithoutGrantorInput[]
+    createMany?: ResourceGrantCreateManyGrantorInputEnvelope
+    set?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    disconnect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    delete?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    connect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    update?: ResourceGrantUpdateWithWhereUniqueWithoutGrantorInput | ResourceGrantUpdateWithWhereUniqueWithoutGrantorInput[]
+    updateMany?: ResourceGrantUpdateManyWithWhereWithoutGrantorInput | ResourceGrantUpdateManyWithWhereWithoutGrantorInput[]
+    deleteMany?: ResourceGrantScalarWhereInput | ResourceGrantScalarWhereInput[]
+  }
+
   export type AIConversationUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AIConversationCreateWithoutUserInput, AIConversationUncheckedCreateWithoutUserInput> | AIConversationCreateWithoutUserInput[] | AIConversationUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AIConversationCreateOrConnectWithoutUserInput | AIConversationCreateOrConnectWithoutUserInput[]
@@ -78562,6 +80209,20 @@ export namespace Prisma {
     deleteMany?: AIUsageScalarWhereInput | AIUsageScalarWhereInput[]
   }
 
+  export type ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput = {
+    create?: XOR<ResourceGrantCreateWithoutGrantorInput, ResourceGrantUncheckedCreateWithoutGrantorInput> | ResourceGrantCreateWithoutGrantorInput[] | ResourceGrantUncheckedCreateWithoutGrantorInput[]
+    connectOrCreate?: ResourceGrantCreateOrConnectWithoutGrantorInput | ResourceGrantCreateOrConnectWithoutGrantorInput[]
+    upsert?: ResourceGrantUpsertWithWhereUniqueWithoutGrantorInput | ResourceGrantUpsertWithWhereUniqueWithoutGrantorInput[]
+    createMany?: ResourceGrantCreateManyGrantorInputEnvelope
+    set?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    disconnect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    delete?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    connect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    update?: ResourceGrantUpdateWithWhereUniqueWithoutGrantorInput | ResourceGrantUpdateWithWhereUniqueWithoutGrantorInput[]
+    updateMany?: ResourceGrantUpdateManyWithWhereWithoutGrantorInput | ResourceGrantUpdateManyWithWhereWithoutGrantorInput[]
+    deleteMany?: ResourceGrantScalarWhereInput | ResourceGrantScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutSessionsInput = {
     create?: XOR<UserCreateWithoutSessionsInput, UserUncheckedCreateWithoutSessionsInput>
     connectOrCreate?: UserCreateOrConnectWithoutSessionsInput
@@ -78648,6 +80309,13 @@ export namespace Prisma {
     connect?: UserRoleWhereUniqueInput | UserRoleWhereUniqueInput[]
   }
 
+  export type ResourceGrantCreateNestedManyWithoutRoleInput = {
+    create?: XOR<ResourceGrantCreateWithoutRoleInput, ResourceGrantUncheckedCreateWithoutRoleInput> | ResourceGrantCreateWithoutRoleInput[] | ResourceGrantUncheckedCreateWithoutRoleInput[]
+    connectOrCreate?: ResourceGrantCreateOrConnectWithoutRoleInput | ResourceGrantCreateOrConnectWithoutRoleInput[]
+    createMany?: ResourceGrantCreateManyRoleInputEnvelope
+    connect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+  }
+
   export type RolePermissionUncheckedCreateNestedManyWithoutRoleInput = {
     create?: XOR<RolePermissionCreateWithoutRoleInput, RolePermissionUncheckedCreateWithoutRoleInput> | RolePermissionCreateWithoutRoleInput[] | RolePermissionUncheckedCreateWithoutRoleInput[]
     connectOrCreate?: RolePermissionCreateOrConnectWithoutRoleInput | RolePermissionCreateOrConnectWithoutRoleInput[]
@@ -78660,6 +80328,13 @@ export namespace Prisma {
     connectOrCreate?: UserRoleCreateOrConnectWithoutRoleInput | UserRoleCreateOrConnectWithoutRoleInput[]
     createMany?: UserRoleCreateManyRoleInputEnvelope
     connect?: UserRoleWhereUniqueInput | UserRoleWhereUniqueInput[]
+  }
+
+  export type ResourceGrantUncheckedCreateNestedManyWithoutRoleInput = {
+    create?: XOR<ResourceGrantCreateWithoutRoleInput, ResourceGrantUncheckedCreateWithoutRoleInput> | ResourceGrantCreateWithoutRoleInput[] | ResourceGrantUncheckedCreateWithoutRoleInput[]
+    connectOrCreate?: ResourceGrantCreateOrConnectWithoutRoleInput | ResourceGrantCreateOrConnectWithoutRoleInput[]
+    createMany?: ResourceGrantCreateManyRoleInputEnvelope
+    connect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
   }
 
   export type EnumRoleTypeFieldUpdateOperationsInput = {
@@ -78694,6 +80369,20 @@ export namespace Prisma {
     deleteMany?: UserRoleScalarWhereInput | UserRoleScalarWhereInput[]
   }
 
+  export type ResourceGrantUpdateManyWithoutRoleNestedInput = {
+    create?: XOR<ResourceGrantCreateWithoutRoleInput, ResourceGrantUncheckedCreateWithoutRoleInput> | ResourceGrantCreateWithoutRoleInput[] | ResourceGrantUncheckedCreateWithoutRoleInput[]
+    connectOrCreate?: ResourceGrantCreateOrConnectWithoutRoleInput | ResourceGrantCreateOrConnectWithoutRoleInput[]
+    upsert?: ResourceGrantUpsertWithWhereUniqueWithoutRoleInput | ResourceGrantUpsertWithWhereUniqueWithoutRoleInput[]
+    createMany?: ResourceGrantCreateManyRoleInputEnvelope
+    set?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    disconnect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    delete?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    connect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    update?: ResourceGrantUpdateWithWhereUniqueWithoutRoleInput | ResourceGrantUpdateWithWhereUniqueWithoutRoleInput[]
+    updateMany?: ResourceGrantUpdateManyWithWhereWithoutRoleInput | ResourceGrantUpdateManyWithWhereWithoutRoleInput[]
+    deleteMany?: ResourceGrantScalarWhereInput | ResourceGrantScalarWhereInput[]
+  }
+
   export type RolePermissionUncheckedUpdateManyWithoutRoleNestedInput = {
     create?: XOR<RolePermissionCreateWithoutRoleInput, RolePermissionUncheckedCreateWithoutRoleInput> | RolePermissionCreateWithoutRoleInput[] | RolePermissionUncheckedCreateWithoutRoleInput[]
     connectOrCreate?: RolePermissionCreateOrConnectWithoutRoleInput | RolePermissionCreateOrConnectWithoutRoleInput[]
@@ -78720,6 +80409,20 @@ export namespace Prisma {
     update?: UserRoleUpdateWithWhereUniqueWithoutRoleInput | UserRoleUpdateWithWhereUniqueWithoutRoleInput[]
     updateMany?: UserRoleUpdateManyWithWhereWithoutRoleInput | UserRoleUpdateManyWithWhereWithoutRoleInput[]
     deleteMany?: UserRoleScalarWhereInput | UserRoleScalarWhereInput[]
+  }
+
+  export type ResourceGrantUncheckedUpdateManyWithoutRoleNestedInput = {
+    create?: XOR<ResourceGrantCreateWithoutRoleInput, ResourceGrantUncheckedCreateWithoutRoleInput> | ResourceGrantCreateWithoutRoleInput[] | ResourceGrantUncheckedCreateWithoutRoleInput[]
+    connectOrCreate?: ResourceGrantCreateOrConnectWithoutRoleInput | ResourceGrantCreateOrConnectWithoutRoleInput[]
+    upsert?: ResourceGrantUpsertWithWhereUniqueWithoutRoleInput | ResourceGrantUpsertWithWhereUniqueWithoutRoleInput[]
+    createMany?: ResourceGrantCreateManyRoleInputEnvelope
+    set?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    disconnect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    delete?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    connect?: ResourceGrantWhereUniqueInput | ResourceGrantWhereUniqueInput[]
+    update?: ResourceGrantUpdateWithWhereUniqueWithoutRoleInput | ResourceGrantUpdateWithWhereUniqueWithoutRoleInput[]
+    updateMany?: ResourceGrantUpdateManyWithWhereWithoutRoleInput | ResourceGrantUpdateManyWithWhereWithoutRoleInput[]
+    deleteMany?: ResourceGrantScalarWhereInput | ResourceGrantScalarWhereInput[]
   }
 
   export type RolePermissionCreateNestedManyWithoutPermissionInput = {
@@ -78818,6 +80521,48 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutRolesInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutRolesInput, UserUpdateWithoutRolesInput>, UserUncheckedUpdateWithoutRolesInput>
+  }
+
+  export type OrganizationCreateNestedOneWithoutResourceGrantsInput = {
+    create?: XOR<OrganizationCreateWithoutResourceGrantsInput, OrganizationUncheckedCreateWithoutResourceGrantsInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutResourceGrantsInput
+    connect?: OrganizationWhereUniqueInput
+  }
+
+  export type RoleCreateNestedOneWithoutResourceGrantsInput = {
+    create?: XOR<RoleCreateWithoutResourceGrantsInput, RoleUncheckedCreateWithoutResourceGrantsInput>
+    connectOrCreate?: RoleCreateOrConnectWithoutResourceGrantsInput
+    connect?: RoleWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutGrantsGivenInput = {
+    create?: XOR<UserCreateWithoutGrantsGivenInput, UserUncheckedCreateWithoutGrantsGivenInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGrantsGivenInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type OrganizationUpdateOneRequiredWithoutResourceGrantsNestedInput = {
+    create?: XOR<OrganizationCreateWithoutResourceGrantsInput, OrganizationUncheckedCreateWithoutResourceGrantsInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutResourceGrantsInput
+    upsert?: OrganizationUpsertWithoutResourceGrantsInput
+    connect?: OrganizationWhereUniqueInput
+    update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutResourceGrantsInput, OrganizationUpdateWithoutResourceGrantsInput>, OrganizationUncheckedUpdateWithoutResourceGrantsInput>
+  }
+
+  export type RoleUpdateOneRequiredWithoutResourceGrantsNestedInput = {
+    create?: XOR<RoleCreateWithoutResourceGrantsInput, RoleUncheckedCreateWithoutResourceGrantsInput>
+    connectOrCreate?: RoleCreateOrConnectWithoutResourceGrantsInput
+    upsert?: RoleUpsertWithoutResourceGrantsInput
+    connect?: RoleWhereUniqueInput
+    update?: XOR<XOR<RoleUpdateToOneWithWhereWithoutResourceGrantsInput, RoleUpdateWithoutResourceGrantsInput>, RoleUncheckedUpdateWithoutResourceGrantsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutGrantsGivenNestedInput = {
+    create?: XOR<UserCreateWithoutGrantsGivenInput, UserUncheckedCreateWithoutGrantsGivenInput>
+    connectOrCreate?: UserCreateOrConnectWithoutGrantsGivenInput
+    upsert?: UserUpsertWithoutGrantsGivenInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGrantsGivenInput, UserUpdateWithoutGrantsGivenInput>, UserUncheckedUpdateWithoutGrantsGivenInput>
   }
 
   export type UserCreateNestedOneWithoutManagedDepartmentsInput = {
@@ -83551,6 +85296,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutOrganizationInput = {
@@ -83604,6 +85350,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutOrganizationInput = {
@@ -83733,6 +85480,38 @@ export namespace Prisma {
 
   export type AIUsageCreateManyOrganizationInputEnvelope = {
     data: AIUsageCreateManyOrganizationInput | AIUsageCreateManyOrganizationInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ResourceGrantCreateWithoutOrganizationInput = {
+    id?: string
+    resourceType?: string
+    resourceId?: string | null
+    permission: string
+    grantedAt?: Date | string
+    expiresAt?: Date | string | null
+    role: RoleCreateNestedOneWithoutResourceGrantsInput
+    grantor: UserCreateNestedOneWithoutGrantsGivenInput
+  }
+
+  export type ResourceGrantUncheckedCreateWithoutOrganizationInput = {
+    id?: string
+    roleId: string
+    resourceType?: string
+    resourceId?: string | null
+    permission: string
+    grantedBy: string
+    grantedAt?: Date | string
+    expiresAt?: Date | string | null
+  }
+
+  export type ResourceGrantCreateOrConnectWithoutOrganizationInput = {
+    where: ResourceGrantWhereUniqueInput
+    create: XOR<ResourceGrantCreateWithoutOrganizationInput, ResourceGrantUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type ResourceGrantCreateManyOrganizationInputEnvelope = {
+    data: ResourceGrantCreateManyOrganizationInput | ResourceGrantCreateManyOrganizationInput[]
     skipDuplicates?: boolean
   }
 
@@ -84577,6 +86356,37 @@ export namespace Prisma {
     estimatedCost?: FloatFilter<"AIUsage"> | number
     feature?: StringFilter<"AIUsage"> | string
     createdAt?: DateTimeFilter<"AIUsage"> | Date | string
+  }
+
+  export type ResourceGrantUpsertWithWhereUniqueWithoutOrganizationInput = {
+    where: ResourceGrantWhereUniqueInput
+    update: XOR<ResourceGrantUpdateWithoutOrganizationInput, ResourceGrantUncheckedUpdateWithoutOrganizationInput>
+    create: XOR<ResourceGrantCreateWithoutOrganizationInput, ResourceGrantUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type ResourceGrantUpdateWithWhereUniqueWithoutOrganizationInput = {
+    where: ResourceGrantWhereUniqueInput
+    data: XOR<ResourceGrantUpdateWithoutOrganizationInput, ResourceGrantUncheckedUpdateWithoutOrganizationInput>
+  }
+
+  export type ResourceGrantUpdateManyWithWhereWithoutOrganizationInput = {
+    where: ResourceGrantScalarWhereInput
+    data: XOR<ResourceGrantUpdateManyMutationInput, ResourceGrantUncheckedUpdateManyWithoutOrganizationInput>
+  }
+
+  export type ResourceGrantScalarWhereInput = {
+    AND?: ResourceGrantScalarWhereInput | ResourceGrantScalarWhereInput[]
+    OR?: ResourceGrantScalarWhereInput[]
+    NOT?: ResourceGrantScalarWhereInput | ResourceGrantScalarWhereInput[]
+    id?: StringFilter<"ResourceGrant"> | string
+    organizationId?: StringFilter<"ResourceGrant"> | string
+    roleId?: StringFilter<"ResourceGrant"> | string
+    resourceType?: StringFilter<"ResourceGrant"> | string
+    resourceId?: StringNullableFilter<"ResourceGrant"> | string | null
+    permission?: StringFilter<"ResourceGrant"> | string
+    grantedBy?: StringFilter<"ResourceGrant"> | string
+    grantedAt?: DateTimeFilter<"ResourceGrant"> | Date | string
+    expiresAt?: DateTimeNullableFilter<"ResourceGrant"> | Date | string | null
   }
 
   export type AIConversationCreateWithoutUserInput = {
@@ -85776,6 +87586,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutSubordinatesInput = {
@@ -85829,6 +87640,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutSubordinatesInput = {
@@ -85887,6 +87699,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutManagerInput = {
@@ -85940,6 +87753,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutManagerInput = {
@@ -85992,6 +87806,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutUsersInput = {
@@ -86034,6 +87849,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutUsersInput = {
@@ -86215,6 +88031,38 @@ export namespace Prisma {
 
   export type AIUsageCreateManyUserInputEnvelope = {
     data: AIUsageCreateManyUserInput | AIUsageCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ResourceGrantCreateWithoutGrantorInput = {
+    id?: string
+    resourceType?: string
+    resourceId?: string | null
+    permission: string
+    grantedAt?: Date | string
+    expiresAt?: Date | string | null
+    organization: OrganizationCreateNestedOneWithoutResourceGrantsInput
+    role: RoleCreateNestedOneWithoutResourceGrantsInput
+  }
+
+  export type ResourceGrantUncheckedCreateWithoutGrantorInput = {
+    id?: string
+    organizationId: string
+    roleId: string
+    resourceType?: string
+    resourceId?: string | null
+    permission: string
+    grantedAt?: Date | string
+    expiresAt?: Date | string | null
+  }
+
+  export type ResourceGrantCreateOrConnectWithoutGrantorInput = {
+    where: ResourceGrantWhereUniqueInput
+    create: XOR<ResourceGrantCreateWithoutGrantorInput, ResourceGrantUncheckedCreateWithoutGrantorInput>
+  }
+
+  export type ResourceGrantCreateManyGrantorInputEnvelope = {
+    data: ResourceGrantCreateManyGrantorInput | ResourceGrantCreateManyGrantorInput[]
     skipDuplicates?: boolean
   }
 
@@ -86942,6 +88790,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubordinatesInput = {
@@ -86995,6 +88844,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutManagerInput = {
@@ -87064,6 +88914,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutUsersInput = {
@@ -87106,6 +88957,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type TeamUpsertWithoutUsersInput = {
@@ -87237,6 +89089,22 @@ export namespace Prisma {
     data: XOR<AIUsageUpdateManyMutationInput, AIUsageUncheckedUpdateManyWithoutUserInput>
   }
 
+  export type ResourceGrantUpsertWithWhereUniqueWithoutGrantorInput = {
+    where: ResourceGrantWhereUniqueInput
+    update: XOR<ResourceGrantUpdateWithoutGrantorInput, ResourceGrantUncheckedUpdateWithoutGrantorInput>
+    create: XOR<ResourceGrantCreateWithoutGrantorInput, ResourceGrantUncheckedCreateWithoutGrantorInput>
+  }
+
+  export type ResourceGrantUpdateWithWhereUniqueWithoutGrantorInput = {
+    where: ResourceGrantWhereUniqueInput
+    data: XOR<ResourceGrantUpdateWithoutGrantorInput, ResourceGrantUncheckedUpdateWithoutGrantorInput>
+  }
+
+  export type ResourceGrantUpdateManyWithWhereWithoutGrantorInput = {
+    where: ResourceGrantScalarWhereInput
+    data: XOR<ResourceGrantUpdateManyMutationInput, ResourceGrantUncheckedUpdateManyWithoutGrantorInput>
+  }
+
   export type UserCreateWithoutSessionsInput = {
     id?: string
     email: string
@@ -87288,6 +89156,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -87341,6 +89210,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -87410,6 +89280,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -87463,6 +89334,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type OrganizationCreateWithoutLiveLocationsInput = {
@@ -87505,6 +89377,7 @@ export namespace Prisma {
     users?: UserCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutLiveLocationsInput = {
@@ -87547,6 +89420,7 @@ export namespace Prisma {
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutLiveLocationsInput = {
@@ -87605,6 +89479,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutLiveLocationInput = {
@@ -87658,6 +89533,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutLiveLocationInput = {
@@ -87716,6 +89592,7 @@ export namespace Prisma {
     users?: UserUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutLiveLocationsInput = {
@@ -87758,6 +89635,7 @@ export namespace Prisma {
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutLiveLocationInput = {
@@ -87822,6 +89700,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutLiveLocationInput = {
@@ -87875,6 +89754,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserCreateWithoutAccountsInput = {
@@ -87928,6 +89808,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -87981,6 +89862,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -88050,6 +89932,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -88103,6 +89986,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type RolePermissionCreateWithoutRoleInput = {
@@ -88149,6 +90033,38 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ResourceGrantCreateWithoutRoleInput = {
+    id?: string
+    resourceType?: string
+    resourceId?: string | null
+    permission: string
+    grantedAt?: Date | string
+    expiresAt?: Date | string | null
+    organization: OrganizationCreateNestedOneWithoutResourceGrantsInput
+    grantor: UserCreateNestedOneWithoutGrantsGivenInput
+  }
+
+  export type ResourceGrantUncheckedCreateWithoutRoleInput = {
+    id?: string
+    organizationId: string
+    resourceType?: string
+    resourceId?: string | null
+    permission: string
+    grantedBy: string
+    grantedAt?: Date | string
+    expiresAt?: Date | string | null
+  }
+
+  export type ResourceGrantCreateOrConnectWithoutRoleInput = {
+    where: ResourceGrantWhereUniqueInput
+    create: XOR<ResourceGrantCreateWithoutRoleInput, ResourceGrantUncheckedCreateWithoutRoleInput>
+  }
+
+  export type ResourceGrantCreateManyRoleInputEnvelope = {
+    data: ResourceGrantCreateManyRoleInput | ResourceGrantCreateManyRoleInput[]
+    skipDuplicates?: boolean
+  }
+
   export type RolePermissionUpsertWithWhereUniqueWithoutRoleInput = {
     where: RolePermissionWhereUniqueInput
     update: XOR<RolePermissionUpdateWithoutRoleInput, RolePermissionUncheckedUpdateWithoutRoleInput>
@@ -88189,6 +90105,22 @@ export namespace Prisma {
   export type UserRoleUpdateManyWithWhereWithoutRoleInput = {
     where: UserRoleScalarWhereInput
     data: XOR<UserRoleUpdateManyMutationInput, UserRoleUncheckedUpdateManyWithoutRoleInput>
+  }
+
+  export type ResourceGrantUpsertWithWhereUniqueWithoutRoleInput = {
+    where: ResourceGrantWhereUniqueInput
+    update: XOR<ResourceGrantUpdateWithoutRoleInput, ResourceGrantUncheckedUpdateWithoutRoleInput>
+    create: XOR<ResourceGrantCreateWithoutRoleInput, ResourceGrantUncheckedCreateWithoutRoleInput>
+  }
+
+  export type ResourceGrantUpdateWithWhereUniqueWithoutRoleInput = {
+    where: ResourceGrantWhereUniqueInput
+    data: XOR<ResourceGrantUpdateWithoutRoleInput, ResourceGrantUncheckedUpdateWithoutRoleInput>
+  }
+
+  export type ResourceGrantUpdateManyWithWhereWithoutRoleInput = {
+    where: ResourceGrantScalarWhereInput
+    data: XOR<ResourceGrantUpdateManyMutationInput, ResourceGrantUncheckedUpdateManyWithoutRoleInput>
   }
 
   export type RolePermissionCreateWithoutPermissionInput = {
@@ -88258,6 +90190,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserRoleCreateNestedManyWithoutRoleInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutRoleInput
   }
 
   export type RoleUncheckedCreateWithoutPermissionsInput = {
@@ -88268,6 +90201,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     users?: UserRoleUncheckedCreateNestedManyWithoutRoleInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutRoleInput
   }
 
   export type RoleCreateOrConnectWithoutPermissionsInput = {
@@ -88321,6 +90255,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserRoleUpdateManyWithoutRoleNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutRoleNestedInput
   }
 
   export type RoleUncheckedUpdateWithoutPermissionsInput = {
@@ -88331,6 +90266,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserRoleUncheckedUpdateManyWithoutRoleNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutRoleNestedInput
   }
 
   export type RoleCreateWithoutUsersInput = {
@@ -88341,6 +90277,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     permissions?: RolePermissionCreateNestedManyWithoutRoleInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutRoleInput
   }
 
   export type RoleUncheckedCreateWithoutUsersInput = {
@@ -88351,6 +90288,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     permissions?: RolePermissionUncheckedCreateNestedManyWithoutRoleInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutRoleInput
   }
 
   export type RoleCreateOrConnectWithoutUsersInput = {
@@ -88409,6 +90347,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutRolesInput = {
@@ -88462,6 +90401,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutRolesInput = {
@@ -88488,6 +90428,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     permissions?: RolePermissionUpdateManyWithoutRoleNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutRoleNestedInput
   }
 
   export type RoleUncheckedUpdateWithoutUsersInput = {
@@ -88498,6 +90439,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     permissions?: RolePermissionUncheckedUpdateManyWithoutRoleNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutRoleNestedInput
   }
 
   export type UserUpsertWithoutRolesInput = {
@@ -88562,6 +90504,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRolesInput = {
@@ -88612,6 +90555,487 @@ export namespace Prisma {
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     managedTeams?: TeamUncheckedUpdateManyWithoutManagerNestedInput
     subordinates?: UserUncheckedUpdateManyWithoutManagerNestedInput
+    visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
+    dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
+    aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
+  }
+
+  export type OrganizationCreateWithoutResourceGrantsInput = {
+    id?: string
+    name: string
+    slug: string
+    logo?: string | null
+    website?: string | null
+    industry?: string | null
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    timezone?: string
+    currency?: string
+    dateFormat?: string
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    aiConversations?: AIConversationCreateNestedManyWithoutOrganizationInput
+    aiInsights?: AIInsightCreateNestedManyWithoutOrganizationInput
+    aiReports?: AIReportCreateNestedManyWithoutOrganizationInput
+    activities?: ActivityCreateNestedManyWithoutOrganizationInput
+    auditLogs?: AuditLogCreateNestedManyWithoutOrganizationInput
+    companies?: CompanyCreateNestedManyWithoutOrganizationInput
+    contacts?: ContactCreateNestedManyWithoutOrganizationInput
+    deals?: DealCreateNestedManyWithoutOrganizationInput
+    departments?: DepartmentCreateNestedManyWithoutOrganizationInput
+    visits?: FieldVisitCreateNestedManyWithoutOrganizationInput
+    files?: FileCreateNestedManyWithoutOrganizationInput
+    fileCategories?: FileCategoryCreateNestedManyWithoutOrganizationInput
+    folders?: FolderCreateNestedManyWithoutOrganizationInput
+    followUps?: FollowUpCreateNestedManyWithoutOrganizationInput
+    geoFences?: GeoFenceCreateNestedManyWithoutOrganizationInput
+    integrations?: IntegrationCreateNestedManyWithoutOrganizationInput
+    leads?: LeadCreateNestedManyWithoutOrganizationInput
+    meetings?: MeetingCreateNestedManyWithoutOrganizationInput
+    notifications?: NotificationCreateNestedManyWithoutOrganizationInput
+    savedViews?: SavedViewCreateNestedManyWithoutOrganizationInput
+    teams?: TeamCreateNestedManyWithoutOrganizationInput
+    users?: UserCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
+    dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
+    aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationUncheckedCreateWithoutResourceGrantsInput = {
+    id?: string
+    name: string
+    slug: string
+    logo?: string | null
+    website?: string | null
+    industry?: string | null
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    timezone?: string
+    currency?: string
+    dateFormat?: string
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    aiConversations?: AIConversationUncheckedCreateNestedManyWithoutOrganizationInput
+    aiInsights?: AIInsightUncheckedCreateNestedManyWithoutOrganizationInput
+    aiReports?: AIReportUncheckedCreateNestedManyWithoutOrganizationInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutOrganizationInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutOrganizationInput
+    companies?: CompanyUncheckedCreateNestedManyWithoutOrganizationInput
+    contacts?: ContactUncheckedCreateNestedManyWithoutOrganizationInput
+    deals?: DealUncheckedCreateNestedManyWithoutOrganizationInput
+    departments?: DepartmentUncheckedCreateNestedManyWithoutOrganizationInput
+    visits?: FieldVisitUncheckedCreateNestedManyWithoutOrganizationInput
+    files?: FileUncheckedCreateNestedManyWithoutOrganizationInput
+    fileCategories?: FileCategoryUncheckedCreateNestedManyWithoutOrganizationInput
+    folders?: FolderUncheckedCreateNestedManyWithoutOrganizationInput
+    followUps?: FollowUpUncheckedCreateNestedManyWithoutOrganizationInput
+    geoFences?: GeoFenceUncheckedCreateNestedManyWithoutOrganizationInput
+    integrations?: IntegrationUncheckedCreateNestedManyWithoutOrganizationInput
+    leads?: LeadUncheckedCreateNestedManyWithoutOrganizationInput
+    meetings?: MeetingUncheckedCreateNestedManyWithoutOrganizationInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
+    savedViews?: SavedViewUncheckedCreateNestedManyWithoutOrganizationInput
+    teams?: TeamUncheckedCreateNestedManyWithoutOrganizationInput
+    users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
+    dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
+    aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationCreateOrConnectWithoutResourceGrantsInput = {
+    where: OrganizationWhereUniqueInput
+    create: XOR<OrganizationCreateWithoutResourceGrantsInput, OrganizationUncheckedCreateWithoutResourceGrantsInput>
+  }
+
+  export type RoleCreateWithoutResourceGrantsInput = {
+    id?: string
+    name: $Enums.RoleType
+    description?: string | null
+    isSystem?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    permissions?: RolePermissionCreateNestedManyWithoutRoleInput
+    users?: UserRoleCreateNestedManyWithoutRoleInput
+  }
+
+  export type RoleUncheckedCreateWithoutResourceGrantsInput = {
+    id?: string
+    name: $Enums.RoleType
+    description?: string | null
+    isSystem?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    permissions?: RolePermissionUncheckedCreateNestedManyWithoutRoleInput
+    users?: UserRoleUncheckedCreateNestedManyWithoutRoleInput
+  }
+
+  export type RoleCreateOrConnectWithoutResourceGrantsInput = {
+    where: RoleWhereUniqueInput
+    create: XOR<RoleCreateWithoutResourceGrantsInput, RoleUncheckedCreateWithoutResourceGrantsInput>
+  }
+
+  export type UserCreateWithoutGrantsGivenInput = {
+    id?: string
+    email: string
+    name?: string | null
+    passwordHash?: string | null
+    image?: string | null
+    employeeId?: string | null
+    phone?: string | null
+    designation?: string | null
+    status?: $Enums.UserStatus
+    emailVerified?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    aiConversations?: AIConversationCreateNestedManyWithoutUserInput
+    generatedAIReports?: AIReportCreateNestedManyWithoutGeneratedByInput
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    activities?: ActivityCreateNestedManyWithoutActorInput
+    auditLogs?: AuditLogCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationCreateNestedOneWithoutUserInput
+    checkIns?: CheckInCreateNestedManyWithoutUserInput
+    ownedCompanies?: CompanyCreateNestedManyWithoutOwnerInput
+    ownedContacts?: ContactCreateNestedManyWithoutOwnerInput
+    ownedDeals?: DealCreateNestedManyWithoutOwnerInput
+    managedDepartments?: DepartmentCreateNestedManyWithoutManagerInput
+    assignedVisits?: FieldVisitCreateNestedManyWithoutAssigneeInput
+    uploadedFiles?: FileCreateNestedManyWithoutUploadedByInput
+    fileActivities?: FileActivityCreateNestedManyWithoutUserInput
+    createdFilePermissions?: FilePermissionCreateNestedManyWithoutCreatedByInput
+    filePermissions?: FilePermissionCreateNestedManyWithoutUserInput
+    fileSharesBy?: FileShareCreateNestedManyWithoutSharedByInput
+    fileSharesWith?: FileShareCreateNestedManyWithoutSharedWithInput
+    uploadedFileVersions?: FileVersionCreateNestedManyWithoutUploadedByInput
+    createdFolders?: FolderCreateNestedManyWithoutCreatedByInput
+    ownedFollowUps?: FollowUpCreateNestedManyWithoutOwnerInput
+    ownedLeads?: LeadCreateNestedManyWithoutOwnerInput
+    createdMeetings?: MeetingCreateNestedManyWithoutCreatedByInput
+    meetings?: MeetingParticipantCreateNestedManyWithoutUserInput
+    editedMeetingSummaries?: MeetingSummaryCreateNestedManyWithoutEditedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    savedViews?: SavedViewCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    managedTeams?: TeamCreateNestedManyWithoutManagerInput
+    department?: DepartmentCreateNestedOneWithoutUsersInput
+    manager?: UserCreateNestedOneWithoutSubordinatesInput
+    subordinates?: UserCreateNestedManyWithoutManagerInput
+    organization: OrganizationCreateNestedOneWithoutUsersInput
+    team?: TeamCreateNestedOneWithoutUsersInput
+    roles?: UserRoleCreateNestedManyWithoutUserInput
+    visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
+    dailyReports?: DailyReportCreateNestedManyWithoutUserInput
+    aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutGrantsGivenInput = {
+    id?: string
+    email: string
+    name?: string | null
+    passwordHash?: string | null
+    image?: string | null
+    employeeId?: string | null
+    phone?: string | null
+    designation?: string | null
+    status?: $Enums.UserStatus
+    emailVerified?: boolean
+    lastLoginAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    organizationId: string
+    departmentId?: string | null
+    teamId?: string | null
+    managerId?: string | null
+    aiConversations?: AIConversationUncheckedCreateNestedManyWithoutUserInput
+    generatedAIReports?: AIReportUncheckedCreateNestedManyWithoutGeneratedByInput
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    activities?: ActivityUncheckedCreateNestedManyWithoutActorInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutActorInput
+    liveLocation?: UserLiveLocationUncheckedCreateNestedOneWithoutUserInput
+    checkIns?: CheckInUncheckedCreateNestedManyWithoutUserInput
+    ownedCompanies?: CompanyUncheckedCreateNestedManyWithoutOwnerInput
+    ownedContacts?: ContactUncheckedCreateNestedManyWithoutOwnerInput
+    ownedDeals?: DealUncheckedCreateNestedManyWithoutOwnerInput
+    managedDepartments?: DepartmentUncheckedCreateNestedManyWithoutManagerInput
+    assignedVisits?: FieldVisitUncheckedCreateNestedManyWithoutAssigneeInput
+    uploadedFiles?: FileUncheckedCreateNestedManyWithoutUploadedByInput
+    fileActivities?: FileActivityUncheckedCreateNestedManyWithoutUserInput
+    createdFilePermissions?: FilePermissionUncheckedCreateNestedManyWithoutCreatedByInput
+    filePermissions?: FilePermissionUncheckedCreateNestedManyWithoutUserInput
+    fileSharesBy?: FileShareUncheckedCreateNestedManyWithoutSharedByInput
+    fileSharesWith?: FileShareUncheckedCreateNestedManyWithoutSharedWithInput
+    uploadedFileVersions?: FileVersionUncheckedCreateNestedManyWithoutUploadedByInput
+    createdFolders?: FolderUncheckedCreateNestedManyWithoutCreatedByInput
+    ownedFollowUps?: FollowUpUncheckedCreateNestedManyWithoutOwnerInput
+    ownedLeads?: LeadUncheckedCreateNestedManyWithoutOwnerInput
+    createdMeetings?: MeetingUncheckedCreateNestedManyWithoutCreatedByInput
+    meetings?: MeetingParticipantUncheckedCreateNestedManyWithoutUserInput
+    editedMeetingSummaries?: MeetingSummaryUncheckedCreateNestedManyWithoutEditedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    savedViews?: SavedViewUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    managedTeams?: TeamUncheckedCreateNestedManyWithoutManagerInput
+    subordinates?: UserUncheckedCreateNestedManyWithoutManagerInput
+    roles?: UserRoleUncheckedCreateNestedManyWithoutUserInput
+    visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
+    dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
+    aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutGrantsGivenInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutGrantsGivenInput, UserUncheckedCreateWithoutGrantsGivenInput>
+  }
+
+  export type OrganizationUpsertWithoutResourceGrantsInput = {
+    update: XOR<OrganizationUpdateWithoutResourceGrantsInput, OrganizationUncheckedUpdateWithoutResourceGrantsInput>
+    create: XOR<OrganizationCreateWithoutResourceGrantsInput, OrganizationUncheckedCreateWithoutResourceGrantsInput>
+    where?: OrganizationWhereInput
+  }
+
+  export type OrganizationUpdateToOneWithWhereWithoutResourceGrantsInput = {
+    where?: OrganizationWhereInput
+    data: XOR<OrganizationUpdateWithoutResourceGrantsInput, OrganizationUncheckedUpdateWithoutResourceGrantsInput>
+  }
+
+  export type OrganizationUpdateWithoutResourceGrantsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    timezone?: StringFieldUpdateOperationsInput | string
+    currency?: StringFieldUpdateOperationsInput | string
+    dateFormat?: StringFieldUpdateOperationsInput | string
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    aiConversations?: AIConversationUpdateManyWithoutOrganizationNestedInput
+    aiInsights?: AIInsightUpdateManyWithoutOrganizationNestedInput
+    aiReports?: AIReportUpdateManyWithoutOrganizationNestedInput
+    activities?: ActivityUpdateManyWithoutOrganizationNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutOrganizationNestedInput
+    companies?: CompanyUpdateManyWithoutOrganizationNestedInput
+    contacts?: ContactUpdateManyWithoutOrganizationNestedInput
+    deals?: DealUpdateManyWithoutOrganizationNestedInput
+    departments?: DepartmentUpdateManyWithoutOrganizationNestedInput
+    visits?: FieldVisitUpdateManyWithoutOrganizationNestedInput
+    files?: FileUpdateManyWithoutOrganizationNestedInput
+    fileCategories?: FileCategoryUpdateManyWithoutOrganizationNestedInput
+    folders?: FolderUpdateManyWithoutOrganizationNestedInput
+    followUps?: FollowUpUpdateManyWithoutOrganizationNestedInput
+    geoFences?: GeoFenceUpdateManyWithoutOrganizationNestedInput
+    integrations?: IntegrationUpdateManyWithoutOrganizationNestedInput
+    leads?: LeadUpdateManyWithoutOrganizationNestedInput
+    meetings?: MeetingUpdateManyWithoutOrganizationNestedInput
+    notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
+    savedViews?: SavedViewUpdateManyWithoutOrganizationNestedInput
+    teams?: TeamUpdateManyWithoutOrganizationNestedInput
+    users?: UserUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
+    dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
+    aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type OrganizationUncheckedUpdateWithoutResourceGrantsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    timezone?: StringFieldUpdateOperationsInput | string
+    currency?: StringFieldUpdateOperationsInput | string
+    dateFormat?: StringFieldUpdateOperationsInput | string
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    aiConversations?: AIConversationUncheckedUpdateManyWithoutOrganizationNestedInput
+    aiInsights?: AIInsightUncheckedUpdateManyWithoutOrganizationNestedInput
+    aiReports?: AIReportUncheckedUpdateManyWithoutOrganizationNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutOrganizationNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutOrganizationNestedInput
+    companies?: CompanyUncheckedUpdateManyWithoutOrganizationNestedInput
+    contacts?: ContactUncheckedUpdateManyWithoutOrganizationNestedInput
+    deals?: DealUncheckedUpdateManyWithoutOrganizationNestedInput
+    departments?: DepartmentUncheckedUpdateManyWithoutOrganizationNestedInput
+    visits?: FieldVisitUncheckedUpdateManyWithoutOrganizationNestedInput
+    files?: FileUncheckedUpdateManyWithoutOrganizationNestedInput
+    fileCategories?: FileCategoryUncheckedUpdateManyWithoutOrganizationNestedInput
+    folders?: FolderUncheckedUpdateManyWithoutOrganizationNestedInput
+    followUps?: FollowUpUncheckedUpdateManyWithoutOrganizationNestedInput
+    geoFences?: GeoFenceUncheckedUpdateManyWithoutOrganizationNestedInput
+    integrations?: IntegrationUncheckedUpdateManyWithoutOrganizationNestedInput
+    leads?: LeadUncheckedUpdateManyWithoutOrganizationNestedInput
+    meetings?: MeetingUncheckedUpdateManyWithoutOrganizationNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
+    savedViews?: SavedViewUncheckedUpdateManyWithoutOrganizationNestedInput
+    teams?: TeamUncheckedUpdateManyWithoutOrganizationNestedInput
+    users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
+    dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
+    aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type RoleUpsertWithoutResourceGrantsInput = {
+    update: XOR<RoleUpdateWithoutResourceGrantsInput, RoleUncheckedUpdateWithoutResourceGrantsInput>
+    create: XOR<RoleCreateWithoutResourceGrantsInput, RoleUncheckedCreateWithoutResourceGrantsInput>
+    where?: RoleWhereInput
+  }
+
+  export type RoleUpdateToOneWithWhereWithoutResourceGrantsInput = {
+    where?: RoleWhereInput
+    data: XOR<RoleUpdateWithoutResourceGrantsInput, RoleUncheckedUpdateWithoutResourceGrantsInput>
+  }
+
+  export type RoleUpdateWithoutResourceGrantsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: EnumRoleTypeFieldUpdateOperationsInput | $Enums.RoleType
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    permissions?: RolePermissionUpdateManyWithoutRoleNestedInput
+    users?: UserRoleUpdateManyWithoutRoleNestedInput
+  }
+
+  export type RoleUncheckedUpdateWithoutResourceGrantsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: EnumRoleTypeFieldUpdateOperationsInput | $Enums.RoleType
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    permissions?: RolePermissionUncheckedUpdateManyWithoutRoleNestedInput
+    users?: UserRoleUncheckedUpdateManyWithoutRoleNestedInput
+  }
+
+  export type UserUpsertWithoutGrantsGivenInput = {
+    update: XOR<UserUpdateWithoutGrantsGivenInput, UserUncheckedUpdateWithoutGrantsGivenInput>
+    create: XOR<UserCreateWithoutGrantsGivenInput, UserUncheckedCreateWithoutGrantsGivenInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutGrantsGivenInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutGrantsGivenInput, UserUncheckedUpdateWithoutGrantsGivenInput>
+  }
+
+  export type UserUpdateWithoutGrantsGivenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    designation?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    aiConversations?: AIConversationUpdateManyWithoutUserNestedInput
+    generatedAIReports?: AIReportUpdateManyWithoutGeneratedByNestedInput
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    activities?: ActivityUpdateManyWithoutActorNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUpdateOneWithoutUserNestedInput
+    checkIns?: CheckInUpdateManyWithoutUserNestedInput
+    ownedCompanies?: CompanyUpdateManyWithoutOwnerNestedInput
+    ownedContacts?: ContactUpdateManyWithoutOwnerNestedInput
+    ownedDeals?: DealUpdateManyWithoutOwnerNestedInput
+    managedDepartments?: DepartmentUpdateManyWithoutManagerNestedInput
+    assignedVisits?: FieldVisitUpdateManyWithoutAssigneeNestedInput
+    uploadedFiles?: FileUpdateManyWithoutUploadedByNestedInput
+    fileActivities?: FileActivityUpdateManyWithoutUserNestedInput
+    createdFilePermissions?: FilePermissionUpdateManyWithoutCreatedByNestedInput
+    filePermissions?: FilePermissionUpdateManyWithoutUserNestedInput
+    fileSharesBy?: FileShareUpdateManyWithoutSharedByNestedInput
+    fileSharesWith?: FileShareUpdateManyWithoutSharedWithNestedInput
+    uploadedFileVersions?: FileVersionUpdateManyWithoutUploadedByNestedInput
+    createdFolders?: FolderUpdateManyWithoutCreatedByNestedInput
+    ownedFollowUps?: FollowUpUpdateManyWithoutOwnerNestedInput
+    ownedLeads?: LeadUpdateManyWithoutOwnerNestedInput
+    createdMeetings?: MeetingUpdateManyWithoutCreatedByNestedInput
+    meetings?: MeetingParticipantUpdateManyWithoutUserNestedInput
+    editedMeetingSummaries?: MeetingSummaryUpdateManyWithoutEditedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    savedViews?: SavedViewUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    managedTeams?: TeamUpdateManyWithoutManagerNestedInput
+    department?: DepartmentUpdateOneWithoutUsersNestedInput
+    manager?: UserUpdateOneWithoutSubordinatesNestedInput
+    subordinates?: UserUpdateManyWithoutManagerNestedInput
+    organization?: OrganizationUpdateOneRequiredWithoutUsersNestedInput
+    team?: TeamUpdateOneWithoutUsersNestedInput
+    roles?: UserRoleUpdateManyWithoutUserNestedInput
+    visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
+    dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
+    aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutGrantsGivenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    designation?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    departmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    teamId?: NullableStringFieldUpdateOperationsInput | string | null
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    aiConversations?: AIConversationUncheckedUpdateManyWithoutUserNestedInput
+    generatedAIReports?: AIReportUncheckedUpdateManyWithoutGeneratedByNestedInput
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    activities?: ActivityUncheckedUpdateManyWithoutActorNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutActorNestedInput
+    liveLocation?: UserLiveLocationUncheckedUpdateOneWithoutUserNestedInput
+    checkIns?: CheckInUncheckedUpdateManyWithoutUserNestedInput
+    ownedCompanies?: CompanyUncheckedUpdateManyWithoutOwnerNestedInput
+    ownedContacts?: ContactUncheckedUpdateManyWithoutOwnerNestedInput
+    ownedDeals?: DealUncheckedUpdateManyWithoutOwnerNestedInput
+    managedDepartments?: DepartmentUncheckedUpdateManyWithoutManagerNestedInput
+    assignedVisits?: FieldVisitUncheckedUpdateManyWithoutAssigneeNestedInput
+    uploadedFiles?: FileUncheckedUpdateManyWithoutUploadedByNestedInput
+    fileActivities?: FileActivityUncheckedUpdateManyWithoutUserNestedInput
+    createdFilePermissions?: FilePermissionUncheckedUpdateManyWithoutCreatedByNestedInput
+    filePermissions?: FilePermissionUncheckedUpdateManyWithoutUserNestedInput
+    fileSharesBy?: FileShareUncheckedUpdateManyWithoutSharedByNestedInput
+    fileSharesWith?: FileShareUncheckedUpdateManyWithoutSharedWithNestedInput
+    uploadedFileVersions?: FileVersionUncheckedUpdateManyWithoutUploadedByNestedInput
+    createdFolders?: FolderUncheckedUpdateManyWithoutCreatedByNestedInput
+    ownedFollowUps?: FollowUpUncheckedUpdateManyWithoutOwnerNestedInput
+    ownedLeads?: LeadUncheckedUpdateManyWithoutOwnerNestedInput
+    createdMeetings?: MeetingUncheckedUpdateManyWithoutCreatedByNestedInput
+    meetings?: MeetingParticipantUncheckedUpdateManyWithoutUserNestedInput
+    editedMeetingSummaries?: MeetingSummaryUncheckedUpdateManyWithoutEditedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    savedViews?: SavedViewUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    managedTeams?: TeamUncheckedUpdateManyWithoutManagerNestedInput
+    subordinates?: UserUncheckedUpdateManyWithoutManagerNestedInput
+    roles?: UserRoleUncheckedUpdateManyWithoutUserNestedInput
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
@@ -88668,6 +91092,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutManagedDepartmentsInput = {
@@ -88721,6 +91146,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutManagedDepartmentsInput = {
@@ -88768,6 +91194,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutDepartmentsInput = {
@@ -88810,6 +91237,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutDepartmentsInput = {
@@ -88936,6 +91364,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutDepartmentInput = {
@@ -88989,6 +91418,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutDepartmentInput = {
@@ -89063,6 +91493,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutManagedDepartmentsInput = {
@@ -89116,6 +91547,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type OrganizationUpsertWithoutDepartmentsInput = {
@@ -89169,6 +91601,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutDepartmentsInput = {
@@ -89211,6 +91644,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type FilePermissionUpsertWithWhereUniqueWithoutDepartmentInput = {
@@ -89373,6 +91807,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutManagedTeamsInput = {
@@ -89426,6 +91861,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutManagedTeamsInput = {
@@ -89473,6 +91909,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutTeamsInput = {
@@ -89515,6 +91952,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutTeamsInput = {
@@ -89573,6 +92011,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutTeamInput = {
@@ -89626,6 +92065,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutTeamInput = {
@@ -89751,6 +92191,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutManagedTeamsInput = {
@@ -89804,6 +92245,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type OrganizationUpsertWithoutTeamsInput = {
@@ -89857,6 +92299,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutTeamsInput = {
@@ -89899,6 +92342,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutTeamInput = {
@@ -90056,6 +92500,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutCreatedFoldersInput = {
@@ -90109,6 +92554,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutCreatedFoldersInput = {
@@ -90156,6 +92602,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutFoldersInput = {
@@ -90198,6 +92645,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutFoldersInput = {
@@ -90362,6 +92810,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedFoldersInput = {
@@ -90415,6 +92864,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type OrganizationUpsertWithoutFoldersInput = {
@@ -90468,6 +92918,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutFoldersInput = {
@@ -90510,6 +92961,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type FolderUpsertWithoutChildrenInput = {
@@ -90632,6 +93084,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutFilesInput = {
@@ -90674,6 +93127,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutFilesInput = {
@@ -90732,6 +93186,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutUploadedFilesInput = {
@@ -90785,6 +93240,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutUploadedFilesInput = {
@@ -91024,6 +93480,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutFilesInput = {
@@ -91066,6 +93523,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutUploadedFilesInput = {
@@ -91130,6 +93588,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUploadedFilesInput = {
@@ -91183,6 +93642,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type FileActivityUpsertWithWhereUniqueWithoutFileInput = {
@@ -91377,6 +93837,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutUploadedFileVersionsInput = {
@@ -91430,6 +93891,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutUploadedFileVersionsInput = {
@@ -91556,6 +94018,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUploadedFileVersionsInput = {
@@ -91609,6 +94072,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type OrganizationCreateWithoutSavedViewsInput = {
@@ -91651,6 +94115,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutSavedViewsInput = {
@@ -91693,6 +94158,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutSavedViewsInput = {
@@ -91751,6 +94217,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutSavedViewsInput = {
@@ -91804,6 +94271,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutSavedViewsInput = {
@@ -91862,6 +94330,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutSavedViewsInput = {
@@ -91904,6 +94373,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutSavedViewsInput = {
@@ -91968,6 +94438,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSavedViewsInput = {
@@ -92021,6 +94492,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserCreateWithoutCreatedFilePermissionsInput = {
@@ -92074,6 +94546,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutCreatedFilePermissionsInput = {
@@ -92127,6 +94600,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutCreatedFilePermissionsInput = {
@@ -92325,6 +94799,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutFilePermissionsInput = {
@@ -92378,6 +94853,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutFilePermissionsInput = {
@@ -92447,6 +94923,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedFilePermissionsInput = {
@@ -92500,6 +94977,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type DepartmentUpsertWithoutFilePermissionsInput = {
@@ -92728,6 +95206,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFilePermissionsInput = {
@@ -92781,6 +95260,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type FileCreateWithoutSharesInput = {
@@ -92885,6 +95365,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutFileSharesByInput = {
@@ -92938,6 +95419,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutFileSharesByInput = {
@@ -92996,6 +95478,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutFileSharesWithInput = {
@@ -93049,6 +95532,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutFileSharesWithInput = {
@@ -93175,6 +95659,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFileSharesByInput = {
@@ -93228,6 +95713,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUpsertWithoutFileSharesWithInput = {
@@ -93292,6 +95778,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFileSharesWithInput = {
@@ -93345,6 +95832,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type OrganizationCreateWithoutFileCategoriesInput = {
@@ -93387,6 +95875,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutFileCategoriesInput = {
@@ -93429,6 +95918,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutFileCategoriesInput = {
@@ -93487,6 +95977,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutFileCategoriesInput = {
@@ -93529,6 +96020,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type FileCreateWithoutActivitiesInput = {
@@ -93633,6 +96125,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutFileActivitiesInput = {
@@ -93686,6 +96179,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutFileActivitiesInput = {
@@ -93812,6 +96306,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFileActivitiesInput = {
@@ -93865,6 +96360,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type ActivityCreateWithoutLeadInput = {
@@ -94143,6 +96639,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutLeadsInput = {
@@ -94185,6 +96682,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutLeadsInput = {
@@ -94243,6 +96741,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutOwnedLeadsInput = {
@@ -94296,6 +96795,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutOwnedLeadsInput = {
@@ -94518,6 +97018,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutLeadsInput = {
@@ -94560,6 +97061,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutOwnedLeadsInput = {
@@ -94624,6 +97126,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedLeadsInput = {
@@ -94677,6 +97180,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type ActivityCreateWithoutCompanyInput = {
@@ -94755,6 +97259,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutCompaniesInput = {
@@ -94797,6 +97302,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutCompaniesInput = {
@@ -94855,6 +97361,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutOwnedCompaniesInput = {
@@ -94908,6 +97415,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutOwnedCompaniesInput = {
@@ -95324,6 +97832,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutCompaniesInput = {
@@ -95366,6 +97875,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutOwnedCompaniesInput = {
@@ -95430,6 +97940,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedCompaniesInput = {
@@ -95483,6 +97994,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type ContactUpsertWithWhereUniqueWithoutCompanyInput = {
@@ -95732,6 +98244,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutContactsInput = {
@@ -95774,6 +98287,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutContactsInput = {
@@ -95832,6 +98346,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutOwnedContactsInput = {
@@ -95885,6 +98400,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutOwnedContactsInput = {
@@ -96240,6 +98756,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutContactsInput = {
@@ -96282,6 +98799,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutOwnedContactsInput = {
@@ -96346,6 +98864,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedContactsInput = {
@@ -96399,6 +98918,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type DealUpsertWithWhereUniqueWithoutContactInput = {
@@ -96694,6 +99214,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutDealsInput = {
@@ -96736,6 +99257,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutDealsInput = {
@@ -96794,6 +99316,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutOwnedDealsInput = {
@@ -96847,6 +99370,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutOwnedDealsInput = {
@@ -97242,6 +99766,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutDealsInput = {
@@ -97284,6 +99809,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutOwnedDealsInput = {
@@ -97348,6 +99874,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedDealsInput = {
@@ -97401,6 +99928,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type FieldVisitUpsertWithWhereUniqueWithoutDealInput = {
@@ -97502,6 +100030,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutActivitiesInput = {
@@ -97555,6 +100084,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutActivitiesInput = {
@@ -97804,6 +100334,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutActivitiesInput = {
@@ -97846,6 +100377,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutActivitiesInput = {
@@ -97915,6 +100447,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutActivitiesInput = {
@@ -97968,6 +100501,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type CompanyUpsertWithoutActivitiesInput = {
@@ -98247,6 +100781,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutActivitiesInput = {
@@ -98289,6 +100824,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserCreateWithoutDailyReportsInput = {
@@ -98342,6 +100878,7 @@ export namespace Prisma {
     roles?: UserRoleCreateNestedManyWithoutUserInput
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutDailyReportsInput = {
@@ -98395,6 +100932,7 @@ export namespace Prisma {
     roles?: UserRoleUncheckedCreateNestedManyWithoutUserInput
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutDailyReportsInput = {
@@ -98442,6 +100980,7 @@ export namespace Prisma {
     users?: UserCreateNestedManyWithoutOrganizationInput
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutDailyReportsInput = {
@@ -98484,6 +101023,7 @@ export namespace Prisma {
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutDailyReportsInput = {
@@ -98580,6 +101120,7 @@ export namespace Prisma {
     roles?: UserRoleUpdateManyWithoutUserNestedInput
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDailyReportsInput = {
@@ -98633,6 +101174,7 @@ export namespace Prisma {
     roles?: UserRoleUncheckedUpdateManyWithoutUserNestedInput
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type OrganizationUpsertWithoutDailyReportsInput = {
@@ -98686,6 +101228,7 @@ export namespace Prisma {
     users?: UserUpdateManyWithoutOrganizationNestedInput
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutDailyReportsInput = {
@@ -98728,6 +101271,7 @@ export namespace Prisma {
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type AIReportUpsertWithoutDailyReportInput = {
@@ -98960,6 +101504,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutFollowUpsInput = {
@@ -99002,6 +101547,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutFollowUpsInput = {
@@ -99060,6 +101606,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutOwnedFollowUpsInput = {
@@ -99113,6 +101660,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutOwnedFollowUpsInput = {
@@ -99346,6 +101894,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutFollowUpsInput = {
@@ -99388,6 +101937,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutOwnedFollowUpsInput = {
@@ -99452,6 +102002,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedFollowUpsInput = {
@@ -99505,6 +102056,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type CheckInCreateWithoutVisitInput = {
@@ -99594,6 +102146,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutAssignedVisitsInput = {
@@ -99647,6 +102200,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutAssignedVisitsInput = {
@@ -99847,6 +102401,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutVisitsInput = {
@@ -99889,6 +102444,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutVisitsInput = {
@@ -100014,6 +102570,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAssignedVisitsInput = {
@@ -100067,6 +102624,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type CompanyUpsertWithoutVisitsInput = {
@@ -100291,6 +102849,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutVisitsInput = {
@@ -100333,6 +102892,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type VisitReportUpsertWithWhereUniqueWithoutVisitInput = {
@@ -100402,6 +102962,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutCheckInsInput = {
@@ -100455,6 +103016,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutCheckInsInput = {
@@ -100569,6 +103131,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCheckInsInput = {
@@ -100622,6 +103185,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type FieldVisitUpsertWithoutCheckInsInput = {
@@ -100774,6 +103338,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutGeoFencesInput = {
@@ -100816,6 +103381,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutGeoFencesInput = {
@@ -100939,6 +103505,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutGeoFencesInput = {
@@ -100981,6 +103548,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserCreateWithoutVisitReportsInput = {
@@ -101034,6 +103602,7 @@ export namespace Prisma {
     roles?: UserRoleCreateNestedManyWithoutUserInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutVisitReportsInput = {
@@ -101087,6 +103656,7 @@ export namespace Prisma {
     roles?: UserRoleUncheckedCreateNestedManyWithoutUserInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutVisitReportsInput = {
@@ -101223,6 +103793,7 @@ export namespace Prisma {
     roles?: UserRoleUpdateManyWithoutUserNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutVisitReportsInput = {
@@ -101276,6 +103847,7 @@ export namespace Prisma {
     roles?: UserRoleUncheckedUpdateManyWithoutUserNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type FieldVisitUpsertWithoutVisitReportsInput = {
@@ -101684,6 +104256,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutCreatedMeetingsInput = {
@@ -101737,6 +104310,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutCreatedMeetingsInput = {
@@ -101833,6 +104407,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutMeetingsInput = {
@@ -101875,6 +104450,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutMeetingsInput = {
@@ -102173,6 +104749,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedMeetingsInput = {
@@ -102226,6 +104803,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type DealUpsertWithoutMeetingsInput = {
@@ -102334,6 +104912,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutMeetingsInput = {
@@ -102376,6 +104955,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type MeetingParticipantUpsertWithWhereUniqueWithoutMeetingInput = {
@@ -102597,6 +105177,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutMeetingsInput = {
@@ -102650,6 +105231,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutMeetingsInput = {
@@ -102778,6 +105360,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMeetingsInput = {
@@ -102831,6 +105414,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type MeetingCreateWithoutRecordingsInput = {
@@ -103108,6 +105692,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutEditedMeetingSummariesInput = {
@@ -103161,6 +105746,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutEditedMeetingSummariesInput = {
@@ -103283,6 +105869,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEditedMeetingSummariesInput = {
@@ -103336,6 +105923,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type MeetingUpsertWithoutSummariesInput = {
@@ -103437,6 +106025,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutAiConversationsInput = {
@@ -103479,6 +106068,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutAiConversationsInput = {
@@ -103537,6 +106127,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutAiConversationsInput = {
@@ -103590,6 +106181,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutAiConversationsInput = {
@@ -103674,6 +106266,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutAiConversationsInput = {
@@ -103716,6 +106309,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutAiConversationsInput = {
@@ -103780,6 +106374,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiConversationsInput = {
@@ -103833,6 +106428,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type AIMessageUpsertWithWhereUniqueWithoutConversationInput = {
@@ -103955,6 +106551,7 @@ export namespace Prisma {
     users?: UserCreateNestedManyWithoutOrganizationInput
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutAiUsagesInput = {
@@ -103997,6 +106594,7 @@ export namespace Prisma {
     users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutAiUsagesInput = {
@@ -104055,6 +106653,7 @@ export namespace Prisma {
     roles?: UserRoleCreateNestedManyWithoutUserInput
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutAiUsagesInput = {
@@ -104108,6 +106707,7 @@ export namespace Prisma {
     roles?: UserRoleUncheckedCreateNestedManyWithoutUserInput
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutAiUsagesInput = {
@@ -104166,6 +106766,7 @@ export namespace Prisma {
     users?: UserUpdateManyWithoutOrganizationNestedInput
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutAiUsagesInput = {
@@ -104208,6 +106809,7 @@ export namespace Prisma {
     users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutAiUsagesInput = {
@@ -104272,6 +106874,7 @@ export namespace Prisma {
     roles?: UserRoleUpdateManyWithoutUserNestedInput
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiUsagesInput = {
@@ -104325,6 +106928,7 @@ export namespace Prisma {
     roles?: UserRoleUncheckedUpdateManyWithoutUserNestedInput
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type OrganizationCreateWithoutAiInsightsInput = {
@@ -104367,6 +106971,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutAiInsightsInput = {
@@ -104409,6 +107014,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutAiInsightsInput = {
@@ -104467,6 +107073,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutAiInsightsInput = {
@@ -104509,6 +107116,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserCreateWithoutGeneratedAIReportsInput = {
@@ -104562,6 +107170,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutGeneratedAIReportsInput = {
@@ -104615,6 +107224,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutGeneratedAIReportsInput = {
@@ -104662,6 +107272,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutAiReportsInput = {
@@ -104704,6 +107315,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutAiReportsInput = {
@@ -104818,6 +107430,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGeneratedAIReportsInput = {
@@ -104871,6 +107484,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type OrganizationUpsertWithoutAiReportsInput = {
@@ -104924,6 +107538,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutAiReportsInput = {
@@ -104966,6 +107581,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type DailyReportUpsertWithoutAiReportInput = {
@@ -105059,6 +107675,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutNotificationsInput = {
@@ -105101,6 +107718,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutNotificationsInput = {
@@ -105159,6 +107777,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -105212,6 +107831,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -105270,6 +107890,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutNotificationsInput = {
@@ -105312,6 +107933,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutNotificationsInput = {
@@ -105376,6 +107998,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -105429,6 +108052,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserCreateWithoutAuditLogsInput = {
@@ -105482,6 +108106,7 @@ export namespace Prisma {
     visitReports?: VisitReportCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantCreateNestedManyWithoutGrantorInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -105535,6 +108160,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedCreateNestedManyWithoutCreatedByInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutUserInput
+    grantsGiven?: ResourceGrantUncheckedCreateNestedManyWithoutGrantorInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -105582,6 +108208,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutAuditLogsInput = {
@@ -105624,6 +108251,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutAuditLogsInput = {
@@ -105693,6 +108321,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -105746,6 +108375,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type OrganizationUpsertWithoutAuditLogsInput = {
@@ -105799,6 +108429,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutAuditLogsInput = {
@@ -105841,6 +108472,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationCreateWithoutIntegrationsInput = {
@@ -105883,6 +108515,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutIntegrationsInput = {
@@ -105925,6 +108558,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedCreateNestedManyWithoutOrganizationInput
     dailyReports?: DailyReportUncheckedCreateNestedManyWithoutOrganizationInput
     aiUsages?: AIUsageUncheckedCreateNestedManyWithoutOrganizationInput
+    resourceGrants?: ResourceGrantUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutIntegrationsInput = {
@@ -106019,6 +108653,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutIntegrationsInput = {
@@ -106061,6 +108696,7 @@ export namespace Prisma {
     liveLocations?: UserLiveLocationUncheckedUpdateManyWithoutOrganizationNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutOrganizationNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutOrganizationNestedInput
+    resourceGrants?: ResourceGrantUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type WebhookDeliveryUpsertWithWhereUniqueWithoutIntegrationInput = {
@@ -106497,6 +109133,17 @@ export namespace Prisma {
     estimatedCost: number
     feature: string
     createdAt?: Date | string
+  }
+
+  export type ResourceGrantCreateManyOrganizationInput = {
+    id?: string
+    roleId: string
+    resourceType?: string
+    resourceId?: string | null
+    permission: string
+    grantedBy: string
+    grantedAt?: Date | string
+    expiresAt?: Date | string | null
   }
 
   export type AIConversationUpdateWithoutOrganizationInput = {
@@ -107472,6 +110119,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOrganizationInput = {
@@ -107525,6 +110173,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutOrganizationInput = {
@@ -107678,6 +110327,39 @@ export namespace Prisma {
     estimatedCost?: FloatFieldUpdateOperationsInput | number
     feature?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ResourceGrantUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    role?: RoleUpdateOneRequiredWithoutResourceGrantsNestedInput
+    grantor?: UserUpdateOneRequiredWithoutGrantsGivenNestedInput
+  }
+
+  export type ResourceGrantUncheckedUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    roleId?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedBy?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ResourceGrantUncheckedUpdateManyWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    roleId?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedBy?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type AIConversationCreateManyUserInput = {
@@ -108111,6 +110793,17 @@ export namespace Prisma {
     estimatedCost: number
     feature: string
     createdAt?: Date | string
+  }
+
+  export type ResourceGrantCreateManyGrantorInput = {
+    id?: string
+    organizationId: string
+    roleId: string
+    resourceType?: string
+    resourceId?: string | null
+    permission: string
+    grantedAt?: Date | string
+    expiresAt?: Date | string | null
   }
 
   export type AIConversationUpdateWithoutUserInput = {
@@ -109333,6 +112026,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutManagerInput = {
@@ -109386,6 +112080,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutManagerInput = {
@@ -109564,6 +112259,39 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ResourceGrantUpdateWithoutGrantorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    organization?: OrganizationUpdateOneRequiredWithoutResourceGrantsNestedInput
+    role?: RoleUpdateOneRequiredWithoutResourceGrantsNestedInput
+  }
+
+  export type ResourceGrantUncheckedUpdateWithoutGrantorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    roleId?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ResourceGrantUncheckedUpdateManyWithoutGrantorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    roleId?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type RolePermissionCreateManyRoleInput = {
     id?: string
     permissionId: string
@@ -109574,6 +112302,17 @@ export namespace Prisma {
     id?: string
     userId: string
     createdAt?: Date | string
+  }
+
+  export type ResourceGrantCreateManyRoleInput = {
+    id?: string
+    organizationId: string
+    resourceType?: string
+    resourceId?: string | null
+    permission: string
+    grantedBy: string
+    grantedAt?: Date | string
+    expiresAt?: Date | string | null
   }
 
   export type RolePermissionUpdateWithoutRoleInput = {
@@ -109610,6 +112349,39 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ResourceGrantUpdateWithoutRoleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    organization?: OrganizationUpdateOneRequiredWithoutResourceGrantsNestedInput
+    grantor?: UserUpdateOneRequiredWithoutGrantsGivenNestedInput
+  }
+
+  export type ResourceGrantUncheckedUpdateWithoutRoleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedBy?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ResourceGrantUncheckedUpdateManyWithoutRoleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    resourceType?: StringFieldUpdateOperationsInput | string
+    resourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    permission?: StringFieldUpdateOperationsInput | string
+    grantedBy?: StringFieldUpdateOperationsInput | string
+    grantedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type RolePermissionCreateManyPermissionInput = {
@@ -109798,6 +112570,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDepartmentInput = {
@@ -109851,6 +112624,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutDepartmentInput = {
@@ -109986,6 +112760,7 @@ export namespace Prisma {
     visitReports?: VisitReportUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTeamInput = {
@@ -110039,6 +112814,7 @@ export namespace Prisma {
     visitReports?: VisitReportUncheckedUpdateManyWithoutCreatedByNestedInput
     dailyReports?: DailyReportUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AIUsageUncheckedUpdateManyWithoutUserNestedInput
+    grantsGiven?: ResourceGrantUncheckedUpdateManyWithoutGrantorNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutTeamInput = {

@@ -2,6 +2,7 @@ import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireSession } from '@/lib/session'
 import type { DashboardMetrics, RecentActivity, LiveVisitMarker } from '@/types/dashboard'
+import { logger } from '@/lib/logger'
 
 const SPARKLINE_DAYS = 12
 const PIPELINE_COLORS: Record<string, string> = {
@@ -106,7 +107,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   // degrade gracefully so one slow query never crashes the whole dashboard.
   function safe<T>(p: Promise<T>, fallback: unknown): Promise<T> {
     return p.catch((err) => {
-      console.error('[dashboard] query failed, using fallback:', (err as Error)?.message?.slice(0, 200))
+      logger.error('dashboard query failed, using fallback', {}, err as Error)
       return fallback as T
     })
   }
@@ -191,7 +192,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const wonDealRows = await prisma.deal
     .findMany({ where: { organizationId, stage: 'WON', closedAt: { gte: windowStart } }, select: { closedAt: true, value: true } })
     .catch((err) => {
-      console.error('[dashboard] wonTrend query failed:', (err as Error)?.message?.slice(0, 200))
+      logger.error('wonTrend query failed', {}, err as Error)
       return [] as { closedAt: Date | null; value: unknown }[]
     })
   const wonTrend = bucketSums(
@@ -205,10 +206,6 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   // --- Live visits: normalize today's field-visit coordinates into a 0-100
   // percentage box for the illustrative map card (no real map tiles yet).
   const geoVisits = activeVisitsToday.filter((v) => v.latitude != null && v.longitude != null)
-  const lats = geoVisits.map((v) => Number(v.latitude))
-  const lngs = geoVisits.map((v) => Number(v.longitude))
-  const latRange = [Math.min(...lats, 0), Math.max(...lats, 1)]
-  const lngRange = [Math.min(...lngs, 0), Math.max(...lngs, 1)]
   const STATUS_LABEL: Record<string, LiveVisitMarker['status']> = {
     IN_MEETING: 'In Meeting',
     CHECKED_IN: 'Checked-in',
@@ -216,17 +213,13 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     COMPLETED: 'Checked-out',
     SCHEDULED: 'On the way',
   }
-  const liveVisits: LiveVisitMarker[] = geoVisits.map((v) => {
-    const latSpan = latRange[1] - latRange[0] || 1
-    const lngSpan = lngRange[1] - lngRange[0] || 1
-    return {
-      id: v.id,
-      name: v.assignee.name ?? 'Field rep',
-      status: STATUS_LABEL[v.status] ?? 'On the way',
-      x: Math.round(((Number(v.longitude) - lngRange[0]) / lngSpan) * 80 + 10),
-      y: Math.round(((latRange[1] - Number(v.latitude)) / latSpan) * 80 + 10),
-    }
-  })
+  const liveVisits: LiveVisitMarker[] = geoVisits.map((v) => ({
+    id: v.id,
+    name: v.assignee.name ?? 'Field rep',
+    status: STATUS_LABEL[v.status] ?? 'On the way',
+    latitude: Number(v.latitude),
+    longitude: Number(v.longitude),
+  }))
 
   // --- AI insights: deterministic, computed straight from the org's own
   // data (no external AI call unless an AI provider key is configured —

@@ -56,20 +56,26 @@ describe('team.service', () => {
 
       const metrics = await getTeamDashboardMetrics()
 
-      expect(metrics.totalEmployees).toBe(2)
-      expect(metrics.onlineEmployees).toBe(1)
-      expect(metrics.offlineEmployees).toBe(1)
-      expect(metrics.submittedToday).toBe(1)
-      expect(metrics.pendingToday).toBe(1)
+      expect(metrics.success).toBe(true)
+      expect(metrics.data!.totalEmployees).toBe(2)
+      expect(metrics.data!.onlineEmployees).toBe(1)
+      expect(metrics.data!.offlineEmployees).toBe(1)
+      expect(metrics.data!.submittedToday).toBe(1)
+      expect(metrics.data!.pendingToday).toBe(1)
     })
 
-    it('throws when user lacks team.view_all permission', async () => {
+    it('returns error when user lacks team.view_all permission', async () => {
       mockRequireApiSession.mockResolvedValue({
         ...mockSession,
         user: { ...mockSession.user, permissions: ['team.view'] },
       })
 
-      await expect(getTeamDashboardMetrics()).rejects.toThrow('Forbidden: missing team.view_all')
+      const result = await getTeamDashboardMetrics()
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Forbidden: missing team.view_all',
+      })
     })
   })
 
@@ -93,12 +99,12 @@ describe('team.service', () => {
       mockPrisma.dailyReport.findMany.mockResolvedValue([])
       mockPrisma.session.findMany.mockResolvedValue([])
 
-      const members = await getTeamMembers()
+      const result = await getTeamMembers()
 
-      expect(members).toHaveLength(1)
-      expect(members[0].name).toBe('User 1')
-      expect(members[0].isOnline).toBe(true)
+      expect(result.success).toBe(true)
+      expect(result.data).toHaveLength(1)
+      expect(result.data![0].name).toBe('User 1')
+      expect(result.data![0].isOnline).toBe(true)
     })
   })
-
-  })
+})

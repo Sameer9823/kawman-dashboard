@@ -242,6 +242,18 @@ exports.Prisma.UserRoleScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ResourceGrantScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  roleId: 'roleId',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  permission: 'permission',
+  grantedBy: 'grantedBy',
+  grantedAt: 'grantedAt',
+  expiresAt: 'expiresAt'
+};
+
 exports.Prisma.DepartmentScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -886,6 +898,7 @@ exports.Prisma.ModelName = {
   Permission: 'Permission',
   RolePermission: 'RolePermission',
   UserRole: 'UserRole',
+  ResourceGrant: 'ResourceGrant',
   Department: 'Department',
   Team: 'Team',
   Folder: 'Folder',

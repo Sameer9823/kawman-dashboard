@@ -3,20 +3,44 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Search, Mail, Phone, ChevronLeft, ChevronRight } from 'lucide-react'
+import { toast } from 'sonner'
+import { Search, Mail, Phone, ChevronLeft, ChevronRight, FileDown, Trash2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { DeleteRowButton } from '@/components/crm/delete-row-button'
 import type { ContactPage, ContactSortKey } from '@/services/contact.service'
-import { deleteContactAction } from '@/app/contacts/actions'
+import { deleteContactAction, bulkDeleteContactsAction } from '@/app/contacts/actions'
+import type { Contact } from '@/types/crm'
 
-/**
- * Server-side paginated / searched / sorted contacts view. All filtering
- * happens in the DB query (see services/contact.service.ts#getContactsPage)
- * — mirrors leads-table.tsx / companies-table.tsx, kept as a card grid
- * since that was this component's existing visual style.
- */
+function toCSV(rows: Contact[]): string {
+  const headers = ['Name', 'Company', 'Designation', 'Email', 'Phone', 'Mobile']
+  const csv = [
+    headers.join(','),
+    ...rows.map((c) =>
+      [
+        `"${c.name}"`,
+        `"${c.company}"`,
+        `"${c.designation}"`,
+        `"${c.email}"`,
+        `"${c.phone}"`,
+        `"${c.mobile}"`,
+      ].join(',')
+    ),
+  ]
+  return csv.join('\r\n')
+}
+
+function exportSelectedToCsv(selected: Contact[]) {
+  const csv = toCSV(selected)
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `contacts-selected-${new Date().toISOString().split('T')[0]}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export function ContactsTable({ result }: { result: ContactPage }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -24,9 +48,16 @@ export function ContactsTable({ result }: { result: ContactPage }) {
   const [, startTransition] = useTransition()
 
   const [query, setQuery] = useState(searchParams.get('q') ?? '')
+  const [selected, setSelected] = useState<Set<string>>(new Set())
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const sortKey = (searchParams.get('sort') as ContactSortKey | null) ?? 'createdAt'
   const sortDir = (searchParams.get('dir') as 'asc' | 'desc' | null) ?? 'desc'
+
+  const [prevResult, setPrevResult] = useState(result)
+  if (prevResult !== result) {
+    setPrevResult(result)
+    if (selected.size > 0) setSelected(new Set())
+  }
 
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -65,10 +96,29 @@ export function ContactsTable({ result }: { result: ContactPage }) {
     updateParams({ sort: key, dir })
   }
 
-  const hasActiveFilters = Boolean(searchParams.get('q')?.trim())
+  function toggleRow(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function toggleAll() {
+    setSelected((prev) => (prev.size === contacts.length ? new Set() : new Set(contacts.map((c) => c.id))))
+  }
+
+  function clearSelection() {
+    setSelected(new Set())
+  }
+
   const { contacts, total, page, pageCount } = result
   const rangeStart = total === 0 ? 0 : (page - 1) * result.pageSize + 1
   const rangeEnd = Math.min(page * result.pageSize, total)
+  const allSelected = contacts.length > 0 && selected.size === contacts.length
+
+  const selectedContacts = contacts.filter((c) => selected.has(c.id))
 
   return (
     <Card className="bg-[#0a111c]/80 border-white/[0.08]">
@@ -93,62 +143,135 @@ export function ContactsTable({ result }: { result: ContactPage }) {
           <option value="name:desc">Name Z–A</option>
           <option value="lastActivityAt:desc">Recently active</option>
         </select>
+        {selected.size > 0 && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-white/60">{selected.size} selected</span>
+            <button
+              onClick={() => exportSelectedToCsv(selectedContacts)}
+              className="flex items-center gap-1 h-7 px-2 rounded-lg border border-white/[0.08] text-xs text-white/70 hover:bg-white/[0.05] transition-colors"
+            >
+              <FileDown className="h-3 w-3" /> Export selected
+            </button>
+            <button
+              onClick={async () => {
+                if (confirm(`Delete ${selected.size} contacts?`)) {
+                  const result = await bulkDeleteContactsAction(Array.from(selected))
+                  if (result.success) {
+                    toast.success(`${result.deleted} contact(s) deleted`)
+                    clearSelection()
+                  } else {
+                    toast.error(result.error)
+                  }
+                }
+              }}
+              className="flex items-center gap-1 h-7 px-2 rounded-lg border border-red-500/30 text-xs text-red-400 hover:bg-red-500/[0.08] transition-colors"
+            >
+              <Trash2 className="h-3 w-3" /> Delete selected
+            </button>
+            <button
+              onClick={clearSelection}
+              className="text-xs text-white/50 hover:text-white transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+        )}
         <span className="text-xs text-white/35 sm:ml-auto">
           {total === 0 ? '0 contacts' : `${rangeStart}–${rangeEnd} of ${total} contacts`}
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 p-4">
-        {contacts.map((contact) => (
-          <div key={contact.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.04] transition-colors">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="h-9 w-9 shrink-0 rounded-full bg-purple-600/25 flex items-center justify-center text-xs font-medium text-purple-300">
-                  {contact.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-                </div>
-                <div className="min-w-0">
-                  <Link
-                    href={`/contacts/${contact.id}`}
-                    className="text-sm font-medium text-white hover:text-purple-300 transition-colors truncate block"
-                  >
-                    {contact.name}
-                  </Link>
-                  <p className="text-xs text-white/45 truncate">{contact.designation}</p>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-1.5 shrink-0">
-                <Badge variant={contact.status === 'ACTIVE' ? 'success' : 'neutral'}>
-                  {contact.status === 'ACTIVE' ? 'Active' : 'Inactive'}
-                </Badge>
-                <DeleteRowButton
-                  action={deleteContactAction.bind(null, contact.id)}
-                  confirmLabel={`Delete ${contact.name}?`}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-white/40 text-xs uppercase tracking-wide border-b border-white/[0.06]">
+              <th className="w-10 px-4 py-3">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleAll}
+                  className="h-4 w-4 rounded border-white/20 bg-white/[0.04] accent-purple-600 cursor-pointer"
+                  aria-label="Select all contacts on this page"
                 />
-              </div>
-            </div>
-            <p className="text-xs text-white/55 mt-3">{contact.company}</p>
-            <div className="mt-2 space-y-1">
-              <p className="text-xs text-white/40 flex items-center gap-1.5 truncate">
-                <Mail className="h-3 w-3 shrink-0" /> {contact.email}
-              </p>
-              <p className="text-xs text-white/40 flex items-center gap-1.5">
-                <Phone className="h-3 w-3 shrink-0" /> {contact.phone}
-              </p>
-            </div>
-          </div>
-        ))}
-        {contacts.length === 0 && (
-          <div className="col-span-full py-10 text-center">
-            {hasActiveFilters ? (
-              <span className="text-sm text-white/40">No contacts match your search.</span>
-            ) : (
-              <span className="flex flex-col items-center gap-3">
-                <span className="text-sm text-white/40">No contacts yet.</span>
-                <Link href="/contacts/new" className="inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-500 transition-colors">Create your first contact</Link>
-              </span>
+              </th>
+               <th className="px-4 py-3 font-medium">Contact</th>
+               <th className="px-4 py-3 font-medium">Company</th>
+               <th className="px-4 py-3 font-medium">Email</th>
+               <th className="px-4 py-3 font-medium">Phone</th>
+               <th className="px-4 py-3 font-medium">Mobile</th>
+               <th className="px-4 py-3 text-right font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {contacts.map((contact) => (
+              <tr
+                key={contact.id}
+                className={`border-b border-white/[0.04] transition-colors ${
+                  selected.has(contact.id) ? 'bg-purple-500/[0.06]' : ''
+                }`}
+              >
+                <td className="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(contact.id)}
+                    onChange={() => toggleRow(contact.id)}
+                    className="h-4 w-4 rounded border-white/20 bg-white/[0.04] accent-purple-600 cursor-pointer"
+                    aria-label={`Select ${contact.name}`}
+                  />
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-9 w-9 shrink-0 rounded-full bg-purple-600/25 flex items-center justify-center text-xs font-medium text-purple-300">
+                      {contact.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                    </div>
+                    <div className="min-w-0">
+                      <Link
+                        href={`/contacts/${contact.id}`}
+                        className="text-sm font-medium text-white hover:text-purple-300 transition-colors truncate block"
+                      >
+                        {contact.name}
+                      </Link>
+                      <p className="text-xs text-white/45 truncate">{contact.designation}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  <span className="text-sm text-white/70 truncate block max-w-[180px]">{contact.company}</span>
+                </td>
+                <td className="px-4 py-3">
+                  <span className="text-xs text-white/40 flex items-center gap-1.5 truncate max-w-[180px]">
+                    <Mail className="h-3 w-3 shrink-0" /> {contact.email}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <span className="text-xs text-white/40 flex items-center gap-1.5">
+                    <Phone className="h-3 w-3 shrink-0" /> {contact.phone}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <span className="text-xs text-white/40 flex items-center gap-1.5">
+                    <Phone className="h-3 w-3 shrink-0" /> {contact.mobile}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <div className="mt-1 flex justify-end gap-1">
+                    <DeleteRowButton
+                      action={deleteContactAction.bind(null, contact.id)}
+                      confirmLabel={`Delete ${contact.name}?`}
+                    />
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {contacts.length === 0 && (
+              <tr>
+                <td colSpan={7} className="py-10 text-center">
+                  <span className="text-sm text-white/40">No contacts yet.</span>
+                </td>
+              </tr>
             )}
-          </div>
-        )}
+          </tbody>
+        </table>
       </div>
 
       {pageCount > 1 && (

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { testWebhookIntegration } from '@/services/integration.service'
 import { requireApiSession } from '@/lib/session'
+import { logger } from '@/lib/logger'
 
 export async function POST(
   _request: Request,
@@ -12,7 +13,7 @@ export async function POST(
     const result = await testWebhookIntegration(id)
     return NextResponse.json(result)
   } catch (error) {
-    console.error('[API] Error testing webhook:', error)
+    logger.error('Error testing webhook', {}, error as Error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to test webhook' },
       { status: 500 }

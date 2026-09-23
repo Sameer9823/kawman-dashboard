@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireApiSession } from '@/lib/session'
 import { getUnreadCount } from '@/services/notification.service'
+import { logger } from '@/lib/logger'
 
 /**
  * GET /api/notifications/unread-count
@@ -14,7 +15,7 @@ export async function GET() {
 
     return NextResponse.json({ count })
   } catch (error) {
-    console.error('[API] Error fetching unread count:', error)
+    logger.error('Error fetching unread count', {}, error as Error)
     return NextResponse.json(
       { error: 'Failed to fetch unread count' },
       { status: 500 }

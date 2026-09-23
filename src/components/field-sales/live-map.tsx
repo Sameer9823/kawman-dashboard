@@ -19,10 +19,9 @@ import { Button } from '@/components/ui/button'
 import { useFieldTracking } from '@/hooks/use-field-tracking'
 import type { LiveMapVisit, VisitStatus, ActiveUserPin } from '@/types/field-sales'
 
-// MapLibre style — free, no token. Dark Matter fits the app's dark palette.
-// Fallback is an INLINE raster style (no second fetch) so "Failed to fetch
-// style.json" on a flaky/corporate network doesn't brick the map.
-const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+// MapLibre raster style — OpenStreetMap tiles, no token needed.
+// Using raster tiles as the primary style to avoid vector tile loading issues
+// that can result in a black/blank map in restricted network environments.
 const RASTER_FALLBACK_STYLE = {
   version: 8 as const,
   sources: {
@@ -115,9 +114,9 @@ export function LiveMap({
   const [mapReady, setMapReady] = React.useState(false)
   const tracking = useFieldTracking()
 
-  // ---- Map init (MapLibre, no token) — deferred + single fallback to avoid freeze ----
-  const fallbackTriedRef = React.useRef(false)
+  // ---- Map init (MapLibre, no token) — OpenStreetMap raster tiles ----
   const mountedRef = React.useRef(true)
+  const resizeObserverRef = React.useRef<ResizeObserver | null>(null)
   React.useEffect(() => {
     mountedRef.current = true
     return () => { mountedRef.current = false }
@@ -126,7 +125,6 @@ export function LiveMap({
     if (!containerRef.current || mapRef.current) return
     let map: maplibregl.Map | null = null
     let raf = 0
-    let onError: ((e: unknown) => void) | null = null
 
     const init = () => {
       if (!mountedRef.current || !containerRef.current || mapRef.current) return
@@ -141,7 +139,7 @@ export function LiveMap({
       try {
         map = new maplibregl.Map({
           container: containerRef.current!,
-          style: MAP_STYLE,
+          style: RASTER_FALLBACK_STYLE,
           center,
           zoom: all.length > 0 ? 11 : 4,
           attributionControl: false,
@@ -154,21 +152,26 @@ export function LiveMap({
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
       map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
 
-      onError = (e: unknown) => {
+      map.on('error', (e: unknown) => {
         const msg = String((e as unknown as { error?: { message?: string } })?.error?.message ?? (e as Error)?.message ?? e)
-        // Prevent infinite setStyle loop that freezes the tab (Wait/Close dialog)
-        const isStyleFetchError = msg.includes('Failed to fetch') || msg.includes('style') || msg.includes('Style')
-        if (isStyleFetchError && !fallbackTriedRef.current) {
-          fallbackTriedRef.current = true
-          try { map!.setStyle(RASTER_FALLBACK_STYLE); setMapError(null); return } catch {}
-        }
-        // Don't spam state if already showing same error — avoids render loop
         setMapError((prev) => (prev === msg.slice(0, 220) ? prev : msg.slice(0, 220)))
-      }
-      map.on('error', onError as never)
+      })
 
       // Resize after container settles (fixes 0-size init when page transition animates)
-      map.once('load', () => { try { map!.resize() } catch {} })
+      map.once('load', () => {
+        try { map!.resize() } catch {}
+        // Also set up ResizeObserver to handle container size changes
+        if (containerRef.current && !resizeObserverRef.current) {
+          resizeObserverRef.current = new ResizeObserver(() => {
+            try { mapRef.current?.resize() } catch {}
+          })
+          resizeObserverRef.current.observe(containerRef.current)
+        }
+        // Force resize after a short delay as backup (handles cases where container
+        // dimensions aren't ready at load time)
+        setTimeout(() => { try { mapRef.current?.resize() } catch {} }, 100)
+        setTimeout(() => { try { mapRef.current?.resize() } catch {} }, 500)
+      })
       mapRef.current = map
       setMapReady(true)
     }
@@ -178,13 +181,16 @@ export function LiveMap({
     return () => {
       cancelAnimationFrame(raf)
       if (map) {
-        try { if (onError) map.off('error', onError as never) } catch {}
         try { map.remove() } catch {}
       }
       // Also handle case where map was assigned to ref after closure
       const refMap = mapRef.current
       if (refMap && refMap !== map) {
         try { refMap.remove() } catch {}
+      }
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect()
+        resizeObserverRef.current = null
       }
       mapRef.current = null
       setMapReady(false)
@@ -418,10 +424,16 @@ export function LiveMap({
         <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-white/40" /> stale</span>
       </div>
 
-      <div ref={containerRef} className="h-[560px] w-full rounded-xl border border-white/10 overflow-hidden relative">
+      <div ref={containerRef} className="h-[560px] w-full rounded-xl border border-white/10 overflow-hidden relative" style={{ backgroundColor: '#0a0f1c' }}>
         {!mapReady && !mapError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#0a0f1c] text-white/30 text-xs gap-2">
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0a0f1c] text-white/30 text-xs gap-2 z-10">
             <RefreshCw className="h-4 w-4 animate-spin" /> Loading map…
+          </div>
+        )}
+        {mapError && (
+          <div className="absolute top-2 left-2 right-2 z-10 flex items-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 py-1.5 text-xs text-red-200">
+            <AlertTriangle className="h-3 w-3 shrink-0" />
+            <span>Map tiles failed to load: {mapError} — check your network.</span>
           </div>
         )}
       </div>

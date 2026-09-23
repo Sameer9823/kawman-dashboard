@@ -7,8 +7,19 @@
  * Validates required env vars at startup.
  * Call `assertEnv()` in instrumentation.ts so production crashes fast
  * with a clear message instead of failing opaquely on first DB/auth call.
+ *
+ * In development, also warns about missing optional integrations (AI,
+ * Cloudinary, Redis) so developers know which features won't work.
  */
 const REQUIRED_IN_PRODUCTION = ['DATABASE_URL', 'BETTER_AUTH_SECRET'] as const
+
+const OPTIONAL_DEV_WARNINGS: Record<string, string> = {
+  OPENAI_API_KEY: 'AI chat/completions will fail without an AI provider key',
+  GOOGLE_GENERATIVE_AI_API_KEY: 'AI chat/completions will fail without an AI provider key',
+  CLOUDINARY_CLOUD_NAME: 'File uploads will fail without Cloudinary credentials',
+  REDIS_URL: 'Background jobs (BullMQ queue) and rate-limiting cache will fall back to in-memory',
+  RESEND_API_KEY: 'Transactional emails (password reset, invites) will log to console instead',
+}
 
 export function assertEnv(): void {
   const missing: string[] = []
@@ -25,5 +36,16 @@ export function assertEnv(): void {
   const secret = process.env.BETTER_AUTH_SECRET
   if (secret && secret.length < 32) {
     console.warn('[env] BETTER_AUTH_SECRET is too short (< 32 chars) — use `openssl rand -hex 32`.')
+  }
+
+  // In development, warn about missing optional integrations so devs know
+  // which features are disabled. These are NOT required — the code degrades
+  // gracefully (AI returns an error, uploads are local-only, etc.).
+  if (!isProd) {
+    for (const [key, description] of Object.entries(OPTIONAL_DEV_WARNINGS)) {
+      if (!process.env[key]) {
+        console.warn(`[env] Optional var ${key} is not set — ${description}.`)
+      }
+    }
   }
 }

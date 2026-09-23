@@ -8,12 +8,12 @@ export const metadata = { title: 'Storage | Kawman ExAct Admin' }
 export default async function AdminStoragePage() {
   const session = await requirePermission('files.manage')
   const [fileAgg, recordingAgg, versionAgg, byUploader] = await Promise.all([
-    prisma.file.aggregate({ where: { organizationId: session.user.organizationId }, _sum: { fileSize: true }, _count: true }),
+    prisma.file.aggregate({ where: { organizationId: session.user.organizationId, uploadedById: session.user.id }, _sum: { fileSize: true }, _count: true }),
     prisma.meetingRecording.aggregate({ where: { meeting: { organizationId: session.user.organizationId } }, _sum: { fileSize: true } }),
-    prisma.fileVersion.aggregate({ where: { file: { organizationId: session.user.organizationId } }, _sum: { fileSize: true } }),
+    prisma.fileVersion.aggregate({ where: { file: { organizationId: session.user.organizationId, uploadedById: session.user.id } }, _sum: { fileSize: true } }),
     prisma.file.groupBy({
       by: ['uploadedById'],
-      where: { organizationId: session.user.organizationId },
+      where: { organizationId: session.user.organizationId, uploadedById: session.user.id },
       _sum: { fileSize: true },
       _count: { _all: true },
     }),

@@ -44,8 +44,8 @@ export interface LiveVisitMarker {
   id: string
   name: string
   status: 'In Meeting' | 'Checked-in' | 'On the way' | 'Checked-out'
-  x: number // percentage position within the map card, 0-100
-  y: number // percentage position within the map card, 0-100
+  latitude: number
+  longitude: number
 }
 
 export interface LeadSource {

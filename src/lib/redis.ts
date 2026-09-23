@@ -1,5 +1,6 @@
 import 'server-only'
 import Redis from 'ioredis'
+import { logger } from '@/lib/logger'
 
 /**
  * Redis client for shared state across server instances.
@@ -27,7 +28,7 @@ export function getRedisClient(): Redis | null {
     })
 
     redisClient.on('error', (err) => {
-      console.error('[REDIS] Connection error:', err.message)
+      logger.error('Redis connection error', {}, err)
     })
 
     redisClient.on('connect', () => {
@@ -36,7 +37,7 @@ export function getRedisClient(): Redis | null {
 
     return redisClient
   } catch (error) {
-    console.error('[REDIS] Failed to create client:', error)
+    logger.error('Failed to create Redis client', {}, error as Error)
     return null
   }
 }

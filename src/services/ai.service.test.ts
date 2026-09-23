@@ -108,7 +108,7 @@ describe('ai.service', () => {
 
       const result = await generateEmployeeDailySummary('report-1')
 
-      expect(result).toEqual({ id: 'ai-report-1' })
+      expect(result).toEqual({ success: true, data: { id: 'ai-report-1' } })
       expect(mockPrisma.aIReport.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
@@ -120,12 +120,12 @@ describe('ai.service', () => {
       )
     })
 
-    it('throws when no reports found for date', async () => {
+    it('returns error when no reports found for date', async () => {
       mockPrisma.dailyReport.findFirst.mockResolvedValue(null)
 
-      await expect(generateEmployeeDailySummary('report-1')).rejects.toThrow(
-        'Daily report not found'
-      )
+      const result = await generateEmployeeDailySummary('report-1')
+
+      expect(result).toEqual({ success: false, error: 'Daily report not found' })
     })
   })
 
@@ -162,7 +162,7 @@ describe('ai.service', () => {
 
       const result = await generateFieldSalesDailySummary()
 
-      expect(result).toEqual({ id: 'ai-report-2' })
+      expect(result).toEqual({ success: true, data: { id: 'ai-report-2' } })
       expect(mockPrisma.aIReport.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({

@@ -11,13 +11,27 @@ import type { UserOption } from '@/services/user.service'
 
 const initialState: ContactFormState = {}
 
+export interface ContactInitialValues {
+  name?: string
+  company?: string
+  designation?: string
+  email?: string
+  phone?: string
+  mobile?: string
+}
+
 export function ContactForm({
   owners,
+  initialValues,
 }: {
   owners: UserOption[]
+  initialValues?: ContactInitialValues
 }) {
   const [state, formAction, pending] = useActionState(createContactAction, initialState)
   const router = useRouter()
+
+  const values = initialValues ?? {}
+
   useEffect(() => {
     if (state.error) toast.error(state.error)
     if (state.success && state.createdId) {
@@ -30,22 +44,22 @@ export function ContactForm({
     <Card className="bg-[#0a111c]/80 border-white/[0.08] p-6">
       <form action={formAction} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Full name *" error={state.fieldErrors?.name}>
-          <Input name="name" placeholder="Anjali Mehta" required />
+          <Input name="name" placeholder="Anjali Mehta" required defaultValue={values.name || undefined} />
         </Field>
         <Field label="Company" error={state.fieldErrors?.company}>
-          <Input name="company" placeholder="Acme Nutraceuticals" />
+          <Input name="company" placeholder="Acme Nutraceuticals" defaultValue={values.company || undefined} />
         </Field>
         <Field label="Designation" error={state.fieldErrors?.designation}>
-          <Input name="designation" placeholder="Procurement Head" />
+          <Input name="designation" placeholder="Procurement Head" defaultValue={values.designation || undefined} />
         </Field>
         <Field label="Email" error={state.fieldErrors?.email}>
-          <Input name="email" type="email" placeholder="anjali@acme.com" />
+          <Input name="email" type="email" placeholder="anjali@acme.com" defaultValue={values.email || undefined} />
         </Field>
         <Field label="Phone" error={state.fieldErrors?.phone}>
-          <Input name="phone" placeholder="+91 22 4000 1000" />
+          <Input name="phone" placeholder="+91 22 4000 1000" defaultValue={values.phone || undefined} />
         </Field>
         <Field label="Mobile" error={state.fieldErrors?.mobile}>
-          <Input name="mobile" placeholder="+91 98765 43210" />
+          <Input name="mobile" placeholder="+91 98765 43210" defaultValue={values.mobile || undefined} />
         </Field>
         <Field label="Owner" error={state.fieldErrors?.ownerId}>
           <select

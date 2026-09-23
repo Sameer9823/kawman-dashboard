@@ -6,6 +6,7 @@ import { customSession } from 'better-auth/plugins/custom-session'
 import { prisma } from '@/lib/db'
 import { getUserPermissions } from '@/services/permission.service'
 import { sendPasswordResetEmail } from '@/lib/email'
+import { logger } from '@/lib/logger'
 
 /**
  * Central auth instance. Everything server-side that needs to know
@@ -106,7 +107,7 @@ export const auth = betterAuth({
           },
         }
       } catch (err) {
-        console.error('[auth:customSession] Prisma error (returning bare session):', err)
+        logger.error('customSession Prisma error', {}, err as Error)
         return {
           session,
           user: {

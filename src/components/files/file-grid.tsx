@@ -101,7 +101,7 @@ export function FileGrid({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <a href={file.secureUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 cursor-pointer">
+                      <a href={`/api/files/${file.id}/download`} target="_blank" rel="noreferrer" className="flex items-center gap-2 cursor-pointer">
                         <Download className="h-3.5 w-3.5" />
                         Download
                       </a>

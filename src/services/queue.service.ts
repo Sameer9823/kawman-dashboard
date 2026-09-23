@@ -1,10 +1,6 @@
 import 'server-only'
 import { addJob, QUEUE_NAMES } from '@/lib/queue'
-import type { EmailJobData } from '@/workers/email.worker'
-import type { NotificationJobData } from '@/workers/notification.worker'
-import type { WebhookJobData } from '@/workers/webhook.worker'
-import type { AIReportJobData } from '@/workers/ai-report.worker'
-import type { FileProcessingJobData } from '@/workers/file-processing.worker'
+import type { EmailJobData, NotificationJobData, WebhookJobData, AIReportJobData, FileProcessingJobData } from '@/workers/types'
 
 /**
  * Queue Service

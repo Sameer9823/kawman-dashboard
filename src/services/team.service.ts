@@ -2,6 +2,7 @@ import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import type { Prisma } from '@/generated/prisma'
+import { ok, err, Result } from '@/lib/result'
 
 export interface TeamDashboardMetrics {
   totalEmployees: number
@@ -59,10 +60,10 @@ function formatDateKey(date: Date): string {
   return date.toISOString().slice(0, 10)
 }
 
-export async function getTeamDashboardMetrics(dateRange?: DateRange): Promise<TeamDashboardMetrics> {
+export async function getTeamDashboardMetrics(dateRange?: DateRange): Promise<Result<TeamDashboardMetrics>> {
   const session = await requireApiSession()
   if (!(session.user.permissions as string[]).includes('team.view_all')) {
-    throw new Error('Forbidden: missing team.view_all')
+    return err('Forbidden: missing team.view_all')
   }
   const organizationId = session.user.organizationId
 
@@ -156,7 +157,7 @@ export async function getTeamDashboardMetrics(dateRange?: DateRange): Promise<Te
 
   const productivity = Array.from(productivityMap.values()).sort((a, b) => a.date.localeCompare(b.date))
 
-  return {
+  return ok({
     totalEmployees: users.length,
     onlineEmployees: onlineUserIds.size,
     offlineEmployees: users.length - onlineUserIds.size,
@@ -171,7 +172,7 @@ export async function getTeamDashboardMetrics(dateRange?: DateRange): Promise<Te
       createdAt: a.createdAt.toISOString(),
     })),
     productivity,
-  }
+  })
 }
 
 export type ActivityLevel = 'high' | 'medium' | 'low' | 'none'
@@ -216,9 +217,9 @@ function deriveActivityLevel(report: { tasksCompletedCount: number; crmRecordsUp
   return 'low'
 }
 
-export async function getTeamMembers(): Promise<TeamMemberRow[]> {
+export async function getTeamMembers(): Promise<Result<TeamMemberRow[]>> {
   const session = await requireApiSession()
-  if (!(session.user.permissions as string[]).includes('team.view_all')) throw new Error('Forbidden: missing team.view_all')
+  if (!(session.user.permissions as string[]).includes('team.view_all')) return err('Forbidden: missing team.view_all')
 
   const organizationId = session.user.organizationId
 
@@ -228,7 +229,7 @@ export async function getTeamMembers(): Promise<TeamMemberRow[]> {
     orderBy: { name: 'asc' },
   })
 
-  if (users.length === 0) return []
+  if (users.length === 0) return ok([])
 
   const userIds = users.map((u) => u.id)
 
@@ -271,7 +272,7 @@ export async function getTeamMembers(): Promise<TeamMemberRow[]> {
     if (mins > 0) liveMinutesByUserId.set(uid, mins)
   }
 
-  return users.map((u) => {
+  return ok(users.map((u) => {
     const report = reportByUserId.get(u.id) ?? null
     const hasSubmittedTodayReport = report?.status === 'SUBMITTED'
     const liveMins = liveMinutesByUserId.get(u.id) ?? 0
@@ -294,5 +295,5 @@ export async function getTeamMembers(): Promise<TeamMemberRow[]> {
       hasSubmittedTodayReport: !!hasSubmittedTodayReport,
       activityLevel: deriveActivityLevel(report ? { tasksCompletedCount: report.tasksCompletedCount, crmRecordsUpdatedCount: report.crmRecordsUpdatedCount, leadsWorkedOnCount: report.leadsWorkedOnCount } : null),
     }
-  })
+  }))
 }

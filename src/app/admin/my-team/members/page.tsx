@@ -3,13 +3,15 @@ import { requirePermission } from '@/lib/session'
 import { PageHeader } from '@/components/crm/page-header'
 import { getTeamMembers } from '@/services/team.service'
 import MembersTableClient from './members-table-client'
+import { isOk } from '@/lib/result'
 
 export const metadata = { title: 'Team Members | Kawman ExAct' }
 
 export default async function TeamMembersPage() {
   await requirePermission('team.view_all')
 
-  const members = await getTeamMembers()
+  const membersResult = await getTeamMembers()
+  const members = isOk(membersResult) ? membersResult.data : []
 
   return (
     <MainLayout>

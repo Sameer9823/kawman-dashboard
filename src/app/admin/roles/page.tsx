@@ -4,13 +4,15 @@ import { MainLayout } from '@/components/layout'
 import { requirePermission } from '@/lib/session'
 import { PageHeader } from '@/components/crm/page-header'
 import { getRoles } from '@/services/role.service'
+import { isOk } from '@/lib/result'
 
 export const metadata = { title: 'Roles & Permissions | Kawman ExAct Admin' }
 
 export default async function AdminRolesPage() {
   await requirePermission('roles.view')
 
-  const roles = await getRoles()
+  const rolesResult = await getRoles()
+  const roles = isOk(rolesResult) ? rolesResult.data : []
 
   return (
     <MainLayout>

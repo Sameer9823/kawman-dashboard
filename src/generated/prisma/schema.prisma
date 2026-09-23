@@ -47,6 +47,7 @@ model Organization {
   users           User[]
   liveLocations   UserLiveLocation[]
   dailyReports    DailyReport[]
+  aiUsages        AIUsage[]
 
   @@index([slug])
   @@index([createdAt])
@@ -107,6 +108,7 @@ model User {
   roles                  UserRole[]
   visitReports           VisitReport[]        @relation("VisitReportCreator")
   dailyReports           DailyReport[]
+  aiUsages               AIUsage[]
 
   @@index([organizationId])
   @@index([email])
@@ -896,6 +898,24 @@ model AIMessage {
   @@index([createdAt])
 }
 
+model AIUsage {
+  id             String       @id @default(cuid())
+  organizationId String
+  userId         String
+  model          String
+  provider       String
+  inputTokens    Int
+  outputTokens   Int
+  estimatedCost  Float
+  feature        String // 'chat', 'report', 'summary', 'data-analysis'
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@index([userId, createdAt])
+}
+
 model AIInsight {
   id             String       @id @default(cuid())
   type           String
@@ -976,19 +996,40 @@ model AuditLog {
 }
 
 model Integration {
-  id             String       @id @default(cuid())
-  name           String
-  type           String
-  config         Json
-  isActive       Boolean      @default(true)
-  organizationId String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id                String            @id @default(cuid())
+  name              String
+  type              String
+  config            Json
+  isActive          Boolean           @default(true)
+  organizationId    String
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  organization      Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  webhookDeliveries WebhookDelivery[]
 
   @@unique([organizationId, name])
   @@index([organizationId])
   @@index([type])
+}
+
+model WebhookDelivery {
+  id             String      @id @default(cuid())
+  integrationId  String
+  event          String
+  url            String
+  payload        Json
+  responseStatus Int?
+  responseBody   String?
+  error          String?
+  success        Boolean
+  attempt        Int         @default(1)
+  deliveredAt    DateTime    @default(now())
+  integration    Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([integrationId])
+  @@index([event])
+  @@index([success])
+  @@index([deliveredAt])
 }
 
 enum UserStatus {

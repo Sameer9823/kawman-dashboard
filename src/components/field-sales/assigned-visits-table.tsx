@@ -1,16 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { MapPin, Loader2, Building2, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Badge, type BadgeVariant } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { format } from 'date-fns'
-import type { FieldVisit, VisitStatus } from '@/types/field-sales'
-import { checkInAction, deleteFieldVisitAction, updateVisitStatusAction } from '@/app/field-sales/actions'
-import { DeleteRowButton } from '@/components/crm/delete-row-button'
-import { VisitRow, STATUS_LABEL, STATUS_VARIANT } from './visit-row'
+import type { FieldVisit } from '@/types/field-sales'
+import { updateVisitStatusAction } from '@/app/field-sales/actions'
+import { VisitRow } from './visit-row'
 
 interface AssignedVisitsTableProps {
   visits: FieldVisit[]

@@ -12,8 +12,9 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const session = await requirePermission('users.view')
 
   const { id } = await params
-  const [user, departments, teams] = await Promise.all([getOrgUserById(id), getDepartments(), getTeams()])
-  if (!user) notFound()
+  const [userResult, departments, teams] = await Promise.all([getOrgUserById(id), getDepartments(), getTeams()])
+  if (!userResult.success || !userResult.data) notFound()
+  const user = userResult.data
 
   return (
     <MainLayout>

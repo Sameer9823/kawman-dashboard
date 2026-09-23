@@ -8,6 +8,7 @@ import { CreateFolderButton } from '@/components/files/create-folder-button'
 import { getFolderContents, getFolderPath } from '@/services/file.service'
 import { getOrgUserOptions } from '@/services/user.service'
 import { isCloudinaryConfigured } from '@/lib/cloudinary'
+import { isOk } from '@/lib/result'
 
 export const metadata = { title: 'My Files | Kawman ExAct' }
 
@@ -15,11 +16,12 @@ export default async function MyFilesPage({ searchParams }: { searchParams: Prom
   const { folder } = await searchParams
   const folderId = folder || null
 
-  const [{ folders, files }, path, users] = await Promise.all([
+  const [{ folders, files }, path, usersResult] = await Promise.all([
     getFolderContents(folderId),
     getFolderPath(folderId),
     getOrgUserOptions(),
   ])
+  const users = isOk(usersResult) ? usersResult.data : []
 
   return (
     <MainLayout>

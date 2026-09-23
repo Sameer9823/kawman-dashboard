@@ -636,6 +636,19 @@ exports.Prisma.AIMessageScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.AIUsageScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  userId: 'userId',
+  model: 'model',
+  provider: 'provider',
+  inputTokens: 'inputTokens',
+  outputTokens: 'outputTokens',
+  estimatedCost: 'estimatedCost',
+  feature: 'feature',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.AIInsightScalarFieldEnum = {
   id: 'id',
   type: 'type',
@@ -695,6 +708,20 @@ exports.Prisma.IntegrationScalarFieldEnum = {
   organizationId: 'organizationId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.WebhookDeliveryScalarFieldEnum = {
+  id: 'id',
+  integrationId: 'integrationId',
+  event: 'event',
+  url: 'url',
+  payload: 'payload',
+  responseStatus: 'responseStatus',
+  responseBody: 'responseBody',
+  error: 'error',
+  success: 'success',
+  attempt: 'attempt',
+  deliveredAt: 'deliveredAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -888,11 +915,13 @@ exports.Prisma.ModelName = {
   MeetingSummary: 'MeetingSummary',
   AIConversation: 'AIConversation',
   AIMessage: 'AIMessage',
+  AIUsage: 'AIUsage',
   AIInsight: 'AIInsight',
   AIReport: 'AIReport',
   Notification: 'Notification',
   AuditLog: 'AuditLog',
-  Integration: 'Integration'
+  Integration: 'Integration',
+  WebhookDelivery: 'WebhookDelivery'
 };
 
 /**

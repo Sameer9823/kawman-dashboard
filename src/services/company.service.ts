@@ -160,6 +160,8 @@ export async function findOrCreateCompanyByName(input: {
   name: string
   organizationId: string
   ownerId: string
+  website?: string | null
+  address?: string | null
 }): Promise<{ id: string; name: string } | null> {
   const trimmed = input.name?.trim()
   if (!trimmed) return null
@@ -169,7 +171,13 @@ export async function findOrCreateCompanyByName(input: {
   })
   if (existing) return existing
   const created = await prisma.company.create({
-    data: { name: trimmed, organizationId: input.organizationId, ownerId: input.ownerId },
+    data: {
+      name: trimmed,
+      organizationId: input.organizationId,
+      ownerId: input.ownerId,
+      website: input.website || undefined,
+      address: input.address || undefined,
+    },
     select: { id: true, name: true },
   })
   return created

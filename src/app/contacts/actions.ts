@@ -166,3 +166,102 @@ export async function deleteContactAction(id: string): Promise<{ success?: boole
   revalidatePath('/contacts')
   return { success: true }
 }
+
+interface ScannedContactData {
+  name: string
+  company: string
+  designation: string
+  phone: string
+  mobile: string
+  email: string
+  website: string
+  address: string
+}
+
+export async function scanAndCreateContactAction(scanned: ScannedContactData): Promise<{ success?: boolean; error?: string; createdId?: string }> {
+  const session = await requireApiSession()
+  if (!(session.user.permissions as string[]).includes(PERMISSIONS['contacts.create'].name)) {
+    throw new Error('You do not have permission to do this.')
+  }
+
+  const name = scanned.name !== '-' ? scanned.name : ''
+  if (name.length < 2) {
+    return { error: 'Unable to detect a valid name from the business card.' }
+  }
+
+  const companyName = scanned.company !== '-' ? scanned.company : undefined
+  const company = companyName
+    ? await findOrCreateCompanyByName({
+        name: companyName,
+        organizationId: session.user.organizationId,
+        ownerId: session.user.id,
+      })
+    : null
+  const companyId = company?.id ?? null
+
+  const contact = await prisma.contact.create({
+    data: {
+      name,
+      designation: scanned.designation !== '-' ? scanned.designation : null,
+      email: scanned.email !== '-' ? scanned.email : null,
+      phone: scanned.phone !== '-' ? scanned.phone : null,
+      mobile: scanned.mobile !== '-' ? scanned.mobile : null,
+      companyId,
+      organizationId: session.user.organizationId,
+      ownerId: session.user.id,
+      lastActivityAt: new Date(),
+    },
+  })
+
+  await prisma.activity.create({
+    data: {
+      type: 'CONTACT_CREATED',
+      description: `${session.user.name} added contact "${contact.name}" via business card scan`,
+      organizationId: session.user.organizationId,
+      actorId: session.user.id,
+      contactId: contact.id,
+      companyId,
+    },
+  })
+
+  await logAudit({
+    organizationId: session.user.organizationId,
+    actorId: session.user.id,
+    action: 'CREATE',
+    resource: 'Contact',
+    resourceId: contact.id,
+    metadata: { name: contact.name, companyId, source: 'business_card_scan' },
+  })
+
+  revalidatePath('/contacts')
+  return { success: true, createdId: contact.id }
+}
+
+export async function bulkDeleteContactsAction(ids: string[]): Promise<{ success?: boolean; error?: string; deleted?: number }> {
+  const session = await requireApiSession()
+  if (!(session.user.permissions as string[]).includes(PERMISSIONS['contacts.delete'].name)) {
+    throw new Error('You do not have permission to do this.')
+  }
+
+  if (!ids || ids.length === 0) {
+    return { error: 'No contacts selected.' }
+  }
+
+  const result = await prisma.contact.deleteMany({
+    where: {
+      id: { in: ids },
+      organizationId: session.user.organizationId,
+    },
+  })
+
+  await logAudit({
+    organizationId: session.user.organizationId,
+    actorId: session.user.id,
+    action: 'DELETE',
+    resource: 'Contact',
+    metadata: { count: result.count, ids },
+  })
+
+  revalidatePath('/contacts')
+  return { success: true, deleted: result.count }
+}

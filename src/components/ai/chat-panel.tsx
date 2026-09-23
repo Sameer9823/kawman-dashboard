@@ -46,6 +46,7 @@ export function ChatPanel({
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const idCounter = React.useRef(0)
   const [mobileListOpen, setMobileListOpen] = React.useState(false)
+  const [sidebarOpen, setSidebarOpen] = React.useState(true) // Desktop sidebar state
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null)
   const [deleting, setDeleting] = React.useState(false)
 
@@ -206,7 +207,7 @@ export function ChatPanel({
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4 h-[calc(100vh-9.5rem)]">
+    <div className={cn('grid gap-4 h-[calc(100vh-9.5rem)]', sidebarOpen ? 'lg:grid-cols-[260px_1fr]' : 'lg:grid-cols-[0_1fr]')}>
       {/* Conversation list — desktop sidebar + mobile sheet */}
       {mobileListOpen && (
         <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setMobileListOpen(false)}>
@@ -233,46 +234,51 @@ export function ChatPanel({
           </div>
         </div>
       )}
-      <div className="hidden lg:flex flex-col rounded-xl border border-white/10 bg-white/5 overflow-hidden">
-        <div className="p-3 border-b border-white/10">
-          <Button size="sm" variant="secondary" className="w-full gap-1.5" onClick={newChat}>
-            <Plus className="h-3.5 w-3.5" />
-            New chat
-          </Button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
-          {conversations.length === 0 && (
-            <p className="text-white/40 text-xs px-2 py-4 text-center">No conversations yet</p>
-          )}
-          {conversations.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => loadConversation(c.id)}
-              className={cn(
-                'w-full text-left px-3 py-2 rounded-lg text-sm group flex items-start justify-between gap-2 transition-colors',
-                activeId === c.id ? 'bg-purple-500/15 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'
-              )}
-            >
-              <span className="truncate">
-                <span className="block truncate font-medium">{c.title || 'Untitled chat'}</span>
-                {c.lastMessagePreview && (
-                  <span className="block truncate text-xs text-white/35">{c.lastMessagePreview}</span>
+      {sidebarOpen && (
+        <div className="hidden lg:flex flex-col rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+          <div className="p-3 border-b border-white/10">
+            <Button size="sm" variant="secondary" className="w-full gap-1.5" onClick={newChat}>
+              <Plus className="h-3.5 w-3.5" />
+              New chat
+            </Button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {conversations.length === 0 && (
+              <p className="text-white/40 text-xs px-2 py-4 text-center">No conversations yet</p>
+            )}
+            {conversations.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => loadConversation(c.id)}
+                className={cn(
+                  'w-full text-left px-3 py-2 rounded-lg text-sm group flex items-start justify-between gap-2 transition-colors',
+                  activeId === c.id ? 'bg-purple-500/15 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'
                 )}
-              </span>
-              <Trash2
-                className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-60 hover:!opacity-100 mt-0.5"
-                onClick={(e) => { e.stopPropagation(); setDeleteTarget(c.id) }}
-              />
-            </button>
-          ))}
+              >
+                <span className="truncate">
+                  <span className="block truncate font-medium">{c.title || 'Untitled chat'}</span>
+                  {c.lastMessagePreview && (
+                    <span className="block truncate text-xs text-white/35">{c.lastMessagePreview}</span>
+                  )}
+                </span>
+                <Trash2
+                  className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-60 hover:!opacity-100 mt-0.5"
+                  onClick={(e) => { e.stopPropagation(); setDeleteTarget(c.id) }}
+                />
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Chat area */}
       <div className="flex flex-col rounded-xl border border-white/10 bg-white/5 overflow-hidden min-h-0">
-        <div className="flex lg:hidden items-center gap-2 p-2 border-b border-white/10 shrink-0">
-          <Button size="sm" variant="ghost" className="gap-1.5 text-white/70" onClick={() => setMobileListOpen(true)}>
+        <div className="flex items-center gap-2 p-2 border-b border-white/10 shrink-0">
+          <Button size="sm" variant="ghost" className="gap-1.5 text-white/70 lg:hidden" onClick={() => setMobileListOpen(true)}>
             <Bot className="h-4 w-4" /> Chats {conversations.length > 0 && <span className="text-white/40">· {conversations.length}</span>}
+          </Button>
+          <Button size="sm" variant="ghost" className="gap-1.5 text-white/70 hidden lg:flex" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <Bot className="h-4 w-4" /> {sidebarOpen ? 'Hide' : 'Show'} sidebar
           </Button>
           <Button size="sm" variant="secondary" className="ml-auto gap-1.5" onClick={newChat}><Plus className="h-3.5 w-3.5" /> New chat</Button>
         </div>

@@ -1,5 +1,6 @@
 import 'server-only'
 import { getRedisClient } from '@/lib/redis'
+import { logger } from '@/lib/logger'
 
 /**
  * Sliding-window rate limiter with Redis backend (shared across instances)
@@ -85,7 +86,7 @@ export async function checkRateLimit(key: string, max: number, windowSeconds: nu
         remaining: result[2],
       }
     } catch (error) {
-      console.error('[RATE-LIMIT] Redis error, falling back to memory:', error)
+      logger.error('Redis error, falling back to memory', {}, error as Error)
       // Fall through to memory fallback
     }
   }
@@ -135,7 +136,7 @@ export async function getRateLimitStatus(key: string, max: number): Promise<Rate
       }
       return { allowed: true, retryAfterSeconds: 0, remaining: max }
     } catch (error) {
-      console.error('[RATE-LIMIT] Redis error getting status:', error)
+      logger.error('Redis error getting status', {}, error as Error)
     }
   }
 

@@ -1,7 +1,8 @@
+
 'use client'
 
 import { useActionState, useState, useTransition } from 'react'
-import { Plug, Plus, Trash2, X } from 'lucide-react'
+import { Plug, Plus, Trash2, X, ExternalLink, RotateCcw, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -52,50 +53,220 @@ export function IntegrationsView({
 function IntegrationRow({ integration }: { integration: IntegrationItem }) {
   const [pending, startTransition] = useTransition()
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [showDeliveries, setShowDeliveries] = useState(false)
+  const [deliveries, setDeliveries] = useState<WebhookDeliveryItem[]>([])
+  const [deliveriesLoading, setDeliveriesLoading] = useState(false)
+  const [deliveriesOffset, setDeliveriesOffset] = useState(0)
+  const [deliveriesHasMore, setDeliveriesHasMore] = useState(true)
+  const [testPending, setTestPending] = useState(false)
+
+  const isWebhook = integration.type === 'webhook'
+
+  async function loadDeliveries(append = false) {
+    if (deliveriesLoading) return
+    setDeliveriesLoading(true)
+    try {
+      const res = await fetch('/api/admin/integrations/' + integration.id + '/deliveries?limit=20&offset=' + (append ? deliveriesOffset : 0))
+      if (res.ok) {
+        const data = await res.json()
+        if (append) {
+          setDeliveries((prev) => [...prev, ...data.deliveries])
+        } else {
+          setDeliveries(data.deliveries)
+        }
+        setDeliveriesOffset(data.deliveries.length)
+        setDeliveriesHasMore(data.hasMore)
+      }
+    } catch (error) {
+      console.error('Failed to load deliveries:', error)
+    } finally {
+      setDeliveriesLoading(false)
+    }
+  }
+
+  async function handleTest() {
+    if (testPending) return
+    setTestPending(true)
+    try {
+      const res = await fetch('/api/admin/integrations/' + integration.id + '/test', { method: 'POST' })
+      const data = await res.json()
+      if (data.success) {
+        alert('Test webhook queued successfully!')
+        setShowDeliveries(true)
+        setDeliveriesOffset(0)
+        await loadDeliveries(false)
+      } else {
+        alert('Failed to queue test: ' + data.message)
+      }
+    } catch (error) {
+      alert('Failed to test webhook')
+    } finally {
+      setTestPending(false)
+    }
+  }
+
+  async function handleRetry(deliveryId: string) {
+    try {
+      const res = await fetch('/api/admin/integrations/' + integration.id + '/retry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deliveryId }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert('Retry queued successfully!')
+        await loadDeliveries(false)
+      } else {
+        alert('Failed to queue retry: ' + data.message)
+      }
+    } catch (error) {
+      alert('Failed to retry webhook')
+    }
+  }
 
   return (
-    <div className="flex items-center gap-3 p-4">
-      <div className="h-9 w-9 rounded-lg bg-purple-500/15 flex items-center justify-center shrink-0">
-        <Plug className="h-4 w-4 text-purple-400" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-white truncate">{integration.name}</p>
-          <Badge variant={integration.isActive ? 'success' : 'neutral'}>
-            {integration.isActive ? 'Active' : 'Paused'}
-          </Badge>
+    <>
+      <div className="flex items-center gap-3 p-4">
+        <div className="h-9 w-9 rounded-lg bg-purple-500/15 flex items-center justify-center shrink-0">
+          <Plug className="h-4 w-4 text-purple-400" />
         </div>
-        <p className="text-xs text-white/40 truncate">
-          {integration.type} · {integration.configSummary} · added {formatDate(integration.createdAt)}
-        </p>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium text-white truncate">{integration.name}</p>
+            <Badge variant={integration.isActive ? 'success' : 'neutral'}>
+              {integration.isActive ? 'Active' : 'Paused'}
+            </Badge>
+          </div>
+          <p className="text-xs text-white/40 truncate">
+            {integration.type} · {integration.configSummary} · added {formatDate(integration.createdAt)}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {isWebhook && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleTest}
+              disabled={testPending}
+              className="gap-1.5"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Test
+            </Button>
+          )}
+          {isWebhook && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setShowDeliveries(!showDeliveries)
+                if (!showDeliveries) {
+                  setDeliveriesOffset(0)
+                  loadDeliveries(false)
+                }
+              }}
+              className="gap-1.5"
+            >
+              {showDeliveries ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              History
+            </Button>
+          )}
+          <button
+            onClick={() => startTransition(() => toggleIntegrationAction(integration.id, !integration.isActive))}
+            disabled={pending}
+            className="text-xs px-2.5 py-1 rounded-full border border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06] transition-colors shrink-0"
+          >
+            {integration.isActive ? 'Pause' : 'Activate'}
+          </button>
+          <button
+            onClick={() => setConfirmOpen(true)}
+            disabled={pending}
+            className="h-7 w-7 shrink-0 rounded-lg flex items-center justify-center text-white/30 hover:text-red-400 transition-colors"
+            title="Remove"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          title={"Remove \"" + integration.name + "\"?"}
+          description="This will disconnect the integration."
+          confirmLabel="Remove"
+          variant="destructive"
+          loading={pending}
+          onConfirm={() => startTransition(() => deleteIntegrationAction(integration.id))}
+        />
       </div>
-      <button
-        onClick={() => startTransition(() => toggleIntegrationAction(integration.id, !integration.isActive))}
-        disabled={pending}
-        className="text-xs px-2.5 py-1 rounded-full border border-white/[0.08] text-white/60 hover:text-white hover:bg-white/[0.06] transition-colors shrink-0"
-      >
-        {integration.isActive ? 'Pause' : 'Activate'}
-      </button>
-      <button
-        onClick={() => setConfirmOpen(true)}
-        disabled={pending}
-        className="h-7 w-7 shrink-0 rounded-lg flex items-center justify-center text-white/30 hover:text-red-400 transition-colors"
-        title="Remove"
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </button>
-      <ConfirmDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        title={`Remove "${integration.name}"?`}
-        description="This will disconnect the integration."
-        confirmLabel="Remove"
-        variant="destructive"
-        loading={pending}
-        onConfirm={() => startTransition(() => deleteIntegrationAction(integration.id))}
-      />
-    </div>
+
+      {showDeliveries && isWebhook && (
+        <div className="border-t border-white/[0.05] bg-white/[0.02] p-4">
+          <div className="space-y-2">
+            {deliveries.length === 0 && !deliveriesLoading && (
+              <p className="text-sm text-white/40 text-center py-4">No deliveries yet.</p>
+            )}
+            {deliveries.map((d) => (
+              <div
+                key={d.id}
+                className={"flex items-center gap-3 p-3 rounded-lg " + (d.success ? 'bg-emerald-500/10' : 'bg-red-500/10') + " border " + (d.success ? 'border-emerald-500/20' : 'border-red-500/20')}
+              >
+                <div className={"h-2 w-2 rounded-full " + (d.success ? 'bg-emerald-400' : 'bg-red-400') + " shrink-0"} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">{d.event}</p>
+                  <p className="text-xs text-white/50 truncate">{d.url}</p>
+                  <p className="text-xs text-white/40">
+                    {formatDate(d.deliveredAt)} · Attempt {d.attempt} · {d.responseStatus ? 'HTTP ' + d.responseStatus : d.error || 'No response'}
+                  </p>
+                </div>
+                {!d.success && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRetry(d.id)}
+                    className="gap-1.5 text-red-400 hover:bg-red-500/10"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    Retry
+                  </Button>
+                )}
+              </div>
+            ))}
+            {deliveriesHasMore && (
+              <div className="text-center pt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => loadDeliveries(true)}
+                  disabled={deliveriesLoading}
+                  className="w-full"
+                >
+                  {deliveriesLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Loading...
+                    </>
+                  ) : (
+                    'Load more'
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   )
+}
+
+interface WebhookDeliveryItem {
+  id: string
+  event: string
+  url: string
+  success: boolean
+  responseStatus: number | null
+  error: string | null
+  attempt: number
+  deliveredAt: string
 }
 
 function NewIntegrationForm({ types, onDone }: { types: readonly IntegrationType[]; onDone: () => void }) {

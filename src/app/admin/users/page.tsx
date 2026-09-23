@@ -20,7 +20,20 @@ const STATUS_VARIANT: Record<string, 'success' | 'neutral' | 'danger' | 'warning
 export default async function AdminUsersPage() {
   await requirePermission('users.view')
 
-  const users = await getOrgUsers()
+  const usersResult = await getOrgUsers()
+  if (!usersResult.success) {
+    return (
+      <MainLayout>
+        <div className="space-y-6">
+          <PageHeader title="Users" subtitle="Error loading users" />
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">
+            {usersResult.error}
+          </div>
+        </div>
+      </MainLayout>
+    )
+  }
+  const users = usersResult.data
 
   return (
     <MainLayout>

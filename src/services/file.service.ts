@@ -23,26 +23,22 @@ async function logActivity(fileId: string, userId: string, action: string, metad
 // Uses the FilePermission model, which already existed in the schema
 // with a folderId column but had zero application code reading or
 // writing it. Semantics are private-by-default — a folder with NO
-// grants is visible ONLY to its creator and files.manage holders
-// (Admin / Super Admin). Employees see an admin's folder only after
-// an explicit FilePermission grant via Manage access:
+// grants is visible ONLY to its creator. Even users with files.manage
+// (Admin / Super Admin) must have an explicit FilePermission grant
+// or be the creator to access a folder.
 //
-//   - `files.manage` permission always sees everything (admin bypass).
 //   - The folder's creator always has access.
-//   - A folder with zero FilePermission rows is private to its
-//     creator + files.manage (NOT open to the whole org).
+//   - A folder with zero FilePermission rows is private to its creator.
 //   - Any folder becomes visible to a user only if they are the
-//     creator, hold files.manage, or have an explicit FilePermission
-//     grant on that folder.
-//
-// Only user-level grants are wired up below. The schema also supports
-// team- and department-level grants (FilePermission.teamId /
-// .departmentId) for exactly this purpose — extending
-// canAccessFolder()/grantFolderAccess() to check the caller's team and
-// department is the natural next step, left out here since the session
-// object doesn't currently carry teamId/departmentId (see lib/session.ts)
-// and adding that lookup deserved its own review rather than being
-// folded in silently.
+//     creator or have an explicit FilePermission grant on that folder.
+//   - Only user-level grants are wired up below. The schema also supports
+//     team- and department-level grants (FilePermission.teamId /
+//     .departmentId) for exactly this purpose — extending
+//     canAccessFolder()/grantFolderAccess() to check the caller's team and
+//     department is the natural next step, left out here since the session
+//     object doesn't currently carry teamId/departmentId (see lib/session.ts)
+//     and adding that lookup deserved its own review rather than being
+//     folded in silently.
 // ============================================================
 
 async function canAccessFolder(
@@ -51,8 +47,6 @@ async function canAccessFolder(
   organizationId: string,
   permissions: string[]
 ): Promise<boolean> {
-  if ((permissions as string[]).includes('files.manage')) return true
-
   const folder = await prisma.folder.findFirst({
     where: { id: folderId, organizationId },
     select: { createdById: true },
@@ -60,9 +54,8 @@ async function canAccessFolder(
   if (!folder) return false
   if (folder.createdById === userId) return true
 
-  // Folders are private by default: admin-created folders are NOT visible
-  // to employees until an explicit FilePermission grant is created via
-  // Manage access. No "open if zero grants" fallback.
+  // Folders are private by default — even admins must have an explicit
+  // FilePermission grant or be the creator to access a folder.
   const ownGrant = await prisma.filePermission.findFirst({ where: { folderId, userId } })
   return Boolean(ownGrant)
 }
@@ -73,7 +66,6 @@ async function filterAccessibleFolders(
   userId: string,
   permissions: string[]
 ): Promise<Set<string>> {
-  if ((permissions as string[]).includes('files.manage')) return new Set(folders.map((f) => f.id))
   if (folders.length === 0) return new Set()
 
   const folderIds = folders.map((f) => f.id)
@@ -83,7 +75,7 @@ async function filterAccessibleFolders(
   })
   const ownGrantIds = new Set(ownGrants.map((g) => g.folderId).filter((id): id is string => Boolean(id)))
 
-  // Private by default: only creator or explicit grantee (files.manage already returned above)
+  // Private by default: only creator or explicit grantee
   const visible = new Set<string>()
   for (const f of folders) {
     if (f.createdById === userId || ownGrantIds.has(f.id)) {
@@ -101,14 +93,15 @@ export interface FolderAccessGrant {
   createdAt: string
 }
 
-/** Only callable by someone who can already see the folder's management surface (creator or files.manage). */
+/** Only callable by the folder's creator. */
 export async function getFolderAccessGrants(folderId: string): Promise<FolderAccessGrant[]> {
   const session = await requireApiSession()
   const folder = await prisma.folder.findFirst({
     where: { id: folderId, organizationId: session.user.organizationId },
+    select: { createdById: true },
   })
   if (!folder) throw new Error('Folder not found')
-  if (folder.createdById !== session.user.id && !(session.user.permissions as string[]).includes('files.manage')) {
+  if (folder.createdById !== session.user.id) {
     throw new Error('You do not have permission to manage access for this folder.')
   }
 
@@ -132,9 +125,10 @@ export async function grantFolderAccess(folderId: string, userId: string, level:
   const session = await requireApiSession()
   const folder = await prisma.folder.findFirst({
     where: { id: folderId, organizationId: session.user.organizationId },
+    select: { createdById: true },
   })
   if (!folder) throw new Error('Folder not found')
-  if (folder.createdById !== session.user.id && !(session.user.permissions as string[]).includes('files.manage')) {
+  if (folder.createdById !== session.user.id) {
     throw new Error('You do not have permission to manage access for this folder.')
   }
 
@@ -157,7 +151,7 @@ export async function revokeFolderAccess(grantId: string): Promise<void> {
   if (!grant?.folder || grant.folder.organizationId !== session.user.organizationId) {
     throw new Error('Grant not found')
   }
-  if (grant.folder.createdById !== session.user.id && !(session.user.permissions as string[]).includes('files.manage')) {
+  if (grant.folder.createdById !== session.user.id) {
     throw new Error('You do not have permission to manage access for this folder.')
   }
   await prisma.filePermission.delete({ where: { id: grantId } })
@@ -187,30 +181,19 @@ type FileRow = Awaited<ReturnType<typeof fetchFileRows>>[number]
 /**
  * Which files a user can see — independent of, and layered on top of,
  * the folder-level access already enforced by canAccessFolder() above.
- * A folder being open to the whole org does NOT mean every file inside
- * it should be: File.visibility has existed in the schema
- * (PRIVATE/TEAM/DEPARTMENT/ORGANIZATION/SHARED) and is settable via
- * updateFileVisibility(), but until now nothing enforced it when
- * listing files — a PRIVATE file was visible to the entire org the
- * moment it landed in a shared (grant-less) folder.
  *
- * `files.manage` bypasses this, matching the existing folder-access
- * convention. Otherwise a file is visible if:
- *   - the caller uploaded it, OR
- *   - it's marked ORGANIZATION, OR
- *   - it's marked TEAM and the caller shares the uploader's team, OR
- *   - it's marked DEPARTMENT and the caller shares the uploader's
- *     department, OR
- *   - the caller has an active (non-expired) FileShare on it — this is
- *     also how a SHARED-visibility file becomes reachable: only via an
- *     explicit share, never by default.
+ * Files are private by default: a user can only see files they uploaded
+ * themselves or files they've been explicitly shared with via FileShare.
+ * Even users with files.manage (Admin / Super Admin) do NOT see all
+ * files — they must be explicitly shared like any other user.
+ *
+ * Visibility levels (ORGANIZATION/TEAM/DEPARTMENT) no longer grant
+ * broad access — only individual FileShare grants make a file visible
+ * to someone other than the owner.
  */
 function fileVisibilityWhere(user: Session['user']): Prisma.FileWhereInput {
-  if ((user.permissions as string[]).includes('files.manage')) return {}
-
   const or: Prisma.FileWhereInput[] = [
     { uploadedById: user.id },
-    { visibility: 'ORGANIZATION' },
     {
       shares: {
         some: {
@@ -220,14 +203,36 @@ function fileVisibilityWhere(user: Session['user']): Prisma.FileWhereInput {
       },
     },
   ]
-  if (user.team?.id) {
-    or.push({ visibility: 'TEAM', uploadedBy: { teamId: user.team.id } })
-  }
-  if (user.department?.id) {
-    or.push({ visibility: 'DEPARTMENT', uploadedBy: { departmentId: user.department.id } })
-  }
 
   return { OR: or }
+}
+
+/**
+ * Checks if a user can access a specific file (owner or explicitly shared).
+ * Returns the file record if accessible, null otherwise.
+ */
+export async function canAccessFile(
+  fileId: string,
+  userId: string,
+  organizationId: string
+): Promise<{ id: string; uploadedById: string; secureUrl: string; fileName: string; mimeType: string } | null> {
+  const file = await prisma.file.findFirst({
+    where: { id: fileId, organizationId },
+    select: { id: true, uploadedById: true, secureUrl: true, fileName: true, mimeType: true },
+  })
+  if (!file) return null
+  if (file.uploadedById === userId) return file
+
+  const share = await prisma.fileShare.findFirst({
+    where: {
+      fileId,
+      sharedWithId: userId,
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+    },
+  })
+  if (!share) return null
+
+  return file
 }
 
 /**
@@ -355,9 +360,6 @@ export async function getAllFoldersFlat(): Promise<{ id: string; name: string; p
     select: { id: true, name: true, parentId: true, createdById: true },
     orderBy: { name: 'asc' },
   })
-  if ((session.user.permissions as string[]).includes('files.manage')) {
-    return all.map(({ id, name, parentId }) => ({ id, name, parentId }))
-  }
   if (all.length === 0) return []
   const folderIds = all.map((f) => f.id)
   const ownGrants = await prisma.filePermission.findMany({
@@ -372,6 +374,10 @@ export async function getAllFoldersFlat(): Promise<{ id: string; name: string; p
 
 export async function createFolder(name: string, parentId: string | null) {
   const session = await requireApiSession()
+  if (parentId) {
+    const allowed = await canAccessFolder(parentId, session.user.id, session.user.organizationId, session.user.permissions)
+    if (!allowed) throw new Error('You do not have access to parent folder.')
+  }
   await prisma.folder.create({
     data: { name, parentId, organizationId: session.user.organizationId, createdById: session.user.id },
   })
@@ -379,9 +385,11 @@ export async function createFolder(name: string, parentId: string | null) {
 
 export async function deleteFolder(id: string) {
   const session = await requireApiSession()
-  const existing = await prisma.folder.findFirst({ where: { id, organizationId: session.user.organizationId } })
+  const existing = await prisma.folder.findFirst({ where: { id, organizationId: session.user.organizationId }, select: { createdById: true } })
   if (!existing) return
+  if (existing.createdById !== session.user.id) throw new Error('You do not have access to this folder.')
   await prisma.folder.delete({ where: { id } })
+  await logActivity('N/A', session.user.id, 'FOLDER_DELETED', { folderId: id })
 }
 
 // ============================================================
@@ -461,8 +469,20 @@ export async function replaceFileContent(
   const session = await requireApiSession()
   const existing = await prisma.file.findFirst({
     where: { id: fileId, organizationId: session.user.organizationId },
+    select: {
+      uploadedById: true,
+      originalName: true,
+      mimeType: true,
+      fileSize: true,
+      cloudinaryPublicId: true,
+      cloudinaryResourceType: true,
+      secureUrl: true,
+      thumbnailUrl: true,
+      updatedAt: true,
+    },
   })
   if (!existing) throw new Error('File not found')
+  if (existing.uploadedById !== session.user.id) throw new Error('You do not have access to this file.')
 
   const lastVersion = await prisma.fileVersion.findFirst({
     where: { fileId },
@@ -510,9 +530,10 @@ export async function getFileVersions(fileId: string): Promise<FileVersionItem[]
   const session = await requireApiSession()
   const file = await prisma.file.findFirst({
     where: { id: fileId, organizationId: session.user.organizationId },
-    include: { uploadedBy: { select: { name: true } } },
+    select: { uploadedById: true, uploadedBy: { select: { name: true } }, originalName: true, mimeType: true, fileSize: true, secureUrl: true, thumbnailUrl: true, updatedAt: true },
   })
   if (!file) throw new Error('File not found')
+  if (file.uploadedById !== session.user.id) throw new Error('You do not have access to this file.')
 
   const versions = await prisma.fileVersion.findMany({
     where: { fileId },
@@ -521,7 +542,7 @@ export async function getFileVersions(fileId: string): Promise<FileVersionItem[]
   })
 
   const current: FileVersionItem = {
-    id: file.id,
+    id: fileId,
     versionNumber: (versions[0]?.versionNumber ?? 0) + 1,
     originalName: file.originalName,
     mimeType: file.mimeType,
@@ -553,10 +574,14 @@ export async function getFileVersions(fileId: string): Promise<FileVersionItem[]
 export async function restoreFileVersion(fileId: string, versionId: string): Promise<void> {
   const session = await requireApiSession()
   const [file, version] = await Promise.all([
-    prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId } }),
+    prisma.file.findFirst({
+      where: { id: fileId, organizationId: session.user.organizationId },
+      select: { uploadedById: true, originalName: true, mimeType: true, fileSize: true, cloudinaryPublicId: true, cloudinaryResourceType: true, secureUrl: true, thumbnailUrl: true, updatedAt: true },
+    }),
     prisma.fileVersion.findFirst({ where: { id: versionId, fileId } }),
   ])
   if (!file || !version) throw new Error('File or version not found')
+  if (file.uploadedById !== session.user.id) throw new Error('You do not have access to this file.')
 
   const lastVersion = await prisma.fileVersion.findFirst({
     where: { fileId },
@@ -621,37 +646,42 @@ export async function getTrashedFiles(): Promise<FileItem[]> {
 
 export async function toggleStar(fileId: string, star: boolean) {
   const session = await requireApiSession()
-  const file = await prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId } })
+  const file = await prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId }, select: { uploadedById: true } })
   if (!file) return
+  if (file.uploadedById !== session.user.id) throw new Error('You do not have access to this file.')
   await logActivity(fileId, session.user.id, star ? 'STARRED' : 'UNSTARRED')
 }
 
 export async function trashFile(fileId: string) {
   const session = await requireApiSession()
-  const file = await prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId } })
+  const file = await prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId }, select: { uploadedById: true } })
   if (!file) return
+  if (file.uploadedById !== session.user.id) throw new Error('You do not have access to this file.')
   await logActivity(fileId, session.user.id, 'TRASHED')
 }
 
 export async function restoreFile(fileId: string) {
   const session = await requireApiSession()
-  const file = await prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId } })
+  const file = await prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId }, select: { uploadedById: true } })
   if (!file) return
+  if (file.uploadedById !== session.user.id) throw new Error('You do not have access to this file.')
   await logActivity(fileId, session.user.id, 'RESTORED')
 }
 
 export async function permanentlyDeleteFile(fileId: string) {
   const session = await requireApiSession()
-  const file = await prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId } })
+  const file = await prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId }, select: { uploadedById: true, cloudinaryPublicId: true, cloudinaryResourceType: true } })
   if (!file) return
+  if (file.uploadedById !== session.user.id) throw new Error('You do not have access to this file.')
   await deleteFromCloudinary(file.cloudinaryPublicId, file.cloudinaryResourceType)
   await prisma.file.delete({ where: { id: fileId } })
 }
 
 export async function updateFileVisibility(fileId: string, visibility: FileVisibility) {
   const session = await requireApiSession()
-  const file = await prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId } })
+  const file = await prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId }, select: { uploadedById: true } })
   if (!file) return
+  if (file.uploadedById !== session.user.id) throw new Error('You do not have access to this file.')
   await prisma.file.update({ where: { id: fileId }, data: { visibility } })
   await logActivity(fileId, session.user.id, 'VISIBILITY_CHANGED', { visibility })
 }
@@ -662,8 +692,9 @@ export async function updateFileVisibility(fileId: string, visibility: FileVisib
 
 export async function shareFile(fileId: string, sharedWithId: string, level: FilePermissionLevel, expiresAt?: Date) {
   const session = await requireApiSession()
-  const file = await prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId } })
+  const file = await prisma.file.findFirst({ where: { id: fileId, organizationId: session.user.organizationId }, select: { uploadedById: true } })
   if (!file) throw new Error('File not found')
+  if (file.uploadedById !== session.user.id) throw new Error('You do not have access to this file.')
   await prisma.fileShare.create({
     data: { fileId, sharedById: session.user.id, sharedWithId, level, expiresAt: expiresAt ?? null },
   })

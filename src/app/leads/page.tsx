@@ -13,6 +13,7 @@ import { ExportMenu } from '@/components/report-engine/export-menu'
 import { buildLeadsReport } from '@/lib/report-engine/builders/leads'
 import { getSession } from '@/lib/session'
 import { ImportLeadsButton } from '@/components/crm/import-leads-button'
+import { isOk } from '@/lib/result'
 
 export const metadata = { title: 'Leads | Kawman ExAct' }
 
@@ -41,12 +42,13 @@ export default async function LeadsPage({
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : undefined
 
   // Current page view (filtered + paginated) for the table; full scoped set for export
-  const [result, owners, session, allLeads] = await Promise.all([
+  const [result, ownersResult, session, allLeads] = await Promise.all([
     getLeadsPage({ search, status, sortKey, sortDir, page }),
     getOrgUserOptions(),
     getSession(),
     getLeads().catch(() => [] as Awaited<ReturnType<typeof getLeads>>),
   ])
+  const owners = isOk(ownersResult) ? ownersResult.data : []
 
   const sessionUser = session?.user as unknown as { name?: string; email?: string; organization?: { name?: string } | null } | undefined
   const exportReport = buildLeadsReport({

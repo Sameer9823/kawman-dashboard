@@ -6,13 +6,15 @@ import { getDepartments } from '@/services/org-structure.service'
 import { getOrgUserOptions } from '@/services/user.service'
 import { DepartmentForm } from './department-form'
 import { deleteDepartmentAction } from './actions'
+import { isOk } from '@/lib/result'
 
 export const metadata = { title: 'Departments | Kawman ExAct Admin' }
 
 export default async function AdminDepartmentsPage() {
   await requirePermission('organizations.view')
 
-  const [departments, managers] = await Promise.all([getDepartments(), getOrgUserOptions()])
+  const [departments, managersResult] = await Promise.all([getDepartments(), getOrgUserOptions()])
+  const managers = isOk(managersResult) ? managersResult.data : []
 
   return (
     <MainLayout>

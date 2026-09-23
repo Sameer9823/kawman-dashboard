@@ -6,13 +6,15 @@ import { getOrgUserOptions } from '@/services/user.service'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { LeadDetailForm } from './lead-detail-form'
+import { isOk } from '@/lib/result'
 
 export const metadata = { title: 'Lead Detail | Kawman ExAct' }
 
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [lead, owners] = await Promise.all([getLeadById(id), getOrgUserOptions()])
+  const [lead, ownersResult] = await Promise.all([getLeadById(id), getOrgUserOptions()])
   if (!lead) notFound()
+  const owners = isOk(ownersResult) ? ownersResult.data : []
 
   const session = await requireApiSession()
   const [activities, followUps] = await Promise.all([

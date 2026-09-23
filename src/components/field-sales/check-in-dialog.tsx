@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { MapPin, Loader2, Camera, ImageIcon, X, Navigation2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -57,7 +57,6 @@ export function CheckInDialog({
   useEffect(() => {
     if (!open) {
       stopCamera()
-      setError((prev) => (prev ? null : prev))
     }
   }, [open, stopCamera])
 

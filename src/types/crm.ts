@@ -44,6 +44,7 @@ export interface Contact {
   designation: string
   email: string
   phone: string
+  mobile: string
   owner: string
   ownerInitials: string
   status: 'ACTIVE' | 'INACTIVE'

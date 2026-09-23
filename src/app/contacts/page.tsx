@@ -9,6 +9,7 @@ import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { getContacts, getContactsPage, type ContactSortKey } from '@/services/contact.service'
 import { getSession } from '@/lib/session'
+import { BusinessCardScanner } from './business-card-scanner'
 
 export const metadata = { title: 'Contacts | Kawman ExAct' }
 
@@ -55,6 +56,7 @@ export default async function ContactsPage({
           subtitle={`${result.total} contacts across your companies`}
           action={
             <div className="flex flex-wrap items-center gap-2">
+              <BusinessCardScanner />
               <ExportCsvButton href="/api/contacts/export" />
               <ExportMenu report={exportReport} />
               <Button asChild className="gap-1.5">

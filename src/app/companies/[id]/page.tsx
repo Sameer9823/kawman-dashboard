@@ -8,13 +8,15 @@ import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { formatCurrency } from '@/lib/utils'
 import { CompanyDetailForm } from './company-detail-form'
+import { isOk } from '@/lib/result'
 
 export const metadata = { title: 'Company Detail | Kawman ExAct' }
 
 export default async function CompanyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [company, owners] = await Promise.all([getCompanyById(id), getOrgUserOptions()])
+  const [company, ownersResult] = await Promise.all([getCompanyById(id), getOrgUserOptions()])
   if (!company) notFound()
+  const owners = isOk(ownersResult) ? ownersResult.data : []
 
   const session = await requireApiSession()
   const [leads, contacts, deals, activities] = await Promise.all([

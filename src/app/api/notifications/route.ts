@@ -1,68 +1,92 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { getSession } from '@/lib/session'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireApiSession } from '@/lib/session'
+import { getUserNotifications, markNotificationsRead, getUnreadCount, deleteNotification } from '@/services/notification.service'
+import { logger } from '@/lib/logger'
 
-export async function GET() {
-  const session = await getSession()
-  if (!session) return NextResponse.json([], { status: 401 })
+/**
+ * GET /api/notifications
+ * Get user notifications with pagination
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const session = await requireApiSession()
+    const { searchParams } = new URL(request.url)
 
-  const notifications = await prisma.notification.findMany({
-    where: { userId: session.user.id, organizationId: session.user.organizationId },
-    orderBy: { createdAt: 'desc' },
-    take: 20,
-  })
+    const limit = parseInt(searchParams.get('limit') || '20')
+    const offset = parseInt(searchParams.get('offset') || '0')
+    const unreadOnly = searchParams.get('unreadOnly') === 'true'
 
-  return NextResponse.json(
-    notifications.map((n) => ({
-      id: n.id,
-      type: n.type,
-      title: n.title,
-      message: n.message,
-      data: (n as { data?: unknown }).data ?? null,
-      createdAt: n.createdAt.toISOString(),
-      read: n.isRead,
-    }))
-  )
+    const result = await getUserNotifications({
+      userId: session.user.id,
+      organizationId: session.user.organizationId,
+      limit,
+      offset,
+      unreadOnly,
+    })
+
+    return NextResponse.json(result)
+  } catch (error) {
+    logger.error('Error fetching notifications', {}, error as Error)
+    return NextResponse.json(
+      { error: 'Failed to fetch notifications' },
+      { status: 500 }
+    )
+  }
 }
 
-export async function PATCH(request: Request) {
-  const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+/**
+ * PATCH /api/notifications
+ * Mark notifications as read
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await requireApiSession()
+    const body = await request.json()
 
-  const body = await request.json().catch(() => ({}))
-  const { id } = body as { id?: string }
+    const { notificationIds, markAll } = body
 
-  if (id) {
-    await prisma.notification.updateMany({
-      where: { id, userId: session.user.id },
-      data: { isRead: true, readAt: new Date() },
+    const result = await markNotificationsRead({
+      userId: session.user.id,
+      organizationId: session.user.organizationId,
+      notificationIds,
+      markAll,
     })
-  } else {
-    await prisma.notification.updateMany({
-      where: { userId: session.user.id, isRead: false },
-      data: { isRead: true, readAt: new Date() },
-    })
+
+    return NextResponse.json(result)
+  } catch (error) {
+    logger.error('Error marking notifications as read', {}, error as Error)
+    return NextResponse.json(
+      { error: 'Failed to mark notifications as read' },
+      { status: 500 }
+    )
   }
-
-  return NextResponse.json({ ok: true })
 }
 
-export async function DELETE(request: Request) {
-  const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+/**
+ * DELETE /api/notifications
+ * Delete a notification
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await requireApiSession()
+    const { searchParams } = new URL(request.url)
+    const notificationId = searchParams.get('id')
 
-  const body = await request.json().catch(() => ({}))
-  const { id } = body as { id?: string }
+    if (!notificationId) {
+      return NextResponse.json(
+        { error: 'Notification ID is required' },
+        { status: 400 }
+      )
+    }
 
-  if (id) {
-    await prisma.notification.deleteMany({
-      where: { id, userId: session.user.id, organizationId: session.user.organizationId },
-    })
-  } else {
-    await prisma.notification.deleteMany({
-      where: { userId: session.user.id, organizationId: session.user.organizationId },
-    })
+    await deleteNotification(notificationId, session.user.id, session.user.organizationId)
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    logger.error('Error deleting notification', {}, error as Error)
+    return NextResponse.json(
+      { error: 'Failed to delete notification' },
+      { status: 500 }
+    )
   }
-
-  return NextResponse.json({ ok: true })
 }

@@ -8,6 +8,7 @@ import type { MeetingListItem, MeetingDetail, MeetingType, MeetingStatus } from 
 import type { Prisma } from '@/generated/prisma'
 import { getRecordScope } from '@/lib/record-scope'
 import type { Session } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 
 /**
  * See lib/record-scope.ts — the base "meetings.view" permission only
@@ -505,7 +506,7 @@ export async function processMeetingVideo(meetingId: string, videoBuffer: Buffer
 
     return { success: true }
   } catch (error) {
-    console.error('[MEETING] Video processing failed:', error)
+    logger.error('Video processing failed', {}, error as Error)
     
     // Update meeting status to FAILED
     await prisma.meeting.update({
@@ -564,7 +565,7 @@ export async function createMeetingWithVideo(
       // Note: In a real app, you might use a queue system like BullMQ
     })
     .catch((err) => {
-      console.error('[MEETING] Background processing error:', err)
+      logger.error('Background processing error', {}, err as Error)
     })
 
   return meeting
@@ -602,7 +603,7 @@ export async function retryMeetingVideoProcessing(meetingId: string) {
 
     // Start background processing
     processMeetingVideo(meetingId, videoBuffer, recording.secureUrl.split('/').pop() || 'video.mp4', 'video/mp4')
-      .catch((err) => console.error('[MEETING] Retry processing error:', err))
+      .catch((err) => logger.error('Retry processing error', {}, err as Error))
 
     return { success: true }
   } catch (error) {

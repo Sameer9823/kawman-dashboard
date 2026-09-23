@@ -2,6 +2,7 @@ import { PrismaClient } from '../generated/prisma'
 import { assertEnv } from './env'
 import { PrismaPg } from '@prisma/adapter-pg'
 import pg from 'pg'
+import { logger } from './logger'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
@@ -21,7 +22,7 @@ function getPgPool(): pg.Pool {
     statement_timeout: 15_000,
     query_timeout: 15_000,
   })
-  pool.on('error', (err) => console.error('[pg pool] unexpected error', err))
+  pool.on('error', (err) => logger.error('pg pool unexpected error', {}, err))
   if (process.env.NODE_ENV !== 'production') globalForPrisma.pgPool = pool
   return pool
 }

@@ -1,12 +1,11 @@
 'use client'
 
 import { format } from 'date-fns'
-import { MapPin, Building2, ShieldCheck, ShieldAlert, ChevronLeft, ChevronRight } from 'lucide-react'
+import { MapPin, Building2, ShieldCheck, ShieldAlert } from 'lucide-react'
 import { Badge, type BadgeVariant } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { DeleteRowButton } from '@/components/crm/delete-row-button'
 import type { FieldVisit, VisitStatus } from '@/types/field-sales'
-import { checkInAction, deleteFieldVisitAction, updateVisitStatusAction } from '@/app/field-sales/actions'
+import { deleteFieldVisitAction } from '@/app/field-sales/actions'
 import { CheckInDialog } from './check-in-dialog'
 
 export const STATUS_LABEL: Record<VisitStatus, string> = {
@@ -26,7 +25,7 @@ export const STATUS_VARIANT: Record<VisitStatus, BadgeVariant> = {
   CANCELLED: 'danger',
 }
 
-function StatusSelect({ visitId, status, onChange }: { visitId: string; status: VisitStatus; onChange?: (status: VisitStatus) => void }) {
+function StatusSelect({ status, onChange }: { status: VisitStatus; onChange?: (status: VisitStatus) => void }) {
   return (
     <select
       value={status}
@@ -48,7 +47,6 @@ interface VisitRowProps {
   showVerification?: boolean
   showMapLink?: boolean
   onCheckInSuccess?: (verificationStatus: string) => void
-  onDelete?: () => void
   onStatusChange?: (status: VisitStatus) => void
 }
 
@@ -58,7 +56,6 @@ export function VisitRow({
   showVerification = true,
   showMapLink = false,
   onCheckInSuccess,
-  onDelete,
   onStatusChange,
 }: VisitRowProps) {
   const verified = visit.lastCheckIn?.verificationStatus === 'VERIFIED'
@@ -99,7 +96,7 @@ export function VisitRow({
       <td className="px-4 py-3">
         <div className="flex flex-col gap-1">
           <Badge variant={STATUS_VARIANT[visit.status]}>{STATUS_LABEL[visit.status]}</Badge>
-          <StatusSelect visitId={visit.id} status={visit.status} onChange={onStatusChange} />
+          <StatusSelect status={visit.status} onChange={onStatusChange} />
         </div>
       </td>
       {showVerification && (

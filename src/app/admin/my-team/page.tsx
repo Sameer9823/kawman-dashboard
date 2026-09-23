@@ -11,6 +11,7 @@ import { Users, UserCheck, UserX, ClipboardCheck, Clock } from 'lucide-react'
 import { TeamProductivityChart } from './productivity-chart'
 import { TeamSummaryPanel } from './team-summary-panel'
 import { TeamDateFilter } from './team-date-filter'
+import { isOk } from '@/lib/result'
 
 export const metadata = { title: 'My Team | Kawman ExAct' }
 
@@ -66,13 +67,40 @@ export default async function MyTeamPage({ searchParams }: { searchParams: Promi
 
   const sp = await searchParams
   const { from, to, preset } = parseDateRange(sp)
-  const [metrics, aiConfigured, allReports] = await Promise.all([
+  const [metricsResult, aiConfigured, allReports] = await Promise.all([
     getTeamDashboardMetrics(from && to ? { from, to } : undefined),
     Promise.resolve(isAIConfigured()),
     listReports().catch(() => [] as ReportSummary[]),
   ])
+  const metrics = isOk(metricsResult) ? metricsResult.data : null
   // Filter to team summaries for the panel
   const teamSummaries = allReports.filter((r) => r.type === 'team_management_summary' || r.type === 'employee_daily_summary').slice(0, 5)
+
+  if (!metricsResult.success) {
+    return (
+      <MainLayout>
+        <div className="space-y-6">
+          <PageHeader title="My Team" subtitle="Error loading team data" />
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">
+            {metricsResult.error}
+          </div>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  if (!metrics) {
+    return (
+      <MainLayout>
+        <div className="space-y-6">
+          <PageHeader title="My Team" subtitle="Error loading team data" />
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">
+            Unknown error
+          </div>
+        </div>
+      </MainLayout>
+    )
+  }
 
   const statCards = [
     { label: 'Total employees', value: metrics.totalEmployees, icon: Users, sub: 'Active in org' },

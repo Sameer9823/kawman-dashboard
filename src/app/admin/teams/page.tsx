@@ -7,13 +7,15 @@ import { getTeams, getDepartments } from '@/services/org-structure.service'
 import { getOrgUserOptions } from '@/services/user.service'
 import { TeamForm } from './team-form'
 import { deleteTeamAction } from './actions'
+import { isOk } from '@/lib/result'
 
 export const metadata = { title: 'Teams | Kawman ExAct Admin' }
 
 export default async function AdminTeamsPage() {
   await requirePermission('organizations.view')
 
-  const [teams, departments, managers] = await Promise.all([getTeams(), getDepartments(), getOrgUserOptions()])
+  const [teams, departments, managersResult] = await Promise.all([getTeams(), getDepartments(), getOrgUserOptions()])
+  const managers = isOk(managersResult) ? managersResult.data : []
 
   return (
     <MainLayout>

@@ -118,7 +118,9 @@ export async function createUserAction(_prev: UserFormState, formData: FormData)
   // sent (e.g. no provider configured yet). The admin still sees the temp
   // password on screen either way.
   const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/login`
-  await sendUserInviteEmail(data.email, data.name, tempPassword, loginUrl).catch((err) => {
+  const organizationName = session.user.organization?.name || 'Kawman ExAct'
+  const invitedByName = session.user.name || 'Admin'
+  await sendUserInviteEmail(data.email, data.name, tempPassword, loginUrl, organizationName, invitedByName).catch((err) => {
     console.error('[admin/users] Failed to send invite email:', err)
   })
 

@@ -47,6 +47,8 @@ model Organization {
   users           User[]
   liveLocations   UserLiveLocation[]
   dailyReports    DailyReport[]
+  aiUsages        AIUsage[]
+  resourceGrants  ResourceGrant[]
 
   @@index([slug])
   @@index([createdAt])
@@ -107,6 +109,8 @@ model User {
   roles                  UserRole[]
   visitReports           VisitReport[]        @relation("VisitReportCreator")
   dailyReports           DailyReport[]
+  aiUsages               AIUsage[]
+  grantsGiven            ResourceGrant[]      @relation("GrantsGiven")
 
   @@index([organizationId])
   @@index([email])
@@ -131,6 +135,7 @@ model Session {
   lastSeenAt DateTime?
 
   @@index([userId])
+  @@index([userId, lastSeenAt])
 }
 
 model UserLiveLocation {
@@ -186,14 +191,15 @@ model Verification {
 }
 
 model Role {
-  id          String           @id @default(cuid())
-  name        RoleType         @unique
-  description String?
-  isSystem    Boolean          @default(false)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  permissions RolePermission[]
-  users       UserRole[]
+  id             String           @id @default(cuid())
+  name           RoleType         @unique
+  description    String?
+  isSystem       Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  permissions    RolePermission[]
+  users          UserRole[]
+  resourceGrants ResourceGrant[]
 
   @@index([name])
 }
@@ -232,6 +238,26 @@ model UserRole {
   @@unique([userId, roleId])
   @@index([userId])
   @@index([roleId])
+}
+
+model ResourceGrant {
+  id             String       @id @default(cuid())
+  organizationId String
+  roleId         String
+  resourceType   String       @default("record") // 'record', 'report', 'file', 'team' etc.
+  resourceId     String? // null = grant applies to all resources of type; set = single resource
+  permission     String // e.g. 'view', 'edit', 'delete', 'share'
+  grantedBy      String
+  grantedAt      DateTime     @default(now())
+  expiresAt      DateTime?
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  grantor        User         @relation("GrantsGiven", fields: [grantedBy], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([roleId])
+  @@index([resourceType, resourceId])
+  @@index([expiresAt])
 }
 
 model Department {
@@ -629,6 +655,8 @@ model DailyReport {
   @@index([userId])
   @@index([date])
   @@index([status])
+  @@index([userId, date, status])
+  @@index([organizationId, date, status])
 }
 
 model FollowUp {
@@ -693,6 +721,8 @@ model FieldVisit {
   @@index([status])
   @@index([scheduledAt])
   @@index([createdAt])
+  @@index([assigneeId, status])
+  @@index([organizationId, scheduledAt])
 }
 
 model CheckIn {
@@ -896,6 +926,24 @@ model AIMessage {
   @@index([createdAt])
 }
 
+model AIUsage {
+  id             String       @id @default(cuid())
+  organizationId String
+  userId         String
+  model          String
+  provider       String
+  inputTokens    Int
+  outputTokens   Int
+  estimatedCost  Float
+  feature        String // 'chat', 'report', 'summary', 'data-analysis'
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@index([userId, createdAt])
+}
+
 model AIInsight {
   id             String       @id @default(cuid())
   type           String
@@ -976,19 +1024,40 @@ model AuditLog {
 }
 
 model Integration {
-  id             String       @id @default(cuid())
-  name           String
-  type           String
-  config         Json
-  isActive       Boolean      @default(true)
-  organizationId String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id                String            @id @default(cuid())
+  name              String
+  type              String
+  config            Json
+  isActive          Boolean           @default(true)
+  organizationId    String
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  organization      Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  webhookDeliveries WebhookDelivery[]
 
   @@unique([organizationId, name])
   @@index([organizationId])
   @@index([type])
+}
+
+model WebhookDelivery {
+  id             String      @id @default(cuid())
+  integrationId  String
+  event          String
+  url            String
+  payload        Json
+  responseStatus Int?
+  responseBody   String?
+  error          String?
+  success        Boolean
+  attempt        Int         @default(1)
+  deliveredAt    DateTime    @default(now())
+  integration    Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([integrationId])
+  @@index([event])
+  @@index([success])
+  @@index([deliveredAt])
 }
 
 enum UserStatus {

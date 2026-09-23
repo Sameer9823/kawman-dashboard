@@ -209,6 +209,12 @@ export function Sidebar() {
   const { hasPermission, hasAnyPermission } = usePermissions()
   const pathname = usePathname()
   const [storage, setStorage] = React.useState<StorageUsage | null>(null)
+  const [mounted, setMounted] = React.useState(false)
+
+  // Set mounted after hydration to avoid SSR mismatch from permission-based rendering
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const refreshStorage = React.useCallback(async () => {
     try {
@@ -242,14 +248,18 @@ export function Sidebar() {
 
   const closeDrawer = React.useCallback(() => setMobileDrawerOpen(false), [setMobileDrawerOpen])
 
-  const visibleGroups = NAV_GROUPS.filter(
-    (group) => !group.requiresAnyPermission || hasAnyPermission(group.requiresAnyPermission)
-  )
-    .map((group) => ({
-      ...group,
-      items: group.items.filter((item) => !item.permission || hasPermission(item.permission)),
-    }))
-    .filter((group) => group.items.length > 0)
+  // Only compute visibleGroups after hydration to prevent SSR mismatch
+  // During SSR, render all groups (permissions will be filtered client-side after mount)
+  const visibleGroups = mounted
+    ? NAV_GROUPS.filter(
+        (group) => !group.requiresAnyPermission || hasAnyPermission(group.requiresAnyPermission)
+      )
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => !item.permission || hasPermission(item.permission)),
+        }))
+        .filter((group) => group.items.length > 0)
+    : NAV_GROUPS
 
   return (
     <aside

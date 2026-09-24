@@ -543,6 +543,7 @@ model Contact {
   organizationId String
   companyId      String?
   ownerId        String
+  emailKey       String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   lastActivityAt DateTime?
@@ -558,9 +559,9 @@ model Contact {
   @@index([organizationId])
   @@index([companyId])
   @@index([ownerId])
-  @@index([email])
   @@index([status])
   @@index([createdAt])
+  @@unique([organizationId, emailKey])
 }
 
 model Deal {

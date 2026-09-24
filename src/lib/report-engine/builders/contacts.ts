@@ -1,15 +1,14 @@
 import type { UniversalReportDefinition, ReportColumn } from '../types'
 import type { Contact } from '@/types/crm'
+import { toContactCsvRows } from '@/lib/contacts-csv'
 
 const COLUMNS: ReportColumn[] = [
   { key: 'name', header: 'Name' },
   { key: 'company', header: 'Company' },
   { key: 'designation', header: 'Designation' },
   { key: 'email', header: 'Email' },
-  { key: 'phone', header: 'Phone' },
-  { key: 'owner', header: 'Owner' },
-  { key: 'status', header: 'Status' },
-  { key: 'lastActivityAt', header: 'Last Activity', format: 'date' },
+  { key: 'phone', header: 'Phone', format: 'text', csvText: true },
+  { key: 'mobile', header: 'Mobile', format: 'text', csvText: true },
 ]
 
 export function buildContactsReport(opts: {
@@ -30,7 +29,7 @@ export function buildContactsReport(opts: {
       recordCount: opts.contacts.length,
     },
     columns: COLUMNS,
-    rows: opts.contacts as unknown as Record<string, unknown>[],
+    rows: toContactCsvRows(opts.contacts) as unknown as Record<string, unknown>[],
   }
 }
 

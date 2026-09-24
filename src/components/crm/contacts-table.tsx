@@ -8,37 +8,40 @@ import { Search, Mail, Phone, ChevronLeft, ChevronRight, FileDown, Trash2 } from
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { DeleteRowButton } from '@/components/crm/delete-row-button'
+import { contactsToExcelCsv } from '@/lib/contacts-csv'
 import type { ContactPage, ContactSortKey } from '@/services/contact.service'
 import { deleteContactAction, bulkDeleteContactsAction } from '@/app/contacts/actions'
 import type { Contact } from '@/types/crm'
 
-function toCSV(rows: Contact[]): string {
-  const headers = ['Name', 'Company', 'Designation', 'Email', 'Phone', 'Mobile']
-  const csv = [
-    headers.join(','),
-    ...rows.map((c) =>
-      [
-        `"${c.name}"`,
-        `"${c.company}"`,
-        `"${c.designation}"`,
-        `"${c.email}"`,
-        `"${c.phone}"`,
-        `"${c.mobile}"`,
-      ].join(',')
-    ),
-  ]
-  return csv.join('\r\n')
-}
-
 function exportSelectedToCsv(selected: Contact[]) {
-  const csv = toCSV(selected)
-  const blob = new Blob([csv], { type: 'text/csv' })
+  const csv = contactsToExcelCsv(selected)
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = `contacts-selected-${new Date().toISOString().split('T')[0]}.csv`
   a.click()
   URL.revokeObjectURL(url)
+}
+
+/** Format a phone/mobile number for display: add + prefix and a space after country code. */
+function formatPhoneDisplay(value: string): string {
+  if (!value) return ''
+  const v = value.trim()
+  if (!v) return ''
+  // Already has + prefix
+  if (v.startsWith('+')) {
+    // Add space after country code (1-3 digits after +)
+    return v.replace(/^\+(\d{1,3})(\d)/, '+$1 $2')
+  }
+  // 00 international prefix → convert to +
+  if (v.startsWith('00')) {
+    const rest = v.slice(2)
+    return rest.replace(/^(\d{1,3})(\d)/, '+$1 $2')
+  }
+  // Bare digits: try to detect country code (1-3 digits) and add + and space
+  // Common: 1 (US/CA), 91 (IN), 44 (GB), 49 (DE), 33 (FR), 86 (CN), 971 (AE), 81 (JP), 61 (AU)
+  return v.replace(/^(\d{1,3})(\d)/, '+$1 $2')
 }
 
 export function ContactsTable({ result }: { result: ContactPage }) {
@@ -245,12 +248,12 @@ export function ContactsTable({ result }: { result: ContactPage }) {
                 </td>
                 <td className="px-4 py-3">
                   <span className="text-xs text-white/40 flex items-center gap-1.5">
-                    <Phone className="h-3 w-3 shrink-0" /> {contact.phone}
+                    <Phone className="h-3 w-3 shrink-0" /> {formatPhoneDisplay(contact.phone)}
                   </span>
                 </td>
                 <td className="px-4 py-3">
                   <span className="text-xs text-white/40 flex items-center gap-1.5">
-                    <Phone className="h-3 w-3 shrink-0" /> {contact.mobile}
+                    <Phone className="h-3 w-3 shrink-0" /> {formatPhoneDisplay(contact.mobile)}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">

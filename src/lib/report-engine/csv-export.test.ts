@@ -68,6 +68,22 @@ describe('report-engine csv-export', () => {
       expect(tableCount).toBe(0)
     })
 
+    it('renders a csvText column as an Excel text formula cell', () => {
+      const report: UniversalReportDefinition = {
+        name: 'csvtext',
+        title: 'csvText',
+        columns: [
+          { key: 'a', header: 'A' },
+          { key: 'phone', header: 'Phone', csvText: true },
+        ],
+        rows: [{ a: 'A', phone: '914444212345' }],
+      }
+
+      const { csv } = generateReportCsv(report)
+
+      expect(csv).toBe('A,Phone\r\nA,"=""914444212345"""')
+    })
+
     it('handles special characters in cell values', () => {
       const specialReport: UniversalReportDefinition = {
         name: 'special',

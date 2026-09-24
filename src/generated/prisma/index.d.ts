@@ -35583,6 +35583,7 @@ export namespace Prisma {
     organizationId: string | null
     companyId: string | null
     ownerId: string | null
+    emailKey: string | null
     createdAt: Date | null
     updatedAt: Date | null
     lastActivityAt: Date | null
@@ -35599,6 +35600,7 @@ export namespace Prisma {
     organizationId: string | null
     companyId: string | null
     ownerId: string | null
+    emailKey: string | null
     createdAt: Date | null
     updatedAt: Date | null
     lastActivityAt: Date | null
@@ -35615,6 +35617,7 @@ export namespace Prisma {
     organizationId: number
     companyId: number
     ownerId: number
+    emailKey: number
     createdAt: number
     updatedAt: number
     lastActivityAt: number
@@ -35633,6 +35636,7 @@ export namespace Prisma {
     organizationId?: true
     companyId?: true
     ownerId?: true
+    emailKey?: true
     createdAt?: true
     updatedAt?: true
     lastActivityAt?: true
@@ -35649,6 +35653,7 @@ export namespace Prisma {
     organizationId?: true
     companyId?: true
     ownerId?: true
+    emailKey?: true
     createdAt?: true
     updatedAt?: true
     lastActivityAt?: true
@@ -35665,6 +35670,7 @@ export namespace Prisma {
     organizationId?: true
     companyId?: true
     ownerId?: true
+    emailKey?: true
     createdAt?: true
     updatedAt?: true
     lastActivityAt?: true
@@ -35754,6 +35760,7 @@ export namespace Prisma {
     organizationId: string
     companyId: string | null
     ownerId: string
+    emailKey: string | null
     createdAt: Date
     updatedAt: Date
     lastActivityAt: Date | null
@@ -35787,6 +35794,7 @@ export namespace Prisma {
     organizationId?: boolean
     companyId?: boolean
     ownerId?: boolean
+    emailKey?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lastActivityAt?: boolean
@@ -35812,6 +35820,7 @@ export namespace Prisma {
     organizationId?: boolean
     companyId?: boolean
     ownerId?: boolean
+    emailKey?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lastActivityAt?: boolean
@@ -35831,6 +35840,7 @@ export namespace Prisma {
     organizationId?: boolean
     companyId?: boolean
     ownerId?: boolean
+    emailKey?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lastActivityAt?: boolean
@@ -35850,12 +35860,13 @@ export namespace Prisma {
     organizationId?: boolean
     companyId?: boolean
     ownerId?: boolean
+    emailKey?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lastActivityAt?: boolean
   }
 
-  export type ContactOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "designation" | "email" | "phone" | "mobile" | "status" | "organizationId" | "companyId" | "ownerId" | "createdAt" | "updatedAt" | "lastActivityAt", ExtArgs["result"]["contact"]>
+  export type ContactOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "designation" | "email" | "phone" | "mobile" | "status" | "organizationId" | "companyId" | "ownerId" | "emailKey" | "createdAt" | "updatedAt" | "lastActivityAt", ExtArgs["result"]["contact"]>
   export type ContactInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     activities?: boolean | Contact$activitiesArgs<ExtArgs>
     company?: boolean | Contact$companyArgs<ExtArgs>
@@ -35901,6 +35912,7 @@ export namespace Prisma {
       organizationId: string
       companyId: string | null
       ownerId: string
+      emailKey: string | null
       createdAt: Date
       updatedAt: Date
       lastActivityAt: Date | null
@@ -36345,6 +36357,7 @@ export namespace Prisma {
     readonly organizationId: FieldRef<"Contact", 'String'>
     readonly companyId: FieldRef<"Contact", 'String'>
     readonly ownerId: FieldRef<"Contact", 'String'>
+    readonly emailKey: FieldRef<"Contact", 'String'>
     readonly createdAt: FieldRef<"Contact", 'DateTime'>
     readonly updatedAt: FieldRef<"Contact", 'DateTime'>
     readonly lastActivityAt: FieldRef<"Contact", 'DateTime'>
@@ -64686,6 +64699,7 @@ export namespace Prisma {
     organizationId: 'organizationId',
     companyId: 'companyId',
     ownerId: 'ownerId',
+    emailKey: 'emailKey',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     lastActivityAt: 'lastActivityAt'
@@ -67592,6 +67606,7 @@ export namespace Prisma {
     organizationId?: StringFilter<"Contact"> | string
     companyId?: StringNullableFilter<"Contact"> | string | null
     ownerId?: StringFilter<"Contact"> | string
+    emailKey?: StringNullableFilter<"Contact"> | string | null
     createdAt?: DateTimeFilter<"Contact"> | Date | string
     updatedAt?: DateTimeFilter<"Contact"> | Date | string
     lastActivityAt?: DateTimeNullableFilter<"Contact"> | Date | string | null
@@ -67616,6 +67631,7 @@ export namespace Prisma {
     organizationId?: SortOrder
     companyId?: SortOrderInput | SortOrder
     ownerId?: SortOrder
+    emailKey?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastActivityAt?: SortOrderInput | SortOrder
@@ -67631,6 +67647,7 @@ export namespace Prisma {
 
   export type ContactWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    organizationId_emailKey?: ContactOrganizationIdEmailKeyCompoundUniqueInput
     AND?: ContactWhereInput | ContactWhereInput[]
     OR?: ContactWhereInput[]
     NOT?: ContactWhereInput | ContactWhereInput[]
@@ -67643,6 +67660,7 @@ export namespace Prisma {
     organizationId?: StringFilter<"Contact"> | string
     companyId?: StringNullableFilter<"Contact"> | string | null
     ownerId?: StringFilter<"Contact"> | string
+    emailKey?: StringNullableFilter<"Contact"> | string | null
     createdAt?: DateTimeFilter<"Contact"> | Date | string
     updatedAt?: DateTimeFilter<"Contact"> | Date | string
     lastActivityAt?: DateTimeNullableFilter<"Contact"> | Date | string | null
@@ -67654,7 +67672,7 @@ export namespace Prisma {
     visits?: FieldVisitListRelationFilter
     leads?: LeadListRelationFilter
     meetings?: MeetingListRelationFilter
-  }, "id">
+  }, "id" | "organizationId_emailKey">
 
   export type ContactOrderByWithAggregationInput = {
     id?: SortOrder
@@ -67667,6 +67685,7 @@ export namespace Prisma {
     organizationId?: SortOrder
     companyId?: SortOrderInput | SortOrder
     ownerId?: SortOrder
+    emailKey?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastActivityAt?: SortOrderInput | SortOrder
@@ -67689,6 +67708,7 @@ export namespace Prisma {
     organizationId?: StringWithAggregatesFilter<"Contact"> | string
     companyId?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     ownerId?: StringWithAggregatesFilter<"Contact"> | string
+    emailKey?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Contact"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Contact"> | Date | string
     lastActivityAt?: DateTimeNullableWithAggregatesFilter<"Contact"> | Date | string | null
@@ -72104,6 +72124,7 @@ export namespace Prisma {
     phone?: string | null
     mobile?: string | null
     status?: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -72128,6 +72149,7 @@ export namespace Prisma {
     organizationId: string
     companyId?: string | null
     ownerId: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -72146,6 +72168,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -72170,6 +72193,7 @@ export namespace Prisma {
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -72191,6 +72215,7 @@ export namespace Prisma {
     organizationId: string
     companyId?: string | null
     ownerId: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -72204,6 +72229,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -72220,6 +72246,7 @@ export namespace Prisma {
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -76246,6 +76273,11 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
+  export type ContactOrganizationIdEmailKeyCompoundUniqueInput = {
+    organizationId: string
+    emailKey: string
+  }
+
   export type ContactCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
@@ -76257,6 +76289,7 @@ export namespace Prisma {
     organizationId?: SortOrder
     companyId?: SortOrder
     ownerId?: SortOrder
+    emailKey?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastActivityAt?: SortOrder
@@ -76273,6 +76306,7 @@ export namespace Prisma {
     organizationId?: SortOrder
     companyId?: SortOrder
     ownerId?: SortOrder
+    emailKey?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastActivityAt?: SortOrder
@@ -76289,6 +76323,7 @@ export namespace Prisma {
     organizationId?: SortOrder
     companyId?: SortOrder
     ownerId?: SortOrder
+    emailKey?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lastActivityAt?: SortOrder
@@ -84627,6 +84662,7 @@ export namespace Prisma {
     phone?: string | null
     mobile?: string | null
     status?: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -84649,6 +84685,7 @@ export namespace Prisma {
     status?: string
     companyId?: string | null
     ownerId: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -85739,6 +85776,7 @@ export namespace Prisma {
     organizationId?: StringFilter<"Contact"> | string
     companyId?: StringNullableFilter<"Contact"> | string | null
     ownerId?: StringFilter<"Contact"> | string
+    emailKey?: StringNullableFilter<"Contact"> | string | null
     createdAt?: DateTimeFilter<"Contact"> | Date | string
     updatedAt?: DateTimeFilter<"Contact"> | Date | string
     lastActivityAt?: DateTimeNullableFilter<"Contact"> | Date | string | null
@@ -86700,6 +86738,7 @@ export namespace Prisma {
     phone?: string | null
     mobile?: string | null
     status?: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -86722,6 +86761,7 @@ export namespace Prisma {
     status?: string
     organizationId: string
     companyId?: string | null
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -96562,6 +96602,7 @@ export namespace Prisma {
     phone?: string | null
     mobile?: string | null
     status?: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -96585,6 +96626,7 @@ export namespace Prisma {
     organizationId: string
     companyId?: string | null
     ownerId: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -96935,6 +96977,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -96958,6 +97001,7 @@ export namespace Prisma {
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -97431,6 +97475,7 @@ export namespace Prisma {
     phone?: string | null
     mobile?: string | null
     status?: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -97453,6 +97498,7 @@ export namespace Prisma {
     status?: string
     organizationId: string
     ownerId: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -99088,6 +99134,7 @@ export namespace Prisma {
     phone?: string | null
     mobile?: string | null
     status?: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -99111,6 +99158,7 @@ export namespace Prisma {
     organizationId: string
     companyId?: string | null
     ownerId: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -99628,6 +99676,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -99651,6 +99700,7 @@ export namespace Prisma {
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -100159,6 +100209,7 @@ export namespace Prisma {
     phone?: string | null
     mobile?: string | null
     status?: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -100182,6 +100233,7 @@ export namespace Prisma {
     organizationId: string
     companyId?: string | null
     ownerId: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -100588,6 +100640,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -100611,6 +100664,7 @@ export namespace Prisma {
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -102275,6 +102329,7 @@ export namespace Prisma {
     phone?: string | null
     mobile?: string | null
     status?: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -102298,6 +102353,7 @@ export namespace Prisma {
     organizationId: string
     companyId?: string | null
     ownerId: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -102711,6 +102767,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -102734,6 +102791,7 @@ export namespace Prisma {
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -104168,6 +104226,7 @@ export namespace Prisma {
     phone?: string | null
     mobile?: string | null
     status?: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -104191,6 +104250,7 @@ export namespace Prisma {
     organizationId: string
     companyId?: string | null
     ownerId: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -104655,6 +104715,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -104678,6 +104739,7 @@ export namespace Prisma {
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -108876,6 +108938,7 @@ export namespace Prisma {
     status?: string
     companyId?: string | null
     ownerId: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -109394,6 +109457,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -109416,6 +109480,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -109436,6 +109501,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -110464,6 +110530,7 @@ export namespace Prisma {
     status?: string
     organizationId: string
     companyId?: string | null
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -111108,6 +111175,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -111130,6 +111198,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -111150,6 +111219,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -113415,6 +113485,7 @@ export namespace Prisma {
     status?: string
     organizationId: string
     ownerId: string
+    emailKey?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     lastActivityAt?: Date | string | null
@@ -113570,6 +113641,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -113592,6 +113664,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -113612,6 +113685,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
+    emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastActivityAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

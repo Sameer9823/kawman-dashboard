@@ -6,6 +6,7 @@ import type { Session } from '@/lib/auth'
 import type { Prisma } from '@/generated/prisma'
 import { ownerScopeWhere } from '@/lib/record-scope-helpers'
 import { toInitials } from '@/lib/utils'
+import { buildContactEmailKey } from '@/lib/contact-dedupe'
 
 /** See lib/record-scope.ts — the base "contacts.view" permission only
  * gates page access, not which rows come back. This adds that filter. */
@@ -102,8 +103,8 @@ export async function getContactsPage(query: ContactQuery = {}): Promise<Contact
     prisma.contact.count({ where }),
     prisma.contact.findMany({
       where,
-      include: { owner: { select: { name: true } }, company: { select: { name: true } } },
-      orderBy: { [CONTACT_SORT_FIELD[sortKey]]: sortDir },
+    include: { owner: { select: { name: true } }, company: { select: { name: true } } },
+    orderBy: { [CONTACT_SORT_FIELD[sortKey]]: sortDir },
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
@@ -169,6 +170,7 @@ export async function findOrCreateContactByName(input: {
       organizationId: input.organizationId,
       ownerId: input.ownerId,
       companyId: input.companyId ?? null,
+      emailKey: buildContactEmailKey(undefined),
     },
     select: { id: true, name: true },
   })

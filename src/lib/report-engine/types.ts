@@ -73,6 +73,10 @@ export interface ReportColumn {
   width?: number // hint in characters
   align?: CellAlign
   format?: CellFormat
+  /** CSV only: force this column to render as Excel text (`="..."`) so values
+   * such as phone numbers are not re-parsed as numbers (no scientific
+   * notation, no leading-zero loss). Ignored for PDF/XLSX rendering. */
+  csvText?: boolean
 }
 
 export interface ReportTable {

@@ -9,15 +9,51 @@
  * so there's nothing for that marker to protect. Keeping it marker-free
  * also lets `toCSV` be unit-tested directly — see csv.test.ts.
  */
-export function toCSV<T>(rows: T[], columns: { key: keyof T & string; header: string }[]): string {
-  const escape = (value: unknown): string => {
-    const str = String(value ?? '')
-    if (/[",\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`
-    return str
+export interface CsvColumn<T> {
+  key: keyof T & string
+  header: string
+  /** When true, the cell is wrapped in the Excel `="..."` text form so values
+   * like phone numbers are never re-parsed as numbers (no scientific notation,
+   * no leading-zero loss). Empty values stay empty. */
+  asText?: boolean
+}
+
+/**
+ * Force a value to be treated as text when opened in Excel/Sheets.
+ * Wraps the (quote-doubled) value in `="..."`. Google Sheets evaluates this to
+ * plain text; Excel keeps it as a text cell regardless of leading digits.
+ */
+export function excelText(value: string): string {
+  return `="${value.replace(/"/g, '""')}"`
+}
+
+/** UTF-8 BOM — prepend to CSV bodies so Excel opens them with correct encoding
+ * (non-ASCII names, ₹, etc.) instead of interpreting bytes as Windows-1252. */
+export const CSV_BOM = '\uFEFF'
+
+/** true when a value would render as an empty cell (null/undefined/NaN/Infinity). */
+function isAbsent(value: unknown): boolean {
+  return value === null || value === undefined || (typeof value === 'number' && !Number.isFinite(value))
+}
+
+/** RFC 4180-escape a single field (already reduced to a string). */
+function escapeField(str: string): string {
+  if (/[",\r\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`
+  return str
+}
+
+export function toCSV<T>(rows: T[], columns: CsvColumn<T>[]): string {
+  const formatValue = (raw: unknown, col: CsvColumn<T>): string => {
+    if (isAbsent(raw)) return ''
+    let str = String(raw)
+    if (col.asText && str.trim() !== '') {
+      str = excelText(str)
+    }
+    return escapeField(str)
   }
 
-  const headerLine = columns.map((c) => escape(c.header)).join(',')
-  const lines = rows.map((row) => columns.map((c) => escape(row[c.key])).join(','))
+  const headerLine = columns.map((c) => escapeField(c.header)).join(',')
+  const lines = rows.map((row) => columns.map((c) => formatValue(row[c.key], c)).join(','))
   return [headerLine, ...lines].join('\r\n')
 }
 

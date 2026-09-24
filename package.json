@@ -19,6 +19,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
+    "db:backfill-email-key": "tsx prisma/scripts/backfill-contact-email-key.ts",
     "postinstall": "puppeteer browsers install chrome"
   },
   "dependencies": {
@@ -64,6 +65,7 @@
     "ioredis": "^6.0.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
+    "libphonenumber-js": "^1.13.13",
     "lucide-react": "^1.35.0",
     "maplibre-gl": "^6.9.1",
     "next": "16.3.3",

@@ -19,6 +19,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
+    "db:backfill-email-key": "tsx prisma/scripts/backfill-contact-email-key.ts",
     "postinstall": "puppeteer browsers install chrome"
   },
   "dependencies": {

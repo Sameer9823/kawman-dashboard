@@ -9,6 +9,7 @@ import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
 import { logAudit } from '@/lib/audit-log'
 import { findOrCreateCompanyByName } from '@/services/company.service'
+import { buildContactEmailKey, duplicateContactEmailMessage } from '@/lib/contact-dedupe'
 
 const contactSchema = z.object({
   name: z.string().trim().min(2, 'Name is required'),
@@ -20,50 +21,24 @@ const contactSchema = z.object({
   ownerId: z.string().trim().optional(),
 })
 
-// Helper to normalize phone numbers
-function normalizePhone(num: string | null | undefined): string | null {
-  return num?.replace(/[\s\-\(\)\+]/g, '') || null
+function isPrismaUniqueError(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'P2002'
 }
 
-// Helper to check for duplicate contact fields
-async function checkDuplicateContact(
+async function findDuplicateContact(
   organizationId: string,
-  email: string | null,
-  phone: string | null,
-  mobile: string | null,
-  excludeId?: string
-) {
-  const normPhone = normalizePhone(phone)
-  const normMobile = normalizePhone(mobile)
-
-  if (normPhone && normMobile && normPhone === normMobile) {
-    return 'Phone and mobile numbers are identical.'
-  }
-
-  const existingContacts = await prisma.contact.findMany({
+  emailKey: string | null,
+  excludeId?: string,
+): Promise<{ id: string; name: string } | null> {
+  if (!emailKey) return null
+  return prisma.contact.findFirst({
     where: {
       organizationId,
+      emailKey,
       ...(excludeId ? { NOT: { id: excludeId } } : {}),
-      OR: [
-        ...(email ? [{ email }] : []),
-        ...(normPhone ? [{ phone: normPhone }] : []),
-        ...(normMobile ? [{ mobile: normMobile }] : []),
-      ],
     },
-    select: { id: true, name: true, email: true, phone: true, mobile: true },
+    select: { id: true, name: true },
   })
-
-  if (existingContacts.length > 0) {
-    const duplicateFields: string[] = []
-    for (const existing of existingContacts) {
-      if (email && existing.email === email) duplicateFields.push('email')
-      if (normPhone && existing.phone === normPhone) duplicateFields.push('phone')
-      if (normMobile && existing.mobile === normMobile) duplicateFields.push('mobile')
-    }
-    const uniqueDuplicates = [...new Set(duplicateFields)]
-    return `Contact already exists with same ${uniqueDuplicates.join(', ')}: ${existingContacts.map(c => c.name).join(', ')}`
-  }
-  return null
 }
 
 export interface ContactFormState {
@@ -103,49 +78,60 @@ export async function createContactAction(_prev: ContactFormState, formData: For
   const phone = data.phone || null
   const mobile = data.mobile || null
 
-  const duplicateError = await checkDuplicateContact(session.user.organizationId, email, phone, mobile)
-  if (duplicateError) {
-    return { error: duplicateError }
+  const emailKey = buildContactEmailKey(email)
+  const existing = await findDuplicateContact(session.user.organizationId, emailKey)
+  if (existing) {
+    return { error: duplicateContactEmailMessage(existing.name) }
   }
 
-  const normPhone = normalizePhone(phone)
-  const normMobile = normalizePhone(mobile)
+  try {
+    const contact = await prisma.contact.create({
+      data: {
+        name: data.name,
+        designation: data.designation || null,
+        email,
+        phone,
+        mobile,
+        companyId,
+        organizationId: session.user.organizationId,
+        ownerId: data.ownerId || session.user.id,
+        lastActivityAt: new Date(),
+        emailKey,
+      },
+    })
 
-  const contact = await prisma.contact.create({
-    data: {
-      name: data.name,
-      designation: data.designation || null,
-      email,
-      phone: normPhone,
-      mobile: normMobile,
-      companyId,
-      organizationId: session.user.organizationId,
-      ownerId: data.ownerId || session.user.id,
-      lastActivityAt: new Date(),
-    },
-  })
-  await prisma.activity.create({
-    data: {
-      type: 'CONTACT_CREATED',
-      description: `${session.user.name} added contact "${contact.name}"`,
+    await prisma.activity.create({
+      data: {
+        type: 'CONTACT_CREATED',
+        description: `${session.user.name} added contact "${contact.name}"`,
+        organizationId: session.user.organizationId,
+        actorId: session.user.id,
+        contactId: contact.id,
+        companyId,
+      },
+    })
+
+    await logAudit({
       organizationId: session.user.organizationId,
       actorId: session.user.id,
-      contactId: contact.id,
-      companyId,
-    },
-  })
+      action: 'CREATE',
+      resource: 'Contact',
+      resourceId: contact.id,
+      metadata: { name: contact.name, companyId },
+    })
 
-  await logAudit({
-    organizationId: session.user.organizationId,
-    actorId: session.user.id,
-    action: 'CREATE',
-    resource: 'Contact',
-    resourceId: contact.id,
-    metadata: { name: contact.name, companyId },
-  })
-
-  revalidatePath('/contacts')
-  return { success: true, createdId: contact.id }
+    revalidatePath('/contacts')
+    return { success: true, createdId: contact.id }
+  } catch (error) {
+    if (emailKey && isPrismaUniqueError(error)) {
+      const dup = await prisma.contact.findFirst({
+        where: { organizationId: session.user.organizationId, emailKey },
+        select: { name: true },
+      })
+      return { error: duplicateContactEmailMessage(dup?.name ?? 'Unknown') }
+    }
+    throw error
+  }
 }
 
 export async function updateContactAction(
@@ -181,40 +167,50 @@ export async function updateContactAction(
   const phone = data.phone || null
   const mobile = data.mobile || null
 
-  const duplicateError = await checkDuplicateContact(session.user.organizationId, email, phone, mobile, id)
-  if (duplicateError) {
-    return { error: duplicateError }
+  const emailKey = buildContactEmailKey(email)
+  const duplicate = await findDuplicateContact(session.user.organizationId, emailKey, id)
+  if (duplicate) {
+    return { error: duplicateContactEmailMessage(duplicate.name) }
   }
 
-  const normPhone = normalizePhone(phone)
-  const normMobile = normalizePhone(mobile)
+  try {
+    await prisma.contact.update({
+      where: { id },
+      data: {
+        name: data.name,
+        designation: data.designation || null,
+        email,
+        phone,
+        mobile,
+        companyId,
+        ownerId: data.ownerId || existing.ownerId,
+        lastActivityAt: new Date(),
+        emailKey,
+      },
+    })
 
-  await prisma.contact.update({
-    where: { id },
-    data: {
-      name: data.name,
-      designation: data.designation || null,
-      email,
-      phone: normPhone,
-      mobile: normMobile,
-      companyId,
-      ownerId: data.ownerId || existing.ownerId,
-      lastActivityAt: new Date(),
-    },
-  })
+    await logAudit({
+      organizationId: session.user.organizationId,
+      actorId: session.user.id,
+      action: 'UPDATE',
+      resource: 'Contact',
+      resourceId: id,
+      metadata: { name: data.name, changes: Object.keys(data) },
+    })
 
-  await logAudit({
-    organizationId: session.user.organizationId,
-    actorId: session.user.id,
-    action: 'UPDATE',
-    resource: 'Contact',
-    resourceId: id,
-    metadata: { name: data.name, changes: Object.keys(data) },
-  })
-
-  revalidatePath('/contacts')
-  revalidatePath(`/contacts/${id}`)
-  return { success: true }
+    revalidatePath('/contacts')
+    revalidatePath(`/contacts/${id}`)
+    return { success: true }
+  } catch (error) {
+    if (emailKey && isPrismaUniqueError(error)) {
+      const dup = await prisma.contact.findFirst({
+        where: { organizationId: session.user.organizationId, emailKey },
+        select: { name: true },
+      })
+      return { error: duplicateContactEmailMessage(dup?.name ?? 'Unknown') }
+    }
+    throw error
+  }
 }
 
 export async function deleteContactAction(id: string): Promise<{ success?: boolean; error?: string }> {
@@ -273,76 +269,60 @@ export async function scanAndCreateContactAction(scanned: ScannedContactData): P
   const phone = scanned.phone !== '-' ? scanned.phone : null
   const mobile = scanned.mobile !== '-' ? scanned.mobile : null
 
-  // Normalize phone numbers for comparison (remove spaces, dashes, etc.)
-  const normalizePhone = (num: string | null) => num?.replace(/[\s\-\(\)\+]/g, '') || null
-  const normPhone = normalizePhone(phone)
-  const normMobile = normalizePhone(mobile)
-
-  // Check if phone and mobile are the same number
-  if (normPhone && normMobile && normPhone === normMobile) {
-    return { error: 'Phone and mobile numbers are identical. Cannot create duplicate contact.' }
+  const emailKey = buildContactEmailKey(email)
+  const existing = await findDuplicateContact(session.user.organizationId, emailKey)
+  if (existing) {
+    return { error: duplicateContactEmailMessage(existing.name) }
   }
 
-  // Check for existing contacts with same unique fields in this organization
-  const existingContacts = await prisma.contact.findMany({
-    where: {
-      organizationId: session.user.organizationId,
-      OR: [
-        ...(email ? [{ email }] : []),
-        ...(normPhone ? [{ phone: normPhone }] : []),
-        ...(normMobile ? [{ mobile: normMobile }] : []),
-      ],
-    },
-    select: { id: true, name: true, email: true, phone: true, mobile: true },
-  })
+  try {
+    const contact = await prisma.contact.create({
+      data: {
+        name,
+        designation: scanned.designation !== '-' ? scanned.designation : null,
+        email,
+        phone,
+        mobile,
+        companyId,
+        organizationId: session.user.organizationId,
+        ownerId: session.user.id,
+        lastActivityAt: new Date(),
+        emailKey,
+      },
+    })
 
-  if (existingContacts.length > 0) {
-    const duplicateFields: string[] = []
-    for (const existing of existingContacts) {
-      if (email && existing.email === email) duplicateFields.push('email')
-      if (normPhone && existing.phone === normPhone) duplicateFields.push('phone')
-      if (normMobile && existing.mobile === normMobile) duplicateFields.push('mobile')
-    }
-    const uniqueDuplicates = [...new Set(duplicateFields)]
-    return { error: `Contact already exists with same ${uniqueDuplicates.join(', ')}: ${existingContacts.map(c => c.name).join(', ')}` }
-  }
+    await prisma.activity.create({
+      data: {
+        type: 'CONTACT_CREATED',
+        description: `${session.user.name} added contact "${contact.name}" via business card scan`,
+        organizationId: session.user.organizationId,
+        actorId: session.user.id,
+        contactId: contact.id,
+        companyId,
+      },
+    })
 
-  const contact = await prisma.contact.create({
-    data: {
-      name,
-      designation: scanned.designation !== '-' ? scanned.designation : null,
-      email,
-      phone: normPhone,
-      mobile: normMobile,
-      companyId,
-      organizationId: session.user.organizationId,
-      ownerId: session.user.id,
-      lastActivityAt: new Date(),
-    },
-  })
-
-  await prisma.activity.create({
-    data: {
-      type: 'CONTACT_CREATED',
-      description: `${session.user.name} added contact "${contact.name}" via business card scan`,
+    await logAudit({
       organizationId: session.user.organizationId,
       actorId: session.user.id,
-      contactId: contact.id,
-      companyId,
-    },
-  })
+      action: 'CREATE',
+      resource: 'Contact',
+      resourceId: contact.id,
+      metadata: { name: contact.name, companyId, source: 'business_card_scan' },
+    })
 
-  await logAudit({
-    organizationId: session.user.organizationId,
-    actorId: session.user.id,
-    action: 'CREATE',
-    resource: 'Contact',
-    resourceId: contact.id,
-    metadata: { name: contact.name, companyId, source: 'business_card_scan' },
-  })
-
-  revalidatePath('/contacts')
-  return { success: true, createdId: contact.id }
+    revalidatePath('/contacts')
+    return { success: true, createdId: contact.id }
+  } catch (error) {
+    if (emailKey && isPrismaUniqueError(error)) {
+      const dup = await prisma.contact.findFirst({
+        where: { organizationId: session.user.organizationId, emailKey },
+        select: { name: true },
+      })
+      return { error: duplicateContactEmailMessage(dup?.name ?? 'Unknown') }
+    }
+    throw error
+  }
 }
 
 export async function bulkDeleteContactsAction(ids: string[]): Promise<{ success?: boolean; error?: string; deleted?: number }> {

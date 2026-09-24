@@ -423,6 +423,7 @@ exports.Prisma.ContactScalarFieldEnum = {
   organizationId: 'organizationId',
   companyId: 'companyId',
   ownerId: 'ownerId',
+  emailKey: 'emailKey',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   lastActivityAt: 'lastActivityAt'

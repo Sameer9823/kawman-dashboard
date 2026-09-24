@@ -20,6 +20,52 @@ const contactSchema = z.object({
   ownerId: z.string().trim().optional(),
 })
 
+// Helper to normalize phone numbers
+function normalizePhone(num: string | null | undefined): string | null {
+  return num?.replace(/[\s\-\(\)\+]/g, '') || null
+}
+
+// Helper to check for duplicate contact fields
+async function checkDuplicateContact(
+  organizationId: string,
+  email: string | null,
+  phone: string | null,
+  mobile: string | null,
+  excludeId?: string
+) {
+  const normPhone = normalizePhone(phone)
+  const normMobile = normalizePhone(mobile)
+
+  if (normPhone && normMobile && normPhone === normMobile) {
+    return 'Phone and mobile numbers are identical.'
+  }
+
+  const existingContacts = await prisma.contact.findMany({
+    where: {
+      organizationId,
+      ...(excludeId ? { NOT: { id: excludeId } } : {}),
+      OR: [
+        ...(email ? [{ email }] : []),
+        ...(normPhone ? [{ phone: normPhone }] : []),
+        ...(normMobile ? [{ mobile: normMobile }] : []),
+      ],
+    },
+    select: { id: true, name: true, email: true, phone: true, mobile: true },
+  })
+
+  if (existingContacts.length > 0) {
+    const duplicateFields: string[] = []
+    for (const existing of existingContacts) {
+      if (email && existing.email === email) duplicateFields.push('email')
+      if (normPhone && existing.phone === normPhone) duplicateFields.push('phone')
+      if (normMobile && existing.mobile === normMobile) duplicateFields.push('mobile')
+    }
+    const uniqueDuplicates = [...new Set(duplicateFields)]
+    return `Contact already exists with same ${uniqueDuplicates.join(', ')}: ${existingContacts.map(c => c.name).join(', ')}`
+  }
+  return null
+}
+
 export interface ContactFormState {
   error?: string
   fieldErrors?: Record<string, string>
@@ -53,13 +99,25 @@ export async function createContactAction(_prev: ContactFormState, formData: For
     : null
   const companyId = company?.id ?? null
 
+  const email = data.email || null
+  const phone = data.phone || null
+  const mobile = data.mobile || null
+
+  const duplicateError = await checkDuplicateContact(session.user.organizationId, email, phone, mobile)
+  if (duplicateError) {
+    return { error: duplicateError }
+  }
+
+  const normPhone = normalizePhone(phone)
+  const normMobile = normalizePhone(mobile)
+
   const contact = await prisma.contact.create({
     data: {
       name: data.name,
       designation: data.designation || null,
-      email: data.email || null,
-      phone: data.phone || null,
-      mobile: data.mobile || null,
+      email,
+      phone: normPhone,
+      mobile: normMobile,
       companyId,
       organizationId: session.user.organizationId,
       ownerId: data.ownerId || session.user.id,
@@ -119,14 +177,26 @@ export async function updateContactAction(
   const rawCompany = formData.get('company')
   const companyId = rawCompany !== null ? (company?.id ?? null) : existing.companyId
 
+  const email = data.email || null
+  const phone = data.phone || null
+  const mobile = data.mobile || null
+
+  const duplicateError = await checkDuplicateContact(session.user.organizationId, email, phone, mobile, id)
+  if (duplicateError) {
+    return { error: duplicateError }
+  }
+
+  const normPhone = normalizePhone(phone)
+  const normMobile = normalizePhone(mobile)
+
   await prisma.contact.update({
     where: { id },
     data: {
       name: data.name,
       designation: data.designation || null,
-      email: data.email || null,
-      phone: data.phone || null,
-      mobile: data.mobile || null,
+      email,
+      phone: normPhone,
+      mobile: normMobile,
       companyId,
       ownerId: data.ownerId || existing.ownerId,
       lastActivityAt: new Date(),
@@ -199,13 +269,51 @@ export async function scanAndCreateContactAction(scanned: ScannedContactData): P
     : null
   const companyId = company?.id ?? null
 
+  const email = scanned.email !== '-' ? scanned.email : null
+  const phone = scanned.phone !== '-' ? scanned.phone : null
+  const mobile = scanned.mobile !== '-' ? scanned.mobile : null
+
+  // Normalize phone numbers for comparison (remove spaces, dashes, etc.)
+  const normalizePhone = (num: string | null) => num?.replace(/[\s\-\(\)\+]/g, '') || null
+  const normPhone = normalizePhone(phone)
+  const normMobile = normalizePhone(mobile)
+
+  // Check if phone and mobile are the same number
+  if (normPhone && normMobile && normPhone === normMobile) {
+    return { error: 'Phone and mobile numbers are identical. Cannot create duplicate contact.' }
+  }
+
+  // Check for existing contacts with same unique fields in this organization
+  const existingContacts = await prisma.contact.findMany({
+    where: {
+      organizationId: session.user.organizationId,
+      OR: [
+        ...(email ? [{ email }] : []),
+        ...(normPhone ? [{ phone: normPhone }] : []),
+        ...(normMobile ? [{ mobile: normMobile }] : []),
+      ],
+    },
+    select: { id: true, name: true, email: true, phone: true, mobile: true },
+  })
+
+  if (existingContacts.length > 0) {
+    const duplicateFields: string[] = []
+    for (const existing of existingContacts) {
+      if (email && existing.email === email) duplicateFields.push('email')
+      if (normPhone && existing.phone === normPhone) duplicateFields.push('phone')
+      if (normMobile && existing.mobile === normMobile) duplicateFields.push('mobile')
+    }
+    const uniqueDuplicates = [...new Set(duplicateFields)]
+    return { error: `Contact already exists with same ${uniqueDuplicates.join(', ')}: ${existingContacts.map(c => c.name).join(', ')}` }
+  }
+
   const contact = await prisma.contact.create({
     data: {
       name,
       designation: scanned.designation !== '-' ? scanned.designation : null,
-      email: scanned.email !== '-' ? scanned.email : null,
-      phone: scanned.phone !== '-' ? scanned.phone : null,
-      mobile: scanned.mobile !== '-' ? scanned.mobile : null,
+      email,
+      phone: normPhone,
+      mobile: normMobile,
       companyId,
       organizationId: session.user.organizationId,
       ownerId: session.user.id,

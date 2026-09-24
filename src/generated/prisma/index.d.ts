@@ -67631,14 +67631,14 @@ export namespace Prisma {
 
   export type ContactWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    email?: string
+    phone?: string
+    mobile?: string
     AND?: ContactWhereInput | ContactWhereInput[]
     OR?: ContactWhereInput[]
     NOT?: ContactWhereInput | ContactWhereInput[]
     name?: StringFilter<"Contact"> | string
     designation?: StringNullableFilter<"Contact"> | string | null
-    email?: StringNullableFilter<"Contact"> | string | null
-    phone?: StringNullableFilter<"Contact"> | string | null
-    mobile?: StringNullableFilter<"Contact"> | string | null
     status?: StringFilter<"Contact"> | string
     organizationId?: StringFilter<"Contact"> | string
     companyId?: StringNullableFilter<"Contact"> | string | null
@@ -67654,7 +67654,7 @@ export namespace Prisma {
     visits?: FieldVisitListRelationFilter
     leads?: LeadListRelationFilter
     meetings?: MeetingListRelationFilter
-  }, "id">
+  }, "id" | "email" | "phone" | "mobile">
 
   export type ContactOrderByWithAggregationInput = {
     id?: SortOrder

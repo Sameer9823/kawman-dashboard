@@ -102,8 +102,8 @@ export async function getContactsPage(query: ContactQuery = {}): Promise<Contact
     prisma.contact.count({ where }),
     prisma.contact.findMany({
       where,
-      include: { owner: { select: { name: true } }, company: { select: { name: true } } },
-      orderBy: { [CONTACT_SORT_FIELD[sortKey]]: sortDir },
+    include: { owner: { select: { name: true } }, company: { select: { name: true } } },
+    orderBy: { [CONTACT_SORT_FIELD[sortKey]]: sortDir },
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),

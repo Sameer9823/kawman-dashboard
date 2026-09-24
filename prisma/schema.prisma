@@ -536,9 +536,9 @@ model Contact {
   id             String       @id @default(cuid())
   name           String
   designation    String?
-  email          String?
-  phone          String?
-  mobile         String?
+  email          String?      @unique
+  phone          String?      @unique
+  mobile         String?      @unique
   status         String       @default("ACTIVE")
   organizationId String
   companyId      String?
@@ -558,7 +558,6 @@ model Contact {
   @@index([organizationId])
   @@index([companyId])
   @@index([ownerId])
-  @@index([email])
   @@index([status])
   @@index([createdAt])
 }

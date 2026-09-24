@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireApiSession } from '@/lib/session'
+import { CSV_BOM } from '@/lib/csv'
 import {
   generateReportPdfBuffer,
   generateReportExcelBuffer,
@@ -135,7 +136,7 @@ export async function POST(request: Request) {
     if (format === 'csv') {
       const { csv } = generateReportCsv(enriched)
       const filename = buildExportFilename(enriched.name, 'csv', fileDate)
-      return new Response(csv, {
+      return new Response(CSV_BOM + csv, {
         headers: {
           'Content-Type': contentTypeFor('csv'),
           'Content-Disposition': `attachment; filename="${filename}"`,

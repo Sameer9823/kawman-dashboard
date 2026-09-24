@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { toCSV, csvResponse, parseCSV } from './csv'
+import { toCSV, csvResponse, parseCSV, excelText } from './csv'
 
 describe('toCSV', () => {
   it('renders a header row and one row per record, in column order', () => {
@@ -52,6 +52,48 @@ describe('toCSV', () => {
   it('produces just the header row for an empty dataset', () => {
     const csv = toCSV([], [{ key: 'name', header: 'Name' }])
     expect(csv).toBe('Name')
+  })
+
+  it('renders null/undefined/NaN/Infinity as an empty field', () => {
+    const csv = toCSV(
+      [{ a: null, b: undefined, c: NaN, d: Infinity, e: -Infinity }],
+      [
+        { key: 'a', header: 'A' },
+        { key: 'b', header: 'B' },
+        { key: 'c', header: 'C' },
+        { key: 'd', header: 'D' },
+        { key: 'e', header: 'E' },
+      ],
+    )
+    expect(csv).toBe('A,B,C,D,E\r\n,,,,')
+  })
+
+  it('quotes a bare carriage return (RFC 4180)', () => {
+    const csv = toCSV([{ x: 'a\rb' }], [{ key: 'x', header: 'X' }])
+    expect(csv.split('\r\n')[1]).toBe('"a\rb"')
+  })
+
+  it('wraps asText values in the Excel text form and leaves empty as empty', () => {
+    const cols = [{ key: 'phone', header: 'Phone', asText: true }]
+    const csv = toCSV([{ phone: '914444212345' }, { phone: '' }], cols)
+    const rows = csv.split('\r\n')
+    expect(rows[0]).toBe('Phone')
+    // raw RFC-escaped form of excelText('914444212345')
+    expect(rows[1]).toBe('"=""914444212345"""')
+    // empty asText value stays a bare empty cell (no ="")
+    expect(rows[2]).toBe('')
+    // round-trip: parseCSV decodes the non-empty cell back to the ="..." form
+    expect(parseCSV(rows[0] + '\r\n' + rows[1]).rows[0].Phone).toBe('="914444212345"')
+  })
+})
+
+describe('excelText', () => {
+  it('wraps a bare value in the ="..." text formula', () => {
+    expect(excelText('914444212345')).toBe('="914444212345"')
+  })
+
+  it('doubles embedded double quotes before wrapping', () => {
+    expect(excelText('She said "hi"')).toBe('="She said ""hi"""')
   })
 })
 

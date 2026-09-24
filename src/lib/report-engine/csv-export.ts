@@ -2,7 +2,12 @@ import 'server-only'
 
 import type { UniversalReportDefinition, ReportTable } from './types'
 import { normalizeReport } from './types'
-import { toCSV } from '@/lib/csv'
+import { toCSV, type CsvColumn } from '@/lib/csv'
+
+/** Build CsvColumn descriptors from a report table, honouring the csvText hint. */
+function csvColumns(t: ReportTable): CsvColumn<never>[] {
+  return t.columns.map((c) => ({ key: c.key as never, header: c.header, asText: c.csvText }))
+}
 
 function tablesFromReport(def: UniversalReportDefinition): ReportTable[] {
   const d = normalizeReport(def)
@@ -39,7 +44,7 @@ export function generateReportCsv(def: UniversalReportDefinition): { csv: string
     const csv = toCSV(
       // toCSV is generic over row shape; Universal rows are Record<string, unknown>
       t.rows as Record<string, unknown>[] as never,
-      t.columns.map((c) => ({ key: c.key as never, header: c.header })),
+      csvColumns(t),
     )
     return { csv, tableCount: 1 }
   }
@@ -50,7 +55,7 @@ export function generateReportCsv(def: UniversalReportDefinition): { csv: string
     parts.push(
       toCSV(
         t.rows as Record<string, unknown>[] as never,
-        t.columns.map((c) => ({ key: c.key as never, header: c.header })),
+        csvColumns(t),
       ),
     )
     parts.push('') // blank line between tables
@@ -71,7 +76,7 @@ export function generateReportCsvPerTable(
     title: t.title ?? `Table ${i + 1}`,
     csv: toCSV(
       t.rows as Record<string, unknown>[] as never,
-      t.columns.map((c) => ({ key: c.key as never, header: c.header })),
+      csvColumns(t),
     ),
   }))
 }

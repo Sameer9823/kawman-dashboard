@@ -33,14 +33,22 @@ export async function POST(request: Request) {
   try {
     if (dailyReportId) {
       const result = await generateEmployeeDailySummary(dailyReportId)
-      return NextResponse.json(result)
+      if (!result.success) {
+        const status = result.error.startsWith('Forbidden') ? 403 : 400
+        return NextResponse.json({ error: result.error }, { status })
+      }
+      return NextResponse.json({ id: result.data.id })
     }
     const dateRange =
       from || to
         ? { from: from ? new Date(from) : new Date(Date.now() - 6 * 86400000), to: to ? new Date(to) : new Date() }
         : undefined
     const result = await generateTeamManagementSummary(dateRange)
-    return NextResponse.json(result)
+    if (!result.success) {
+      const status = result.error.startsWith('Forbidden') ? 403 : 400
+      return NextResponse.json({ error: result.error }, { status })
+    }
+    return NextResponse.json({ id: result.data.id })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Failed to generate summary'
     const status = msg.startsWith('Forbidden') ? 403 : 500

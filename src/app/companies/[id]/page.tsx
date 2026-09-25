@@ -6,8 +6,10 @@ import { getCompanyById } from '@/services/company.service'
 import { getOrgUserOptions } from '@/services/user.service'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
+import { canManageAssignments } from '@/lib/record-scope'
 import { formatCurrency } from '@/lib/utils'
 import { CompanyDetailForm } from './company-detail-form'
+import type { UserOption } from '@/services/user.service'
 import { isOk } from '@/lib/result'
 
 export const metadata = { title: 'Company Detail | Kawman ExAct' }
@@ -19,6 +21,8 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
   const owners = isOk(ownersResult) ? ownersResult.data : []
 
   const session = await requireApiSession()
+  const canAssign = canManageAssignments(session.user)
+  const currentUser: UserOption = { id: session.user.id, name: session.user.name ?? 'Me' }
   const [leads, contacts, deals, activities] = await Promise.all([
     prisma.lead.findMany({
       where: { companyId: id, organizationId: session.user.organizationId },
@@ -50,7 +54,7 @@ export default async function CompanyDetailPage({ params }: { params: Promise<{ 
     <MainLayout>
       <div className="space-y-6 max-w-4xl">
         <PageHeader title={company.name} subtitle={company.industry} />
-        <CompanyDetailForm company={company} owners={owners} />
+        <CompanyDetailForm company={company} owners={owners} canAssign={canAssign} currentUser={currentUser} />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">

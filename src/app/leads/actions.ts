@@ -11,6 +11,7 @@ import { PERMISSIONS } from '@/lib/permissions-data'
 import { recalculateLeadScore, recalculateAllLeadScores } from '@/services/lead.service'
 import { parseCSV } from '@/lib/csv'
 import { logAudit } from '@/lib/audit-log'
+import { canManageAssignments } from '@/lib/record-scope'
 import { findOrCreateCompanyByName } from '@/services/company.service'
 
 const leadSchema = z.object({
@@ -20,6 +21,7 @@ const leadSchema = z.object({
   email: z.string().trim().email('Enter a valid email').optional().or(z.literal('')),
   phone: z.string().trim().optional(),
   source: z.string().trim().optional(),
+  segment: z.string().trim().optional(),
   status: z.enum(['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST']).optional(),
   score: z.coerce.number().int().min(0).max(100).optional(),
   value: z.coerce.number().min(0).optional(),
@@ -54,6 +56,7 @@ export async function createLeadAction(_prev: LeadFormState, formData: FormData)
   }
 
   const data = parsed.data
+  if (!canManageAssignments(session.user)) data.ownerId = session.user.id
   const lead = await prisma.$transaction(async (tx) => {
     const created = await tx.lead.create({
       data: {
@@ -63,6 +66,7 @@ export async function createLeadAction(_prev: LeadFormState, formData: FormData)
         email: data.email || null,
         phone: data.phone || null,
         source: data.source || 'Other',
+        segment: data.segment || null,
         score: data.score ?? 0,
         value: data.value ?? null,
         notes: data.notes || null,
@@ -96,6 +100,24 @@ export async function createLeadAction(_prev: LeadFormState, formData: FormData)
     return created
   })
 
+  // Notify the owner when a lead is created and assigned to someone else
+  if (lead.ownerId !== session.user.id) {
+    try {
+      const { createNotification } = await import('@/services/notification.service')
+      const assignerName = session.user.name ?? session.user.email ?? 'A team member'
+      await createNotification({
+        organizationId: session.user.organizationId,
+        userId: lead.ownerId,
+        type: 'NEW_LEAD' as never,
+        title: 'New Lead Assigned',
+        message: `${assignerName} assigned you "${lead.name}"${lead.company ? ` at ${lead.company}` : ''}`,
+        data: { leadId: lead.id, leadName: lead.name, leadCompany: lead.company ?? null, assignedById: session.user.id, leadUrl: `/leads/${lead.id}` } as never,
+      })
+    } catch (notifyErr) {
+      console.error('[createLeadAction] notification failed (ignored):', notifyErr)
+    }
+  }
+
   revalidatePath('/leads')
   revalidatePath('/dashboard')
   return { success: true, createdId: lead.id }
@@ -118,6 +140,7 @@ export async function updateLeadAction(id: string, _prev: LeadFormState, formDat
   if (!existing) return { error: 'Lead not found.' }
 
   const data = parsed.data
+  if (!canManageAssignments(session.user)) data.ownerId = session.user.id
   await prisma.lead.update({
     where: { id },
     data: {
@@ -126,6 +149,7 @@ export async function updateLeadAction(id: string, _prev: LeadFormState, formDat
       email: data.email || null,
       phone: data.phone || null,
       source: data.source || undefined,
+      segment: data.segment || null,
       status: data.status,
       score: data.score,
       value: data.value,
@@ -375,8 +399,9 @@ export async function importLeadsAction(formData: FormData): Promise<LeadImportR
           companyId: data.company ? (companyIdByName.get(data.company) ?? companyIdByName.get(data.company.toLowerCase()) ?? null) : null,
           email: data.email || null,
           phone: data.phone || null,
-          source: data.source || 'Import',
-          status: data.status,
+        source: data.source || 'Import',
+        segment: data.segment || null,
+        status: data.status,
           score: data.score ?? 0,
           value: data.value ?? null,
           notes: data.notes || null,
@@ -477,13 +502,42 @@ export async function bulkReassignLeadsAction(ids: string[], ownerId: string): P
 
   try {
     const session = await assertPermission(PERMISSIONS['leads.update'].name)
+    if (!canManageAssignments(session.user)) return { error: 'Only admins can reassign leads to other users' }
     const owner = await prisma.user.findFirst({ where: { id: ownerId, organizationId: session.user.organizationId } })
     if (!owner) return { error: 'Selected owner not found' }
+
+    // Fetch lead details for the notification before updating ownership
+    const leadsToUpdate = await prisma.lead.findMany({
+      where: { id: { in: ids }, organizationId: session.user.organizationId },
+      select: { id: true, name: true, company: true },
+    })
 
     const result = await prisma.lead.updateMany({
       where: { id: { in: ids }, organizationId: session.user.organizationId },
       data: { ownerId },
     })
+
+    // Notify the new owner of each reassigned lead (bell notification)
+    if (result.count > 0 && ownerId !== session.user.id) {
+      try {
+        const { createNotification } = await import('@/services/notification.service')
+        const assignerName = session.user.name ?? session.user.email ?? 'A team member'
+        await Promise.all(
+          leadsToUpdate.map((lead) =>
+            createNotification({
+              organizationId: session.user.organizationId,
+              userId: ownerId,
+              type: 'NEW_LEAD' as never,
+              title: 'Lead reassigned to you',
+              message: `${assignerName} reassigned "${lead.name}"${lead.company ? ` at ${lead.company}` : ''} to you`,
+              data: { leadId: lead.id, leadName: lead.name, leadCompany: lead.company ?? null, assignedById: session.user.id, leadUrl: `/leads/${lead.id}` } as never,
+            })
+          )
+        )
+      } catch (notifyErr) {
+        console.error('[bulkReassignLeadsAction] notification failed (ignored):', notifyErr)
+      }
+    }
 
     await logAudit({
       organizationId: session.user.organizationId,

@@ -47,7 +47,7 @@ const STATUS_LABEL: Record<LeadStatus, string> = {
  * Also owns row selection + the bulk-action bar (audit: "Bulk Actions —
  * No bulk delete/update on any table").
  */
-export function LeadsTable({ result, owners }: { result: LeadPage; owners: UserOption[] }) {
+export function LeadsTable({ result, owners, canAssign }: { result: LeadPage; owners: UserOption[]; canAssign: boolean }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -165,6 +165,7 @@ export function LeadsTable({ result, owners }: { result: LeadPage; owners: UserO
         <BulkActionBar
           selectedIds={Array.from(selected)}
           owners={owners}
+          canAssign={canAssign}
           onClear={() => setSelected(new Set())}
           onDone={() => {
             setSelected(new Set())
@@ -346,11 +347,13 @@ export function LeadsTable({ result, owners }: { result: LeadPage; owners: UserO
 function BulkActionBar({
   selectedIds,
   owners,
+  canAssign,
   onClear,
   onDone,
 }: {
   selectedIds: string[]
   owners: UserOption[]
+  canAssign: boolean
   onClear: () => void
   onDone: () => void
 }) {
@@ -391,25 +394,27 @@ function BulkActionBar({
         ))}
       </select>
 
-      <select
-        defaultValue=""
-        disabled={pending}
-        onChange={(e) => {
-          if (!e.target.value) return
-          run(() => bulkReassignLeadsAction(selectedIds, e.target.value))
-          e.target.value = ''
-        }}
-        className="h-8 rounded-lg border border-white/[0.08] bg-white/[0.06] px-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-      >
-        <option value="" disabled>
-          Reassign to…
-        </option>
-        {owners.map((o) => (
-          <option key={o.id} value={o.id}>
-            {o.name}
+      {canAssign && (
+        <select
+          defaultValue=""
+          disabled={pending}
+          onChange={(e) => {
+            if (!e.target.value) return
+            run(() => bulkReassignLeadsAction(selectedIds, e.target.value))
+            e.target.value = ''
+          }}
+          className="h-8 rounded-lg border border-white/[0.08] bg-white/[0.06] px-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+        >
+          <option value="" disabled>
+            Reassign to…
           </option>
-        ))}
-      </select>
+          {owners.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.name}
+            </option>
+          ))}
+        </select>
+      )}
 
       <Button
         type="button"

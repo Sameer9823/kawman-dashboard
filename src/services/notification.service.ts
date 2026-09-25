@@ -1,7 +1,7 @@
 import 'server-only'
 import { prisma } from '@/lib/db'
 import type { Prisma } from '@/generated/prisma'
-import { queueNotification, queueEmail } from '@/services/queue.service'
+import { queueEmail } from '@/services/queue.service'
 import {
   LeadAssignedTemplate,
   DealStageChangedTemplate,
@@ -47,27 +47,33 @@ export interface NotificationInput {
 }
 
 /**
- * Create an in-app notification (queued for background processing)
+ * Create an in-app notification
+ *
+ * Writes directly to the database so notifications are immediately visible
+ * without depending on a running Redis worker. Email dispatch is still
+ * queued (and falls back gracefully when Redis is unavailable).
  */
 export async function createNotification(args: NotificationInput): Promise<string | null> {
   const { organizationId, userId, type, title, message, data, sendEmail, emailTemplate, emailData } = args
 
-  // Queue in-app notification
-  const notificationJobId = await queueNotification({
-    organizationId,
-    userId,
-    type,
-    title,
-    message,
-    data,
+  // Create in-app notification directly in the database
+  const notification = await prisma.notification.create({
+    data: {
+      organizationId,
+      userId,
+      type,
+      title,
+      message,
+      data: data as Prisma.InputJsonValue,
+    },
   })
 
-  // Queue email if requested
+  // Queue email if requested (best-effort; no-op when Redis is unavailable)
   if (sendEmail && emailTemplate && emailData) {
     await queueEmailNotification(userId, emailTemplate, emailData)
   }
 
-  return notificationJobId
+  return notification.id
 }
 
 /**
@@ -260,6 +266,12 @@ export async function markNotificationsRead(args: {
 export async function deleteNotification(notificationId: string, userId: string, organizationId: string) {
   return prisma.notification.delete({
     where: { id: notificationId, userId, organizationId },
+  })
+}
+
+export async function deleteAllNotifications(userId: string, organizationId: string) {
+  return prisma.notification.deleteMany({
+    where: { userId, organizationId },
   })
 }
 

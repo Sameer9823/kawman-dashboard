@@ -8,14 +8,19 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createDealAction, type DealFormState } from '../actions'
 import type { UserOption } from '@/services/user.service'
+import { SEGMENTS, SEGMENT_LABEL } from '@/types/crm'
 
 const initialState: DealFormState = {}
 const STAGES = ['NEW_LEAD', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST']
 
 export function DealForm({
   owners,
+  canAssign,
+  currentUser,
 }: {
   owners: UserOption[]
+  canAssign: boolean
+  currentUser: UserOption
 }) {
   const [state, formAction, pending] = useActionState(createDealAction, initialState)
   const router = useRouter()
@@ -70,17 +75,45 @@ export function DealForm({
             <option value="HIGH">High</option>
           </select>
         </Field>
-        <Field label="Owner" error={state.fieldErrors?.ownerId}>
+        <Field label="Segment" error={state.fieldErrors?.segment}>
           <select
-            name="ownerId"
+            name="segment"
             defaultValue=""
             className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
           >
-            <option value="">Assign to me</option>
-            {owners.map((o) => (
-              <option key={o.id} value={o.id}>{o.name}</option>
+            <option value="">Select segment</option>
+            {SEGMENTS.map((s) => (
+              <option key={s} value={s}>
+                {SEGMENT_LABEL[s]}
+              </option>
             ))}
           </select>
+        </Field>
+        <Field label="Owner" error={state.fieldErrors?.ownerId}>
+          {canAssign ? (
+            <select
+              name="ownerId"
+              defaultValue=""
+              className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            >
+              <option value="">Assign to me</option>
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>{o.name}</option>
+              ))}
+            </select>
+          ) : (
+            <>
+              <input type="hidden" name="ownerId" value={currentUser.id} />
+              <select
+                name="ownerId"
+                defaultValue={currentUser.id}
+                disabled
+                className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white/50 cursor-not-allowed"
+              >
+                <option value={currentUser.id}>{currentUser.name} (you)</option>
+              </select>
+            </>
+          )}
         </Field>
 
         {state.error && (

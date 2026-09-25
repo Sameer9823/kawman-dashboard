@@ -5,8 +5,10 @@ import { getDealById } from '@/services/deal.service'
 import { getOrgUserOptions } from '@/services/user.service'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
+import { canManageAssignments } from '@/lib/record-scope'
 import { formatCurrency } from '@/lib/utils'
 import { DealDetailForm } from './deal-detail-form'
+import type { UserOption } from '@/services/user.service'
 import { isOk } from '@/lib/result'
 
 export const metadata = { title: 'Deal Detail | Kawman ExAct' }
@@ -21,6 +23,8 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
   const owners = isOk(ownersResult) ? ownersResult.data : []
 
   const session = await requireApiSession()
+  const canAssign = canManageAssignments(session.user)
+  const currentUser: UserOption = { id: session.user.id, name: session.user.name ?? 'Me' }
   const [activities, followUps] = await Promise.all([
     prisma.activity.findMany({
       where: { dealId: id, organizationId: session.user.organizationId },
@@ -38,7 +42,7 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
     <MainLayout>
       <div className="space-y-6 max-w-4xl">
         <PageHeader title={deal.name} subtitle={`${deal.company} · ${formatCurrency(deal.value)}`} />
-        <DealDetailForm deal={deal} owners={owners} />
+        <DealDetailForm deal={deal} owners={owners} canAssign={canAssign} currentUser={currentUser} />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">

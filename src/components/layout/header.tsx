@@ -30,6 +30,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useUIStore } from '@/stores/ui'
 import { useSession, signOut } from '@/lib/auth-client'
 import { getInitials, formatRelativeTime } from '@/lib/utils'
+import { playNotificationSound } from '@/lib/notification-sound'
 import { ThemeToggle } from './theme-toggle'
 
 const NOTIF_COLOR: Record<string, string> = {
@@ -53,7 +54,7 @@ interface NotificationDTO {
   message: string
   data?: { dailyReportId?: string; userId?: string; visitId?: string; assignedById?: string; scheduledAt?: string } | null
   createdAt: string
-  read: boolean
+  isRead: boolean
 }
 
 function notifHref(n: NotificationDTO): string {
@@ -78,17 +79,28 @@ export function Header() {
 
   const { data: notifications = [] } = useQuery<NotificationDTO[]>({
     queryKey: ['notifications'],
-    queryFn: async () => {
-      const res = await fetch('/api/notifications')
-      if (!res.ok) return []
-      const data = await res.json()
-      return Array.isArray(data) ? data : []
-    },
+      queryFn: async () => {
+        const res = await fetch('/api/notifications')
+        if (!res.ok) return []
+        const data = await res.json()
+        return data.notifications ?? []
+      },
     enabled: !!user,
-    refetchInterval: 60_000,
+    refetchInterval: 15_000,
   })
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  // Play a sound when new unread notifications arrive
+  const seenIdsRef = React.useRef<Set<string>>(new Set())
+  React.useEffect(() => {
+    if (!user) return
+    const newUnread = notifications.filter((n) => !n.isRead && !seenIdsRef.current.has(n.id))
+    if (newUnread.length > 0) {
+      playNotificationSound()
+    }
+    notifications.forEach((n) => seenIdsRef.current.add(n.id))
+  })
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length
 
   function removeNotification(id: string) {
     queryClient.setQueryData<NotificationDTO[]>(['notifications'], (prev) => (prev ? prev.filter((n) => n.id !== id) : prev))
@@ -228,7 +240,7 @@ export function Header() {
                       <p className="text-xs text-white/50 line-clamp-2">{notification.message}</p>
                       <p className="text-xs text-white/35 mt-0.5">{formatRelativeTime(notification.createdAt)}</p>
                     </div>
-                    {!notification.read && <span className="mt-1.5 h-2 w-2 rounded-full bg-purple-400 shrink-0" aria-hidden="true" />}
+                    {!notification.isRead && <span className="mt-1.5 h-2 w-2 rounded-full bg-purple-400 shrink-0" aria-hidden="true" />}
                   </Link>
                 </DropdownMenuItem>
               ))}

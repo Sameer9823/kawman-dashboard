@@ -8,6 +8,7 @@ import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
 import { logAudit } from '@/lib/audit-log'
+import { canManageAssignments } from '@/lib/record-scope'
 import { findOrCreateCompanyByName } from '@/services/company.service'
 import { findOrCreateContactByName } from '@/services/contact.service'
 
@@ -22,6 +23,7 @@ const dealSchema = z.object({
   stage: z.enum(STAGES).optional(),
   expectedClose: z.string().trim().optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
+  segment: z.string().trim().optional(),
   ownerId: z.string().trim().optional(),
 })
 
@@ -48,6 +50,7 @@ export async function createDealAction(_prev: DealFormState, formData: FormData)
     return { fieldErrors }
   }
   const data = parsed.data
+  if (!canManageAssignments(session.user)) data.ownerId = session.user.id
 
   const company = data.company?.trim()
     ? await findOrCreateCompanyByName({
@@ -75,6 +78,7 @@ export async function createDealAction(_prev: DealFormState, formData: FormData)
       stage: data.stage ?? 'NEW_LEAD',
       expectedClose: data.expectedClose ? new Date(data.expectedClose) : null,
       priority: data.priority ?? 'MEDIUM',
+      segment: data.segment || null,
       companyId,
       contactId,
       organizationId: session.user.organizationId,
@@ -116,6 +120,7 @@ export async function updateDealAction(id: string, _prev: DealFormState, formDat
     return { fieldErrors }
   }
   const data = parsed.data
+  if (!canManageAssignments(session.user)) data.ownerId = session.user.id
 
   const existing = await prisma.deal.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!existing) return { error: 'Deal not found.' }
@@ -150,6 +155,7 @@ export async function updateDealAction(id: string, _prev: DealFormState, formDat
       stage: data.stage ?? existing.stage,
       expectedClose: data.expectedClose ? new Date(data.expectedClose) : null,
       priority: data.priority ?? existing.priority,
+      segment: data.segment || null,
       companyId,
       contactId,
       ownerId: data.ownerId || existing.ownerId,

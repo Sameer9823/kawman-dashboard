@@ -55,6 +55,7 @@ function mapDeal(row: DealRow): Deal {
     ownerInitials: toInitials(row.owner.name ?? 'U'),
     expectedClose: row.expectedClose ? row.expectedClose.toISOString().slice(0, 10) : '',
     priority: (row.priority as Deal['priority']) ?? 'MEDIUM',
+    segment: row.segment ?? null,
   }
 }
 

@@ -11,7 +11,7 @@ import type { UserOption } from '@/services/user.service'
 
 const initialState: CompanyFormState = {}
 
-export function CompanyForm({ owners }: { owners: UserOption[] }) {
+export function CompanyForm({ owners, canAssign, currentUser }: { owners: UserOption[]; canAssign: boolean; currentUser: UserOption }) {
   const [state, formAction, pending] = useActionState(createCompanyAction, initialState)
   const router = useRouter()
   useEffect(() => {
@@ -53,16 +53,30 @@ export function CompanyForm({ owners }: { owners: UserOption[] }) {
           <Input name="revenue" type="number" min={0} step="10000" placeholder="50000000" />
         </Field>
         <Field label="Owner" error={state.fieldErrors?.ownerId}>
-          <select
-            name="ownerId"
-            defaultValue=""
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
-            <option value="">Assign to me</option>
-            {owners.map((o) => (
-              <option key={o.id} value={o.id}>{o.name}</option>
-            ))}
-          </select>
+          {canAssign ? (
+            <select
+              name="ownerId"
+              defaultValue=""
+              className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            >
+              <option value="">Assign to me</option>
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>{o.name}</option>
+              ))}
+            </select>
+          ) : (
+            <>
+              <input type="hidden" name="ownerId" value={currentUser.id} />
+              <select
+                name="ownerId"
+                defaultValue={currentUser.id}
+                disabled
+                className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white/50 cursor-not-allowed"
+              >
+                <option value={currentUser.id}>{currentUser.name} (you)</option>
+              </select>
+            </>
+          )}
         </Field>
 
         {state.error && (

@@ -8,6 +8,7 @@ import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
 import { logAudit } from '@/lib/audit-log'
+import { canManageAssignments } from '@/lib/record-scope'
 import { findOrCreateCompanyByName } from '@/services/company.service'
 import { buildContactEmailKey, duplicateContactEmailMessage } from '@/lib/contact-dedupe'
 
@@ -18,6 +19,8 @@ const contactSchema = z.object({
   email: z.string().trim().email('Enter a valid email').optional().or(z.literal('')),
   phone: z.string().trim().optional(),
   mobile: z.string().trim().optional(),
+  address: z.string().trim().optional(),
+  segment: z.string().trim().optional(),
   ownerId: z.string().trim().optional(),
 })
 
@@ -64,6 +67,7 @@ export async function createContactAction(_prev: ContactFormState, formData: For
     return { fieldErrors }
   }
   const data = parsed.data
+  if (!canManageAssignments(session.user)) data.ownerId = session.user.id
 
   const company = data.company?.trim()
     ? await findOrCreateCompanyByName({
@@ -77,6 +81,7 @@ export async function createContactAction(_prev: ContactFormState, formData: For
   const email = data.email || null
   const phone = data.phone || null
   const mobile = data.mobile || null
+  const address = data.address || null
 
   const emailKey = buildContactEmailKey(email)
   const existing = await findDuplicateContact(session.user.organizationId, emailKey)
@@ -92,9 +97,11 @@ export async function createContactAction(_prev: ContactFormState, formData: For
         email,
         phone,
         mobile,
+        address,
+        segment: data.segment || null,
         companyId,
-        organizationId: session.user.organizationId,
-        ownerId: data.ownerId || session.user.id,
+         organizationId: session.user.organizationId,
+         ownerId: data.ownerId || session.user.id,
         lastActivityAt: new Date(),
         emailKey,
       },
@@ -148,6 +155,7 @@ export async function updateContactAction(
     return { fieldErrors }
   }
   const data = parsed.data
+  if (!canManageAssignments(session.user)) data.ownerId = session.user.id
 
   const existing = await prisma.contact.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!existing) return { error: 'Contact not found.' }
@@ -166,6 +174,7 @@ export async function updateContactAction(
   const email = data.email || null
   const phone = data.phone || null
   const mobile = data.mobile || null
+  const address = data.address || null
 
   const emailKey = buildContactEmailKey(email)
   const duplicate = await findDuplicateContact(session.user.organizationId, emailKey, id)
@@ -182,8 +191,10 @@ export async function updateContactAction(
         email,
         phone,
         mobile,
+        address,
+        segment: data.segment || null,
         companyId,
-        ownerId: data.ownerId || existing.ownerId,
+         ownerId: data.ownerId || existing.ownerId,
         lastActivityAt: new Date(),
         emailKey,
       },
@@ -268,6 +279,7 @@ export async function scanAndCreateContactAction(scanned: ScannedContactData): P
   const email = scanned.email !== '-' ? scanned.email : null
   const phone = scanned.phone !== '-' ? scanned.phone : null
   const mobile = scanned.mobile !== '-' ? scanned.mobile : null
+  const address = scanned.address !== '-' ? scanned.address : null
 
   const emailKey = buildContactEmailKey(email)
   const existing = await findDuplicateContact(session.user.organizationId, emailKey)
@@ -283,6 +295,7 @@ export async function scanAndCreateContactAction(scanned: ScannedContactData): P
         email,
         phone,
         mobile,
+        address,
         companyId,
         organizationId: session.user.organizationId,
         ownerId: session.user.id,

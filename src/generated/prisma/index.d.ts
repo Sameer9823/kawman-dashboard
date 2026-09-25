@@ -32698,6 +32698,7 @@ export namespace Prisma {
     status: $Enums.LeadStatus | null
     score: number | null
     value: Decimal | null
+    segment: string | null
     notes: string | null
     organizationId: string | null
     ownerId: string | null
@@ -32718,6 +32719,7 @@ export namespace Prisma {
     status: $Enums.LeadStatus | null
     score: number | null
     value: Decimal | null
+    segment: string | null
     notes: string | null
     organizationId: string | null
     ownerId: string | null
@@ -32738,6 +32740,7 @@ export namespace Prisma {
     status: number
     score: number
     value: number
+    segment: number
     notes: number
     organizationId: number
     ownerId: number
@@ -32770,6 +32773,7 @@ export namespace Prisma {
     status?: true
     score?: true
     value?: true
+    segment?: true
     notes?: true
     organizationId?: true
     ownerId?: true
@@ -32790,6 +32794,7 @@ export namespace Prisma {
     status?: true
     score?: true
     value?: true
+    segment?: true
     notes?: true
     organizationId?: true
     ownerId?: true
@@ -32810,6 +32815,7 @@ export namespace Prisma {
     status?: true
     score?: true
     value?: true
+    segment?: true
     notes?: true
     organizationId?: true
     ownerId?: true
@@ -32917,6 +32923,7 @@ export namespace Prisma {
     status: $Enums.LeadStatus
     score: number
     value: Decimal | null
+    segment: string | null
     notes: string | null
     organizationId: string
     ownerId: string
@@ -32956,6 +32963,7 @@ export namespace Prisma {
     status?: boolean
     score?: boolean
     value?: boolean
+    segment?: boolean
     notes?: boolean
     organizationId?: boolean
     ownerId?: boolean
@@ -32984,6 +32992,7 @@ export namespace Prisma {
     status?: boolean
     score?: boolean
     value?: boolean
+    segment?: boolean
     notes?: boolean
     organizationId?: boolean
     ownerId?: boolean
@@ -33008,6 +33017,7 @@ export namespace Prisma {
     status?: boolean
     score?: boolean
     value?: boolean
+    segment?: boolean
     notes?: boolean
     organizationId?: boolean
     ownerId?: boolean
@@ -33032,6 +33042,7 @@ export namespace Prisma {
     status?: boolean
     score?: boolean
     value?: boolean
+    segment?: boolean
     notes?: boolean
     organizationId?: boolean
     ownerId?: boolean
@@ -33042,7 +33053,7 @@ export namespace Prisma {
     lastActivityAt?: boolean
   }
 
-  export type LeadOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "company" | "email" | "phone" | "source" | "status" | "score" | "value" | "notes" | "organizationId" | "ownerId" | "companyId" | "contactId" | "createdAt" | "updatedAt" | "lastActivityAt", ExtArgs["result"]["lead"]>
+  export type LeadOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "company" | "email" | "phone" | "source" | "status" | "score" | "value" | "segment" | "notes" | "organizationId" | "ownerId" | "companyId" | "contactId" | "createdAt" | "updatedAt" | "lastActivityAt", ExtArgs["result"]["lead"]>
   export type LeadInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     activities?: boolean | Lead$activitiesArgs<ExtArgs>
     deals?: boolean | Lead$dealsArgs<ExtArgs>
@@ -33087,6 +33098,7 @@ export namespace Prisma {
       status: $Enums.LeadStatus
       score: number
       value: Prisma.Decimal | null
+      segment: string | null
       notes: string | null
       organizationId: string
       ownerId: string
@@ -33534,6 +33546,7 @@ export namespace Prisma {
     readonly status: FieldRef<"Lead", 'LeadStatus'>
     readonly score: FieldRef<"Lead", 'Int'>
     readonly value: FieldRef<"Lead", 'Decimal'>
+    readonly segment: FieldRef<"Lead", 'String'>
     readonly notes: FieldRef<"Lead", 'String'>
     readonly organizationId: FieldRef<"Lead", 'String'>
     readonly ownerId: FieldRef<"Lead", 'String'>
@@ -35579,6 +35592,8 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     mobile: string | null
+    address: string | null
+    segment: string | null
     status: string | null
     organizationId: string | null
     companyId: string | null
@@ -35596,6 +35611,8 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     mobile: string | null
+    address: string | null
+    segment: string | null
     status: string | null
     organizationId: string | null
     companyId: string | null
@@ -35613,6 +35630,8 @@ export namespace Prisma {
     email: number
     phone: number
     mobile: number
+    address: number
+    segment: number
     status: number
     organizationId: number
     companyId: number
@@ -35632,6 +35651,8 @@ export namespace Prisma {
     email?: true
     phone?: true
     mobile?: true
+    address?: true
+    segment?: true
     status?: true
     organizationId?: true
     companyId?: true
@@ -35649,6 +35670,8 @@ export namespace Prisma {
     email?: true
     phone?: true
     mobile?: true
+    address?: true
+    segment?: true
     status?: true
     organizationId?: true
     companyId?: true
@@ -35666,6 +35689,8 @@ export namespace Prisma {
     email?: true
     phone?: true
     mobile?: true
+    address?: true
+    segment?: true
     status?: true
     organizationId?: true
     companyId?: true
@@ -35756,6 +35781,8 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     mobile: string | null
+    address: string | null
+    segment: string | null
     status: string
     organizationId: string
     companyId: string | null
@@ -35790,6 +35817,8 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     mobile?: boolean
+    address?: boolean
+    segment?: boolean
     status?: boolean
     organizationId?: boolean
     companyId?: boolean
@@ -35816,6 +35845,8 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     mobile?: boolean
+    address?: boolean
+    segment?: boolean
     status?: boolean
     organizationId?: boolean
     companyId?: boolean
@@ -35836,6 +35867,8 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     mobile?: boolean
+    address?: boolean
+    segment?: boolean
     status?: boolean
     organizationId?: boolean
     companyId?: boolean
@@ -35856,6 +35889,8 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     mobile?: boolean
+    address?: boolean
+    segment?: boolean
     status?: boolean
     organizationId?: boolean
     companyId?: boolean
@@ -35866,7 +35901,7 @@ export namespace Prisma {
     lastActivityAt?: boolean
   }
 
-  export type ContactOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "designation" | "email" | "phone" | "mobile" | "status" | "organizationId" | "companyId" | "ownerId" | "emailKey" | "createdAt" | "updatedAt" | "lastActivityAt", ExtArgs["result"]["contact"]>
+  export type ContactOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "designation" | "email" | "phone" | "mobile" | "address" | "segment" | "status" | "organizationId" | "companyId" | "ownerId" | "emailKey" | "createdAt" | "updatedAt" | "lastActivityAt", ExtArgs["result"]["contact"]>
   export type ContactInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     activities?: boolean | Contact$activitiesArgs<ExtArgs>
     company?: boolean | Contact$companyArgs<ExtArgs>
@@ -35908,6 +35943,8 @@ export namespace Prisma {
       email: string | null
       phone: string | null
       mobile: string | null
+      address: string | null
+      segment: string | null
       status: string
       organizationId: string
       companyId: string | null
@@ -36353,6 +36390,8 @@ export namespace Prisma {
     readonly email: FieldRef<"Contact", 'String'>
     readonly phone: FieldRef<"Contact", 'String'>
     readonly mobile: FieldRef<"Contact", 'String'>
+    readonly address: FieldRef<"Contact", 'String'>
+    readonly segment: FieldRef<"Contact", 'String'>
     readonly status: FieldRef<"Contact", 'String'>
     readonly organizationId: FieldRef<"Contact", 'String'>
     readonly companyId: FieldRef<"Contact", 'String'>
@@ -36949,6 +36988,7 @@ export namespace Prisma {
     stage: $Enums.DealStage | null
     expectedClose: Date | null
     priority: string | null
+    segment: string | null
     notes: string | null
     organizationId: string | null
     ownerId: string | null
@@ -36968,6 +37008,7 @@ export namespace Prisma {
     stage: $Enums.DealStage | null
     expectedClose: Date | null
     priority: string | null
+    segment: string | null
     notes: string | null
     organizationId: string | null
     ownerId: string | null
@@ -36987,6 +37028,7 @@ export namespace Prisma {
     stage: number
     expectedClose: number
     priority: number
+    segment: number
     notes: number
     organizationId: number
     ownerId: number
@@ -37018,6 +37060,7 @@ export namespace Prisma {
     stage?: true
     expectedClose?: true
     priority?: true
+    segment?: true
     notes?: true
     organizationId?: true
     ownerId?: true
@@ -37037,6 +37080,7 @@ export namespace Prisma {
     stage?: true
     expectedClose?: true
     priority?: true
+    segment?: true
     notes?: true
     organizationId?: true
     ownerId?: true
@@ -37056,6 +37100,7 @@ export namespace Prisma {
     stage?: true
     expectedClose?: true
     priority?: true
+    segment?: true
     notes?: true
     organizationId?: true
     ownerId?: true
@@ -37162,6 +37207,7 @@ export namespace Prisma {
     stage: $Enums.DealStage
     expectedClose: Date | null
     priority: string
+    segment: string | null
     notes: string | null
     organizationId: string
     ownerId: string
@@ -37200,6 +37246,7 @@ export namespace Prisma {
     stage?: boolean
     expectedClose?: boolean
     priority?: boolean
+    segment?: boolean
     notes?: boolean
     organizationId?: boolean
     ownerId?: boolean
@@ -37229,6 +37276,7 @@ export namespace Prisma {
     stage?: boolean
     expectedClose?: boolean
     priority?: boolean
+    segment?: boolean
     notes?: boolean
     organizationId?: boolean
     ownerId?: boolean
@@ -37253,6 +37301,7 @@ export namespace Prisma {
     stage?: boolean
     expectedClose?: boolean
     priority?: boolean
+    segment?: boolean
     notes?: boolean
     organizationId?: boolean
     ownerId?: boolean
@@ -37277,6 +37326,7 @@ export namespace Prisma {
     stage?: boolean
     expectedClose?: boolean
     priority?: boolean
+    segment?: boolean
     notes?: boolean
     organizationId?: boolean
     ownerId?: boolean
@@ -37288,7 +37338,7 @@ export namespace Prisma {
     closedAt?: boolean
   }
 
-  export type DealOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "value" | "probability" | "stage" | "expectedClose" | "priority" | "notes" | "organizationId" | "ownerId" | "companyId" | "contactId" | "leadId" | "createdAt" | "updatedAt" | "closedAt", ExtArgs["result"]["deal"]>
+  export type DealOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "value" | "probability" | "stage" | "expectedClose" | "priority" | "segment" | "notes" | "organizationId" | "ownerId" | "companyId" | "contactId" | "leadId" | "createdAt" | "updatedAt" | "closedAt", ExtArgs["result"]["deal"]>
   export type DealInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     activities?: boolean | Deal$activitiesArgs<ExtArgs>
     company?: boolean | Deal$companyArgs<ExtArgs>
@@ -37337,6 +37387,7 @@ export namespace Prisma {
       stage: $Enums.DealStage
       expectedClose: Date | null
       priority: string
+      segment: string | null
       notes: string | null
       organizationId: string
       ownerId: string
@@ -37785,6 +37836,7 @@ export namespace Prisma {
     readonly stage: FieldRef<"Deal", 'DealStage'>
     readonly expectedClose: FieldRef<"Deal", 'DateTime'>
     readonly priority: FieldRef<"Deal", 'String'>
+    readonly segment: FieldRef<"Deal", 'String'>
     readonly notes: FieldRef<"Deal", 'String'>
     readonly organizationId: FieldRef<"Deal", 'String'>
     readonly ownerId: FieldRef<"Deal", 'String'>
@@ -64652,6 +64704,7 @@ export namespace Prisma {
     status: 'status',
     score: 'score',
     value: 'value',
+    segment: 'segment',
     notes: 'notes',
     organizationId: 'organizationId',
     ownerId: 'ownerId',
@@ -64695,6 +64748,8 @@ export namespace Prisma {
     email: 'email',
     phone: 'phone',
     mobile: 'mobile',
+    address: 'address',
+    segment: 'segment',
     status: 'status',
     organizationId: 'organizationId',
     companyId: 'companyId',
@@ -64716,6 +64771,7 @@ export namespace Prisma {
     stage: 'stage',
     expectedClose: 'expectedClose',
     priority: 'priority',
+    segment: 'segment',
     notes: 'notes',
     organizationId: 'organizationId',
     ownerId: 'ownerId',
@@ -67326,6 +67382,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFilter<"Lead"> | $Enums.LeadStatus
     score?: IntFilter<"Lead"> | number
     value?: DecimalNullableFilter<"Lead"> | Decimal | DecimalJsLike | number | string | null
+    segment?: StringNullableFilter<"Lead"> | string | null
     notes?: StringNullableFilter<"Lead"> | string | null
     organizationId?: StringFilter<"Lead"> | string
     ownerId?: StringFilter<"Lead"> | string
@@ -67353,6 +67410,7 @@ export namespace Prisma {
     status?: SortOrder
     score?: SortOrder
     value?: SortOrderInput | SortOrder
+    segment?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
     organizationId?: SortOrder
     ownerId?: SortOrder
@@ -67383,6 +67441,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFilter<"Lead"> | $Enums.LeadStatus
     score?: IntFilter<"Lead"> | number
     value?: DecimalNullableFilter<"Lead"> | Decimal | DecimalJsLike | number | string | null
+    segment?: StringNullableFilter<"Lead"> | string | null
     notes?: StringNullableFilter<"Lead"> | string | null
     organizationId?: StringFilter<"Lead"> | string
     ownerId?: StringFilter<"Lead"> | string
@@ -67410,6 +67469,7 @@ export namespace Prisma {
     status?: SortOrder
     score?: SortOrder
     value?: SortOrderInput | SortOrder
+    segment?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
     organizationId?: SortOrder
     ownerId?: SortOrder
@@ -67438,6 +67498,7 @@ export namespace Prisma {
     status?: EnumLeadStatusWithAggregatesFilter<"Lead"> | $Enums.LeadStatus
     score?: IntWithAggregatesFilter<"Lead"> | number
     value?: DecimalNullableWithAggregatesFilter<"Lead"> | Decimal | DecimalJsLike | number | string | null
+    segment?: StringNullableWithAggregatesFilter<"Lead"> | string | null
     notes?: StringNullableWithAggregatesFilter<"Lead"> | string | null
     organizationId?: StringWithAggregatesFilter<"Lead"> | string
     ownerId?: StringWithAggregatesFilter<"Lead"> | string
@@ -67602,6 +67663,8 @@ export namespace Prisma {
     email?: StringNullableFilter<"Contact"> | string | null
     phone?: StringNullableFilter<"Contact"> | string | null
     mobile?: StringNullableFilter<"Contact"> | string | null
+    address?: StringNullableFilter<"Contact"> | string | null
+    segment?: StringNullableFilter<"Contact"> | string | null
     status?: StringFilter<"Contact"> | string
     organizationId?: StringFilter<"Contact"> | string
     companyId?: StringNullableFilter<"Contact"> | string | null
@@ -67627,6 +67690,8 @@ export namespace Prisma {
     email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     mobile?: SortOrderInput | SortOrder
+    address?: SortOrderInput | SortOrder
+    segment?: SortOrderInput | SortOrder
     status?: SortOrder
     organizationId?: SortOrder
     companyId?: SortOrderInput | SortOrder
@@ -67656,6 +67721,8 @@ export namespace Prisma {
     email?: StringNullableFilter<"Contact"> | string | null
     phone?: StringNullableFilter<"Contact"> | string | null
     mobile?: StringNullableFilter<"Contact"> | string | null
+    address?: StringNullableFilter<"Contact"> | string | null
+    segment?: StringNullableFilter<"Contact"> | string | null
     status?: StringFilter<"Contact"> | string
     organizationId?: StringFilter<"Contact"> | string
     companyId?: StringNullableFilter<"Contact"> | string | null
@@ -67681,6 +67748,8 @@ export namespace Prisma {
     email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     mobile?: SortOrderInput | SortOrder
+    address?: SortOrderInput | SortOrder
+    segment?: SortOrderInput | SortOrder
     status?: SortOrder
     organizationId?: SortOrder
     companyId?: SortOrderInput | SortOrder
@@ -67704,6 +67773,8 @@ export namespace Prisma {
     email?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     phone?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     mobile?: StringNullableWithAggregatesFilter<"Contact"> | string | null
+    address?: StringNullableWithAggregatesFilter<"Contact"> | string | null
+    segment?: StringNullableWithAggregatesFilter<"Contact"> | string | null
     status?: StringWithAggregatesFilter<"Contact"> | string
     organizationId?: StringWithAggregatesFilter<"Contact"> | string
     companyId?: StringNullableWithAggregatesFilter<"Contact"> | string | null
@@ -67725,6 +67796,7 @@ export namespace Prisma {
     stage?: EnumDealStageFilter<"Deal"> | $Enums.DealStage
     expectedClose?: DateTimeNullableFilter<"Deal"> | Date | string | null
     priority?: StringFilter<"Deal"> | string
+    segment?: StringNullableFilter<"Deal"> | string | null
     notes?: StringNullableFilter<"Deal"> | string | null
     organizationId?: StringFilter<"Deal"> | string
     ownerId?: StringFilter<"Deal"> | string
@@ -67753,6 +67825,7 @@ export namespace Prisma {
     stage?: SortOrder
     expectedClose?: SortOrderInput | SortOrder
     priority?: SortOrder
+    segment?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
     organizationId?: SortOrder
     ownerId?: SortOrder
@@ -67784,6 +67857,7 @@ export namespace Prisma {
     stage?: EnumDealStageFilter<"Deal"> | $Enums.DealStage
     expectedClose?: DateTimeNullableFilter<"Deal"> | Date | string | null
     priority?: StringFilter<"Deal"> | string
+    segment?: StringNullableFilter<"Deal"> | string | null
     notes?: StringNullableFilter<"Deal"> | string | null
     organizationId?: StringFilter<"Deal"> | string
     ownerId?: StringFilter<"Deal"> | string
@@ -67812,6 +67886,7 @@ export namespace Prisma {
     stage?: SortOrder
     expectedClose?: SortOrderInput | SortOrder
     priority?: SortOrder
+    segment?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
     organizationId?: SortOrder
     ownerId?: SortOrder
@@ -67839,6 +67914,7 @@ export namespace Prisma {
     stage?: EnumDealStageWithAggregatesFilter<"Deal"> | $Enums.DealStage
     expectedClose?: DateTimeNullableWithAggregatesFilter<"Deal"> | Date | string | null
     priority?: StringWithAggregatesFilter<"Deal"> | string
+    segment?: StringNullableWithAggregatesFilter<"Deal"> | string | null
     notes?: StringNullableWithAggregatesFilter<"Deal"> | string | null
     organizationId?: StringWithAggregatesFilter<"Deal"> | string
     ownerId?: StringWithAggregatesFilter<"Deal"> | string
@@ -71808,6 +71884,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -71831,6 +71908,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -71854,6 +71932,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -71877,6 +71956,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -71900,6 +71980,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -71920,6 +72001,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -71936,6 +72018,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -72123,6 +72206,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     emailKey?: string | null
     createdAt?: Date | string
@@ -72145,6 +72230,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     organizationId: string
     companyId?: string | null
@@ -72167,6 +72254,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -72189,6 +72278,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -72211,6 +72302,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     organizationId: string
     companyId?: string | null
@@ -72228,6 +72321,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -72242,6 +72337,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -72260,6 +72357,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -72283,6 +72381,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -72306,6 +72405,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -72329,6 +72429,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -72352,6 +72453,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -72371,6 +72473,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -72385,6 +72488,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -76106,6 +76210,7 @@ export namespace Prisma {
     status?: SortOrder
     score?: SortOrder
     value?: SortOrder
+    segment?: SortOrder
     notes?: SortOrder
     organizationId?: SortOrder
     ownerId?: SortOrder
@@ -76131,6 +76236,7 @@ export namespace Prisma {
     status?: SortOrder
     score?: SortOrder
     value?: SortOrder
+    segment?: SortOrder
     notes?: SortOrder
     organizationId?: SortOrder
     ownerId?: SortOrder
@@ -76151,6 +76257,7 @@ export namespace Prisma {
     status?: SortOrder
     score?: SortOrder
     value?: SortOrder
+    segment?: SortOrder
     notes?: SortOrder
     organizationId?: SortOrder
     ownerId?: SortOrder
@@ -76285,6 +76392,8 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     mobile?: SortOrder
+    address?: SortOrder
+    segment?: SortOrder
     status?: SortOrder
     organizationId?: SortOrder
     companyId?: SortOrder
@@ -76302,6 +76411,8 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     mobile?: SortOrder
+    address?: SortOrder
+    segment?: SortOrder
     status?: SortOrder
     organizationId?: SortOrder
     companyId?: SortOrder
@@ -76319,6 +76430,8 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     mobile?: SortOrder
+    address?: SortOrder
+    segment?: SortOrder
     status?: SortOrder
     organizationId?: SortOrder
     companyId?: SortOrder
@@ -76349,6 +76462,7 @@ export namespace Prisma {
     stage?: SortOrder
     expectedClose?: SortOrder
     priority?: SortOrder
+    segment?: SortOrder
     notes?: SortOrder
     organizationId?: SortOrder
     ownerId?: SortOrder
@@ -76373,6 +76487,7 @@ export namespace Prisma {
     stage?: SortOrder
     expectedClose?: SortOrder
     priority?: SortOrder
+    segment?: SortOrder
     notes?: SortOrder
     organizationId?: SortOrder
     ownerId?: SortOrder
@@ -76392,6 +76507,7 @@ export namespace Prisma {
     stage?: SortOrder
     expectedClose?: SortOrder
     priority?: SortOrder
+    segment?: SortOrder
     notes?: SortOrder
     organizationId?: SortOrder
     ownerId?: SortOrder
@@ -84661,6 +84777,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     emailKey?: string | null
     createdAt?: Date | string
@@ -84682,6 +84800,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     companyId?: string | null
     ownerId: string
@@ -84714,6 +84834,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -84736,6 +84857,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     ownerId: string
     companyId?: string | null
@@ -85082,6 +85204,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -85104,6 +85227,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     ownerId: string
     companyId?: string | null
@@ -85772,6 +85896,8 @@ export namespace Prisma {
     email?: StringNullableFilter<"Contact"> | string | null
     phone?: StringNullableFilter<"Contact"> | string | null
     mobile?: StringNullableFilter<"Contact"> | string | null
+    address?: StringNullableFilter<"Contact"> | string | null
+    segment?: StringNullableFilter<"Contact"> | string | null
     status?: StringFilter<"Contact"> | string
     organizationId?: StringFilter<"Contact"> | string
     companyId?: StringNullableFilter<"Contact"> | string | null
@@ -85809,6 +85935,7 @@ export namespace Prisma {
     stage?: EnumDealStageFilter<"Deal"> | $Enums.DealStage
     expectedClose?: DateTimeNullableFilter<"Deal"> | Date | string | null
     priority?: StringFilter<"Deal"> | string
+    segment?: StringNullableFilter<"Deal"> | string | null
     notes?: StringNullableFilter<"Deal"> | string | null
     organizationId?: StringFilter<"Deal"> | string
     ownerId?: StringFilter<"Deal"> | string
@@ -86111,6 +86238,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFilter<"Lead"> | $Enums.LeadStatus
     score?: IntFilter<"Lead"> | number
     value?: DecimalNullableFilter<"Lead"> | Decimal | DecimalJsLike | number | string | null
+    segment?: StringNullableFilter<"Lead"> | string | null
     notes?: StringNullableFilter<"Lead"> | string | null
     organizationId?: StringFilter<"Lead"> | string
     ownerId?: StringFilter<"Lead"> | string
@@ -86737,6 +86865,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     emailKey?: string | null
     createdAt?: Date | string
@@ -86758,6 +86888,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     organizationId: string
     companyId?: string | null
@@ -86790,6 +86922,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -86812,6 +86945,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     companyId?: string | null
@@ -87246,6 +87380,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -87268,6 +87403,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     organizationId: string
     companyId?: string | null
@@ -96447,6 +96583,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -96469,6 +96606,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -96601,6 +96739,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     emailKey?: string | null
     createdAt?: Date | string
@@ -96622,6 +96762,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     organizationId: string
     companyId?: string | null
@@ -96976,6 +97118,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -96997,6 +97141,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -97474,6 +97620,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     emailKey?: string | null
     createdAt?: Date | string
@@ -97495,6 +97643,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     organizationId: string
     ownerId: string
@@ -97527,6 +97677,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -97549,6 +97700,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -97709,6 +97861,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -97731,6 +97884,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -98462,6 +98616,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -98484,6 +98639,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -98568,6 +98724,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -98590,6 +98747,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -99133,6 +99291,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     emailKey?: string | null
     createdAt?: Date | string
@@ -99154,6 +99314,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     organizationId: string
     companyId?: string | null
@@ -99183,6 +99345,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -99205,6 +99368,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -99675,6 +99839,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -99696,6 +99862,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -99731,6 +99899,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -99753,6 +99922,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -100208,6 +100378,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     emailKey?: string | null
     createdAt?: Date | string
@@ -100229,6 +100401,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     organizationId: string
     companyId?: string | null
@@ -100256,6 +100430,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -100278,6 +100453,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -100307,6 +100483,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -100329,6 +100506,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -100639,6 +100817,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -100660,6 +100840,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -100693,6 +100875,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -100715,6 +100898,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -100750,6 +100934,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -100772,6 +100957,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -101428,6 +101614,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -101450,6 +101637,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -101479,6 +101667,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -101501,6 +101690,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -101806,6 +101996,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -101828,6 +102019,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -101863,6 +102055,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -101885,6 +102078,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -102328,6 +102522,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     emailKey?: string | null
     createdAt?: Date | string
@@ -102349,6 +102545,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     organizationId: string
     companyId?: string | null
@@ -102376,6 +102574,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -102398,6 +102597,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -102766,6 +102966,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -102787,6 +102989,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -102820,6 +103024,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -102842,6 +103047,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -104225,6 +104431,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     emailKey?: string | null
     createdAt?: Date | string
@@ -104246,6 +104454,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     organizationId: string
     companyId?: string | null
@@ -104386,6 +104596,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -104408,6 +104619,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -104714,6 +104926,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -104735,6 +104949,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -104887,6 +105103,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -104909,6 +105126,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -108935,6 +109153,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     companyId?: string | null
     ownerId: string
@@ -108952,6 +109172,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     ownerId: string
     companyId?: string | null
@@ -109074,6 +109295,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     ownerId: string
     companyId?: string | null
@@ -109456,6 +109678,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -109477,6 +109701,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -109498,6 +109724,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -109515,6 +109743,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -109537,6 +109766,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -109559,6 +109789,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -109913,6 +110144,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -109935,6 +110167,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -109957,6 +110190,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     ownerId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -110527,6 +110761,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     organizationId: string
     companyId?: string | null
@@ -110544,6 +110780,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     companyId?: string | null
@@ -110696,6 +110933,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     organizationId: string
     companyId?: string | null
@@ -111174,6 +111412,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -111195,6 +111435,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -111216,6 +111458,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -111233,6 +111477,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -111255,6 +111500,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -111277,6 +111523,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -111719,6 +111966,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -111741,6 +111989,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -111763,6 +112012,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -113287,6 +113537,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -113360,6 +113611,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -113382,6 +113634,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -113404,6 +113657,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -113482,6 +113736,8 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     mobile?: string | null
+    address?: string | null
+    segment?: string | null
     status?: string
     organizationId: string
     ownerId: string
@@ -113499,6 +113755,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -113565,6 +113822,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -113640,6 +113898,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     emailKey?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -113661,6 +113921,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -113682,6 +113944,8 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     mobile?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -113699,6 +113963,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -113721,6 +113986,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -113743,6 +114009,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -113905,6 +114172,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -113927,6 +114195,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -113949,6 +114218,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -114047,6 +114317,7 @@ export namespace Prisma {
     stage?: $Enums.DealStage
     expectedClose?: Date | string | null
     priority?: string
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -114085,6 +114356,7 @@ export namespace Prisma {
     status?: $Enums.LeadStatus
     score?: number
     value?: Decimal | DecimalJsLike | number | string | null
+    segment?: string | null
     notes?: string | null
     organizationId: string
     ownerId: string
@@ -114161,6 +114433,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -114183,6 +114456,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -114205,6 +114479,7 @@ export namespace Prisma {
     stage?: EnumDealStageFieldUpdateOperationsInput | $Enums.DealStage
     expectedClose?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     priority?: StringFieldUpdateOperationsInput | string
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -114283,6 +114558,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -114305,6 +114581,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string
@@ -114327,6 +114604,7 @@ export namespace Prisma {
     status?: EnumLeadStatusFieldUpdateOperationsInput | $Enums.LeadStatus
     score?: IntFieldUpdateOperationsInput | number
     value?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    segment?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     organizationId?: StringFieldUpdateOperationsInput | string
     ownerId?: StringFieldUpdateOperationsInput | string

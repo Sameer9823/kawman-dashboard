@@ -42,6 +42,7 @@ function mapLead(row: LeadWithOwner): Lead {
     status: row.status as LeadStatus,
     score: row.score,
     value: row.value ? Number(row.value) : 0,
+    segment: row.segment ?? null,
     createdAt: row.createdAt.toISOString(),
     lastActivityAt: (row.lastActivityAt ?? row.createdAt).toISOString(),
   }

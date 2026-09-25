@@ -12,7 +12,7 @@ export default async function AIChatPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <PageHeader title="AI Chat" subtitle="Ask questions about your leads, deals, and pipeline" />
+        <PageHeader title="AI Chat" subtitle="Ask about your leads, deals, pipeline, or any team member's activity today" />
         <ChatPanel initialConversations={conversations} aiConfigured={isAIConfigured()} />
       </div>
     </MainLayout>

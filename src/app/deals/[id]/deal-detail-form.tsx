@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { DealDetail } from '@/services/deal.service'
 import type { DealStage } from '@/types/crm'
+import { SEGMENTS, SEGMENT_LABEL } from '@/types/crm'
 import type { UserOption } from '@/services/user.service'
 import { updateDealAction, deleteDealAction, type DealFormState } from '../actions'
 
@@ -18,9 +19,13 @@ const initialState: DealFormState = {}
 export function DealDetailForm({
   deal,
   owners,
+  canAssign,
+  currentUser,
 }: {
   deal: DealDetail
   owners: UserOption[]
+  canAssign: boolean
+  currentUser: UserOption
 }) {
   const router = useRouter()
   const [deleting, startDelete] = useTransition()
@@ -88,18 +93,46 @@ export function DealDetailForm({
             <option value="HIGH">High</option>
           </select>
         </Field>
-        <Field label="Owner">
+        <Field label="Segment">
           <select
-            name="ownerId"
-            defaultValue={deal.ownerId}
+            name="segment"
+            defaultValue={deal.segment ?? ''}
             className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
           >
-            {owners.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.name}
+            <option value="">Select segment</option>
+            {SEGMENTS.map((s) => (
+              <option key={s} value={s}>
+                {SEGMENT_LABEL[s]}
               </option>
             ))}
           </select>
+        </Field>
+        <Field label="Owner">
+          {canAssign ? (
+            <select
+              name="ownerId"
+              defaultValue={deal.ownerId}
+              className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            >
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <>
+              <input type="hidden" name="ownerId" value={currentUser.id} />
+              <select
+                name="ownerId"
+                defaultValue={currentUser.id}
+                disabled
+                className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white/50 cursor-not-allowed"
+              >
+                <option value={currentUser.id}>{currentUser.name} (you)</option>
+              </select>
+            </>
+          )}
         </Field>
         <Field label="Notes">
           <textarea

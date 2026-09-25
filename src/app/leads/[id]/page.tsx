@@ -3,8 +3,10 @@ import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { getLeadById } from '@/services/lead.service'
 import { getOrgUserOptions } from '@/services/user.service'
+import type { UserOption } from '@/services/user.service'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
+import { canManageAssignments } from '@/lib/record-scope'
 import { LeadDetailForm } from './lead-detail-form'
 import { isOk } from '@/lib/result'
 
@@ -17,6 +19,8 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   const owners = isOk(ownersResult) ? ownersResult.data : []
 
   const session = await requireApiSession()
+  const canAssign = canManageAssignments(session.user)
+  const currentUser: UserOption = { id: session.user.id, name: session.user.name ?? 'Me' }
   const [activities, followUps] = await Promise.all([
     prisma.activity.findMany({
       where: { leadId: id, organizationId: session.user.organizationId },
@@ -34,7 +38,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
     <MainLayout>
       <div className="space-y-6 max-w-4xl">
         <PageHeader title={lead.name} subtitle={lead.company} />
-        <LeadDetailForm lead={lead} owners={owners} />
+        <LeadDetailForm lead={lead} owners={owners} canAssign={canAssign} currentUser={currentUser} />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">

@@ -13,7 +13,7 @@ import { updateCompanyAction, deleteCompanyAction, type CompanyFormState } from 
 
 const initialState: CompanyFormState = {}
 
-export function CompanyDetailForm({ company, owners }: { company: CompanyDetail; owners: UserOption[] }) {
+export function CompanyDetailForm({ company, owners, canAssign, currentUser }: { company: CompanyDetail; owners: UserOption[]; canAssign: boolean; currentUser: UserOption }) {
   const router = useRouter()
   const [deleting, startDelete] = useTransition()
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -66,17 +66,31 @@ export function CompanyDetailForm({ company, owners }: { company: CompanyDetail;
           <Input name="revenue" type="number" min={0} defaultValue={company.revenue || ''} />
         </Field>
         <Field label="Owner">
-          <select
-            name="ownerId"
-            defaultValue={company.ownerId}
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
-            {owners.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.name}
-              </option>
-            ))}
-          </select>
+          {canAssign ? (
+            <select
+              name="ownerId"
+              defaultValue={company.ownerId}
+              className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            >
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <>
+              <input type="hidden" name="ownerId" value={currentUser.id} />
+              <select
+                name="ownerId"
+                defaultValue={currentUser.id}
+                disabled
+                className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white/50 cursor-not-allowed"
+              >
+                <option value={currentUser.id}>{currentUser.name} (you)</option>
+              </select>
+            </>
+          )}
         </Field>
 
         {state.error && (

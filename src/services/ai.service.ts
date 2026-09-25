@@ -14,16 +14,16 @@ import { ok, err, Result } from '@/lib/result'
 // non-admin never sees org-wide aggregates via the AI.
 // ============================================================
 
-function scopeFilterForAI(user: Session['user']): { ownerFilter: Prisma.LeadWhereInput; dealOwnerFilter: Prisma.DealWhereInput; followUpOwnerFilter: Prisma.FollowUpWhereInput; visitAssigneeFilter: Prisma.FieldVisitWhereInput; meetingOwnerFilter: Prisma.MeetingWhereInput } {
+function scopeFilterForAI(user: Session['user']): { ownerFilter: Prisma.LeadWhereInput; dealOwnerFilter: Prisma.DealWhereInput; followUpOwnerFilter: Prisma.FollowUpWhereInput; visitAssigneeFilter: Prisma.FieldVisitWhereInput; meetingOwnerFilter: Prisma.MeetingWhereInput; userWhere: Prisma.UserWhereInput } {
   const scope = getRecordScope(user)
-  if (scope === 'ALL') return { ownerFilter: {}, dealOwnerFilter: {}, followUpOwnerFilter: {}, visitAssigneeFilter: {}, meetingOwnerFilter: {} }
+  if (scope === 'ALL') return { ownerFilter: {}, dealOwnerFilter: {}, followUpOwnerFilter: {}, visitAssigneeFilter: {}, meetingOwnerFilter: {}, userWhere: {} }
   if (scope === 'DEPARTMENT' && user.department?.id) {
     const deptLead = { owner: { departmentId: user.department.id } } as unknown as Prisma.LeadWhereInput
     const deptAssignee = { assignee: { departmentId: user.department.id } } as unknown as Prisma.FieldVisitWhereInput
     const deptMeeting = { createdBy: { departmentId: user.department.id } } as unknown as Prisma.MeetingWhereInput
-    return { ownerFilter: deptLead, dealOwnerFilter: deptLead as unknown as Prisma.DealWhereInput, followUpOwnerFilter: { owner: { departmentId: user.department.id } } as unknown as Prisma.FollowUpWhereInput, visitAssigneeFilter: deptAssignee, meetingOwnerFilter: deptMeeting }
+    return { ownerFilter: deptLead, dealOwnerFilter: deptLead as unknown as Prisma.DealWhereInput, followUpOwnerFilter: { owner: { departmentId: user.department.id } } as unknown as Prisma.FollowUpWhereInput, visitAssigneeFilter: deptAssignee, meetingOwnerFilter: deptMeeting, userWhere: { OR: [{ departmentId: user.department.id }, { id: user.id }] } as Prisma.UserWhereInput }
   }
-  return { ownerFilter: { ownerId: user.id } as Prisma.LeadWhereInput, dealOwnerFilter: { ownerId: user.id } as Prisma.DealWhereInput, followUpOwnerFilter: { ownerId: user.id } as Prisma.FollowUpWhereInput, visitAssigneeFilter: { assigneeId: user.id } as Prisma.FieldVisitWhereInput, meetingOwnerFilter: { createdById: user.id } as Prisma.MeetingWhereInput }
+  return { ownerFilter: { ownerId: user.id } as Prisma.LeadWhereInput, dealOwnerFilter: { ownerId: user.id } as Prisma.DealWhereInput, followUpOwnerFilter: { ownerId: user.id } as Prisma.FollowUpWhereInput, visitAssigneeFilter: { assigneeId: user.id } as Prisma.FieldVisitWhereInput, meetingOwnerFilter: { createdById: user.id } as Prisma.MeetingWhereInput, userWhere: { id: user.id } as Prisma.UserWhereInput }
 }
 
 async function buildOrgContext(organizationId: string, user?: Session['user']): Promise<string> {
@@ -44,6 +44,21 @@ async function buildOrgContext(organizationId: string, user?: Session['user']): 
   const visitWhere: Prisma.FieldVisitWhereInput = { organizationId, ...(s?.visitAssigneeFilter ?? {}) }
   const meetingWhere: Prisma.MeetingWhereInput = { organizationId, ...(s?.meetingOwnerFilter ?? {}) }
 
+  // Employee-level data (daily reports, activities, users) is scoped the same way:
+  // admins see everything, managers see their department, others see only themselves.
+  let drUserFilter: Prisma.DailyReportWhereInput = {}
+  let activityActorFilter: Prisma.ActivityWhereInput = {}
+  if (user) {
+    const scope = getRecordScope(user)
+    if (scope === 'DEPARTMENT' && user.department?.id) {
+      drUserFilter = { user: { departmentId: user.department.id } }
+      activityActorFilter = { actor: { departmentId: user.department.id } }
+    } else if (scope === 'OWN') {
+      drUserFilter = { userId: user.id }
+      activityActorFilter = { actorId: user.id }
+    }
+  }
+
   const [
     leadsByStatus,
     dealsByStage,
@@ -59,6 +74,9 @@ async function buildOrgContext(organizationId: string, user?: Session['user']): 
     todaysVisitReports,
     todaysMeetings,
     upcomingMeetings,
+    teamMembers,
+    todaysDailyReports,
+    todaysActivities,
   ] = await Promise.all([
     prisma.lead.groupBy({ by: ['status'], where: leadWhere, _count: { _all: true } }),
     prisma.deal.groupBy({ by: ['stage'], where: dealWhere, _count: { _all: true }, _sum: { value: true } }),
@@ -74,6 +92,9 @@ async function buildOrgContext(organizationId: string, user?: Session['user']): 
     prisma.visitReport.findMany({ where: { createdAt: { gte: today, lt: tomorrow } }, include: { visit: { select: { id: true, title: true, assignee: { select: { name: true } }, company: { select: { name: true } } } }, createdBy: { select: { name: true } } } }),
     prisma.meeting.findMany({ where: { ...meetingWhere, scheduledAt: { gte: today, lt: tomorrow } }, include: { createdBy: { select: { name: true } }, company: { select: { name: true } }, participants: { include: { user: { select: { name: true } } } } }, orderBy: { scheduledAt: 'asc' } }),
     prisma.meeting.findMany({ where: { ...meetingWhere, scheduledAt: { gte: tomorrow, lt: weekEnd }, status: { in: ['PROCESSING', 'SCHEDULED'] } }, include: { createdBy: { select: { name: true } }, company: { select: { name: true } } }, orderBy: { scheduledAt: 'asc' }, take: 10 }),
+    prisma.user.findMany({ where: { organizationId, status: 'ACTIVE', ...(s?.userWhere ?? {}) }, select: { id: true, name: true, email: true, designation: true, department: { select: { name: true } }, team: { select: { name: true } }, status: true, roles: { select: { role: { select: { name: true } } } } }, orderBy: { name: 'asc' } }),
+    prisma.dailyReport.findMany({ where: { organizationId, date: { gte: today, lt: tomorrow }, ...drUserFilter }, include: { user: { select: { name: true, email: true, designation: true, department: { select: { name: true } } } } }, orderBy: { createdAt: 'desc' } }),
+    prisma.activity.findMany({ where: { organizationId, createdAt: { gte: today, lt: tomorrow }, ...activityActorFilter }, include: { actor: { select: { name: true, email: true, designation: true } }, lead: { select: { name: true } }, company: { select: { name: true } }, contact: { select: { name: true } }, deal: { select: { name: true } } }, orderBy: { createdAt: 'desc' }, take: 30 }),
   ])
 
   const fmt = (n: number) => `₹${Number(n).toLocaleString('en-IN')}`
@@ -209,6 +230,46 @@ async function buildOrgContext(organizationId: string, user?: Session['user']): 
     lines.push(`- ${l.name} (${l.company ?? 'no company'}), status ${l.status}, source ${l.source ?? 'unknown'}`)
   }
   if (recentLeads.length === 0) lines.push('- none')
+  lines.push('')
+
+  // Team Members (Employee Directory)
+  lines.push(`Team members (${teamMembers.length}):`)
+  for (const u of teamMembers) {
+    const roles = u.roles?.map((r) => r.role.name).join(', ') ?? 'member'
+    const dept = u.department?.name ?? '—'
+    const team = u.team?.name
+    lines.push(`  - ${u.name ?? u.email} (${u.email})${u.designation ? ` · ${u.designation}` : ''} · Dept: ${dept}${team ? ` · Team: ${team}` : ''} [${roles}]`)
+  }
+  if (teamMembers.length === 0) lines.push('  - none')
+  lines.push('')
+
+  // Daily Reports Today
+  lines.push(`Daily reports today (${todaysDailyReports.length}):`)
+  for (const dr of todaysDailyReports) {
+    const emp = dr.user?.name ?? dr.user?.email ?? 'Unknown'
+    const dept = dr.user?.department?.name ?? '—'
+    lines.push(`  - ${emp} · Dept: ${dept} · Status: ${dr.status} · Date: ${dr.date.toISOString().slice(0, 10)}`)
+    if (dr.workDescription) lines.push(`    Work: ${dr.workDescription.slice(0, 300)}`)
+    if (dr.completedWork) lines.push(`    Completed: ${dr.completedWork.slice(0, 300)}`)
+    if (dr.pendingWork) lines.push(`    Pending: ${dr.pendingWork.slice(0, 300)}`)
+    if (dr.blockers) lines.push(`    Blockers: ${dr.blockers.slice(0, 300)}`)
+    if (dr.tomorrowPlan) lines.push(`    Tomorrow: ${dr.tomorrowPlan.slice(0, 300)}`)
+    lines.push(`    Stats: tasks=${dr.tasksCompletedCount}, crmUpdated=${dr.crmRecordsUpdatedCount}, leadsWorked=${dr.leadsWorkedOnCount}, filesUploaded=${dr.filesUploadedCount}, activeMinutes=${dr.activeWorkingTimeMinutes}`)
+  }
+  if (todaysDailyReports.length === 0) lines.push('  - No daily reports submitted today.')
+  lines.push('')
+
+  // Activities Today
+  if (todaysActivities.length > 0) {
+    lines.push(`CRM activities today (${todaysActivities.length}):`)
+    for (const a of todaysActivities) {
+      const actor = a.actor?.name ?? a.actor?.email ?? 'Unknown'
+      const target = a.lead?.name ? `lead "${a.lead.name}"` : a.deal?.name ? `deal "${a.deal.name}"` : a.company?.name ? `company "${a.company.name}"` : a.contact?.name ? `contact "${a.contact.name}"` : ''
+      const ts = a.createdAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+      lines.push(`  - ${ts} — ${actor} · ${a.type}${target ? ` · ${target}` : ''} · ${a.description.slice(0, 200)}`)
+    }
+    lines.push('')
+  }
 
   return lines.join('\n')
 }
@@ -419,21 +480,42 @@ export interface ReportSummary {
   generatedByName: string
 }
 
+/**
+ * employee_daily_summary reports are scoped to the employee they describe
+ * — only the employee, SUPER_ADMIN, and ADMIN can see them. Managers and
+ * other employees are explicitly excluded.
+ */
+function canViewEmployeeSummary(
+  user: Session['user'],
+  dailyReportUserId: string | null | undefined
+): boolean {
+  if (getRecordScope(user) === 'ALL') return true
+  return dailyReportUserId === user.id
+}
+
 export async function listReports(): Promise<ReportSummary[]> {
   const session = await requireApiSession()
   const rows = await prisma.aIReport.findMany({
     where: { organizationId: session.user.organizationId },
     orderBy: { createdAt: 'desc' },
     take: 30,
-    include: { generatedBy: { select: { name: true } } },
+    include: {
+      generatedBy: { select: { name: true } },
+      dailyReport: { select: { userId: true } },
+    },
   })
-  return rows.map((r) => ({
-    id: r.id,
-    type: r.type,
-    title: r.title,
-    createdAt: r.createdAt.toISOString(),
-    generatedByName: r.generatedBy.name ?? 'Unknown',
-  }))
+  return rows
+    .filter((r) => {
+      if (r.type !== 'employee_daily_summary') return true
+      return canViewEmployeeSummary(session.user, r.dailyReport?.userId)
+    })
+    .map((r) => ({
+      id: r.id,
+      type: r.type,
+      title: r.title,
+      createdAt: r.createdAt.toISOString(),
+      generatedByName: r.generatedBy.name ?? 'Unknown',
+    }))
 }
 
 /** Same as listReports, filtered to a single report type — used by /ai/summary. */
@@ -443,24 +525,38 @@ export async function listReportsByType(type: ReportType): Promise<ReportSummary
     where: { organizationId: session.user.organizationId, type },
     orderBy: { createdAt: 'desc' },
     take: 30,
-    include: { generatedBy: { select: { name: true } } },
+    include: {
+      generatedBy: { select: { name: true } },
+      dailyReport: { select: { userId: true } },
+    },
   })
-  return rows.map((r) => ({
-    id: r.id,
-    type: r.type,
-    title: r.title,
-    createdAt: r.createdAt.toISOString(),
-    generatedByName: r.generatedBy.name ?? 'Unknown',
-  }))
+  return rows
+    .filter((r) => {
+      if (r.type !== 'employee_daily_summary') return true
+      return canViewEmployeeSummary(session.user, r.dailyReport?.userId)
+    })
+    .map((r) => ({
+      id: r.id,
+      type: r.type,
+      title: r.title,
+      createdAt: r.createdAt.toISOString(),
+      generatedByName: r.generatedBy.name ?? 'Unknown',
+    }))
 }
 
 export async function getReport(id: string) {
   const session = await requireApiSession()
   const row = await prisma.aIReport.findFirst({
     where: { id, organizationId: session.user.organizationId },
-    include: { generatedBy: { select: { name: true } } },
+    include: {
+      generatedBy: { select: { name: true } },
+      dailyReport: { select: { userId: true } },
+    },
   })
   if (!row) return null
+  if (row.type === 'employee_daily_summary' && !canViewEmployeeSummary(session.user, row.dailyReport?.userId)) {
+    return null
+  }
   return {
     id: row.id,
     type: row.type,
@@ -725,9 +821,12 @@ export async function deleteReport(id: string): Promise<Result<void>> {
     const session = await requireApiSession()
     const existing = await prisma.aIReport.findFirst({
       where: { id, organizationId: session.user.organizationId },
-      select: { id: true },
+      select: { id: true, type: true, dailyReport: { select: { userId: true } } },
     })
     if (!existing) return err('Report not found')
+    if (existing.type === 'employee_daily_summary' && !canViewEmployeeSummary(session.user, existing.dailyReport?.userId)) {
+      return err('Report not found')
+    }
     await prisma.aIReport.delete({ where: { id } })
     return ok(undefined)
   } catch (e) {

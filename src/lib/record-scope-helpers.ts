@@ -28,3 +28,17 @@ export function ownerScopeWhere<T>(user: Session['user']): T {
   }
   return { ownerId: user.id } as unknown as T
 }
+
+/**
+ * Contact-specific owner scope: contacts are only visible to SUPER_ADMIN / ADMIN
+ * (full org visibility) and to the individual owner of the record. Unlike the
+ * generic `ownerScopeWhere`, MANAGER / SALES_MANAGER and all other roles do NOT
+ * get department-level visibility — they only see contacts they personally own.
+ * This enforces the rule: other employees must not see contacts added by
+ * colleagues.
+ */
+export function contactOwnerScopeWhere<T>(user: Session['user']): T {
+  const scope = getRecordScope(user)
+  if (scope === 'ALL') return {} as T
+  return { ownerId: user.id } as unknown as T
+}

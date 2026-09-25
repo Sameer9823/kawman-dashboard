@@ -8,7 +8,7 @@ import { createFieldVisitAction, type VisitFormState } from '../actions'
 import type { UserOption } from '@/services/user.service'
 
 const initialState: VisitFormState = {}
-export function NewVisitForm({ owners }: { owners: UserOption[] }) {
+export function NewVisitForm({ owners, canAssign, currentUser }: { owners: UserOption[]; canAssign: boolean; currentUser: UserOption }) {
   const [state, formAction, pending] = useActionState(createFieldVisitAction, initialState)
   const [loc, setLoc] = useState<{ lat: number; lng: number; acc?: number } | null>(null)
   const [locLoading, setLocLoading] = useState(false)
@@ -164,16 +164,30 @@ export function NewVisitForm({ owners }: { owners: UserOption[] }) {
           <Input name="scheduledAt" type="datetime-local" required />
         </Field>
         <Field label="Assign to" error={state.fieldErrors?.assigneeId}>
-          <select
-            name="assigneeId"
-            defaultValue=""
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-          >
-            <option value="">Assign to me</option>
-            {owners.map((o) => (
-              <option key={o.id} value={o.id}>{o.name}</option>
-            ))}
-          </select>
+          {canAssign ? (
+            <select
+              name="assigneeId"
+              defaultValue=""
+              className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            >
+              <option value="">Assign to me</option>
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>{o.name}</option>
+              ))}
+            </select>
+          ) : (
+            <>
+              <input type="hidden" name="assigneeId" value={currentUser.id} />
+              <select
+                name="assigneeId"
+                defaultValue={currentUser.id}
+                disabled
+                className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white/50 cursor-not-allowed"
+              >
+                <option value={currentUser.id}>{currentUser.name} (you)</option>
+              </select>
+            </>
+          )}
         </Field>
         <Field label="Company" error={state.fieldErrors?.company}>
           <Input name="company" placeholder="Acme Nutraceuticals" />

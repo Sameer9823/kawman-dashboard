@@ -12,6 +12,7 @@ import { ExportCsvButton } from '@/components/crm/export-csv-button'
 import { ExportMenu } from '@/components/report-engine/export-menu'
 import { buildLeadsReport } from '@/lib/report-engine/builders/leads'
 import { getSession } from '@/lib/session'
+import { canManageAssignments } from '@/lib/record-scope'
 import { ImportLeadsButton } from '@/components/crm/import-leads-button'
 import { isOk } from '@/lib/result'
 
@@ -50,6 +51,8 @@ export default async function LeadsPage({
   ])
   const owners = isOk(ownersResult) ? ownersResult.data : []
 
+  const canAssign = session ? canManageAssignments(session.user) : false
+
   const sessionUser = session?.user as unknown as { name?: string; email?: string; organization?: { name?: string } | null } | undefined
   const exportReport = buildLeadsReport({
     leads: allLeads.length ? allLeads : result.leads,
@@ -82,7 +85,7 @@ export default async function LeadsPage({
             </div>
           }
         />
-        <LeadsTable result={result} owners={owners} />
+        <LeadsTable result={result} owners={owners} canAssign={canAssign} />
       </div>
     </MainLayout>
   )

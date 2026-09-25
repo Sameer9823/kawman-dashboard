@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireApiSession } from '@/lib/session'
-import { getUserNotifications, markNotificationsRead, getUnreadCount, deleteNotification } from '@/services/notification.service'
+import { getUserNotifications, markNotificationsRead, deleteNotification, deleteAllNotifications } from '@/services/notification.service'
 import { logger } from '@/lib/logger'
 
 /**
@@ -69,17 +69,14 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await requireApiSession()
-    const { searchParams } = new URL(request.url)
-    const notificationId = searchParams.get('id')
+    const body = await request.json().catch(() => ({}))
+    const notificationId = body?.id
 
-    if (!notificationId) {
-      return NextResponse.json(
-        { error: 'Notification ID is required' },
-        { status: 400 }
-      )
+    if (notificationId) {
+      await deleteNotification(notificationId, session.user.id, session.user.organizationId)
+    } else {
+      await deleteAllNotifications(session.user.id, session.user.organizationId)
     }
-
-    await deleteNotification(notificationId, session.user.id, session.user.organizationId)
 
     return NextResponse.json({ success: true })
   } catch (error) {

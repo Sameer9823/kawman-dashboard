@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { ContactDetail } from '@/services/contact.service'
 import type { UserOption } from '@/services/user.service'
+import { SEGMENTS, SEGMENT_LABEL } from '@/types/crm'
 import { updateContactAction, deleteContactAction, type ContactFormState } from '../actions'
 
 const initialState: ContactFormState = {}
@@ -16,9 +17,13 @@ const initialState: ContactFormState = {}
 export function ContactDetailForm({
   contact,
   owners,
+  canAssign,
+  currentUser,
 }: {
   contact: ContactDetail
   owners: UserOption[]
+  canAssign: boolean
+  currentUser: UserOption
 }) {
   const router = useRouter()
   const [deleting, startDelete] = useTransition()
@@ -62,18 +67,49 @@ export function ContactDetailForm({
         <Field label="Mobile" error={state.fieldErrors?.mobile}>
           <Input name="mobile" defaultValue={contact.mobile} />
         </Field>
-        <Field label="Owner" error={state.fieldErrors?.ownerId}>
+        <Field label="Address" error={state.fieldErrors?.address}>
+          <Input name="address" defaultValue={contact.address} placeholder="123 Main St, City, State" />
+        </Field>
+        <Field label="Segment" error={state.fieldErrors?.segment}>
           <select
-            name="ownerId"
-            defaultValue={contact.ownerId}
+            name="segment"
+            defaultValue={contact.segment ?? ''}
             className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
           >
-            {owners.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.name}
+            <option value="">Select segment</option>
+            {SEGMENTS.map((s) => (
+              <option key={s} value={s}>
+                {SEGMENT_LABEL[s]}
               </option>
             ))}
           </select>
+        </Field>
+        <Field label="Owner" error={state.fieldErrors?.ownerId}>
+          {canAssign ? (
+            <select
+              name="ownerId"
+              defaultValue={contact.ownerId}
+              className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            >
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <>
+              <input type="hidden" name="ownerId" value={currentUser.id} />
+              <select
+                name="ownerId"
+                defaultValue={currentUser.id}
+                disabled
+                className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white/50 cursor-not-allowed"
+              >
+                <option value={currentUser.id}>{currentUser.name} (you)</option>
+              </select>
+            </>
+          )}
         </Field>
 
         {state.error && (

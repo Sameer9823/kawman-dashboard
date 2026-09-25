@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { Search, Mail, Phone, ChevronLeft, ChevronRight, FileDown, Trash2 } from 'lucide-react'
+import { Search, Mail, Phone, ChevronLeft, ChevronRight, FileDown, Trash2, MapPin } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { DeleteRowButton } from '@/components/crm/delete-row-button'
@@ -185,10 +185,20 @@ export function ContactsTable({ result }: { result: ContactPage }) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[1360px] table-fixed text-sm border-separate border-spacing-0">
+          <colgroup>
+            <col className="w-11" />
+            <col className="w-[260px]" />
+            <col className="w-[150px]" />
+            <col className="w-[280px]" />
+            <col className="w-[160px]" />
+            <col className="w-[160px]" />
+            <col className="w-[300px]" />
+            <col className="w-[100px]" />
+          </colgroup>
           <thead>
             <tr className="text-left text-white/40 text-xs uppercase tracking-wide border-b border-white/[0.06]">
-              <th className="w-10 px-4 py-3">
+              <th className="px-5 py-3.5">
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -197,12 +207,13 @@ export function ContactsTable({ result }: { result: ContactPage }) {
                   aria-label="Select all contacts on this page"
                 />
               </th>
-               <th className="px-4 py-3 font-medium">Contact</th>
-               <th className="px-4 py-3 font-medium">Company</th>
-               <th className="px-4 py-3 font-medium">Email</th>
-               <th className="px-4 py-3 font-medium">Phone</th>
-               <th className="px-4 py-3 font-medium">Mobile</th>
-               <th className="px-4 py-3 text-right font-medium">Actions</th>
+              <th className="px-5 py-3.5 font-medium">Contact</th>
+              <th className="px-5 py-3.5 font-medium">Company</th>
+              <th className="px-5 py-3.5 font-medium">Email</th>
+              <th className="px-5 py-3.5 font-medium">Phone</th>
+              <th className="px-5 py-3.5 font-medium">Mobile</th>
+              <th className="px-5 py-3.5 font-medium">Address</th>
+              <th className="px-5 py-3.5 text-right font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -213,7 +224,7 @@ export function ContactsTable({ result }: { result: ContactPage }) {
                   selected.has(contact.id) ? 'bg-purple-500/[0.06]' : ''
                 }`}
               >
-                <td className="px-4 py-3">
+                <td className="px-5 py-4 align-top">
                   <input
                     type="checkbox"
                     checked={selected.has(contact.id)}
@@ -222,7 +233,7 @@ export function ContactsTable({ result }: { result: ContactPage }) {
                     aria-label={`Select ${contact.name}`}
                   />
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-4 align-top">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="h-9 w-9 shrink-0 rounded-full bg-purple-600/25 flex items-center justify-center text-xs font-medium text-purple-300">
                       {contact.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
@@ -234,30 +245,47 @@ export function ContactsTable({ result }: { result: ContactPage }) {
                       >
                         {contact.name}
                       </Link>
-                      <p className="text-xs text-white/45 truncate">{contact.designation}</p>
+                      <p className="text-xs text-white/45 line-clamp-2 break-words">{contact.designation}</p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3">
-                  <span className="text-sm text-white/70 truncate block max-w-[180px]">{contact.company}</span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="text-xs text-white/40 flex items-center gap-1.5 truncate max-w-[180px]">
-                    <Mail className="h-3 w-3 shrink-0" /> {contact.email}
+                <td className="px-5 py-4 align-top min-w-0">
+                  <span className="text-sm text-white/70 line-clamp-2 break-words" title={contact.company}>
+                    {contact.company}
                   </span>
                 </td>
-                <td className="px-4 py-3">
-                  <span className="text-xs text-white/40 flex items-center gap-1.5">
-                    <Phone className="h-3 w-3 shrink-0" /> {formatPhoneDisplay(contact.phone)}
+                <td className="px-5 py-4 align-top min-w-0">
+                  <span
+                    className="text-xs text-white/40 flex items-start gap-1.5 min-w-0"
+                    title={contact.email}
+                  >
+                    <Mail className="h-3 w-3 shrink-0 mt-0.5" />
+                    <span className="line-clamp-2 break-all min-w-0">{contact.email}</span>
                   </span>
                 </td>
-                <td className="px-4 py-3">
-                  <span className="text-xs text-white/40 flex items-center gap-1.5">
-                    <Phone className="h-3 w-3 shrink-0" /> {formatPhoneDisplay(contact.mobile)}
+                <td className="px-5 py-4 align-top min-w-0">
+                  <span className="text-xs text-white/40 flex items-center gap-1.5 min-w-0">
+                    <Phone className="h-3 w-3 shrink-0" />
+                    <span className="truncate min-w-0">{formatPhoneDisplay(contact.phone)}</span>
                   </span>
                 </td>
-                <td className="px-4 py-3 text-right">
-                  <div className="mt-1 flex justify-end gap-1">
+                <td className="px-5 py-4 align-top min-w-0">
+                  <span className="text-xs text-white/40 flex items-center gap-1.5 min-w-0">
+                    <Phone className="h-3 w-3 shrink-0" />
+                    <span className="truncate min-w-0">{formatPhoneDisplay(contact.mobile)}</span>
+                  </span>
+                </td>
+                <td className="px-5 py-4 align-top min-w-0">
+                  <span
+                    className="text-xs text-white/40 flex items-start gap-1.5 min-w-0"
+                    title={contact.address || undefined}
+                  >
+                    <MapPin className="h-3 w-3 shrink-0 mt-0.5" />
+                    <span className="line-clamp-2 break-words min-w-0">{contact.address || '—'}</span>
+                  </span>
+                </td>
+                <td className="px-5 py-4 align-top text-right">
+                  <div className="flex justify-end gap-1">
                     <DeleteRowButton
                       action={deleteContactAction.bind(null, contact.id)}
                       confirmLabel={`Delete ${contact.name}?`}
@@ -268,7 +296,7 @@ export function ContactsTable({ result }: { result: ContactPage }) {
             ))}
             {contacts.length === 0 && (
               <tr>
-                <td colSpan={7} className="py-10 text-center">
+                <td colSpan={8} className="py-10 text-center">
                   <span className="text-sm text-white/40">No contacts yet.</span>
                 </td>
               </tr>

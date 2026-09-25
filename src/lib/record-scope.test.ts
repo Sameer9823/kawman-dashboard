@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getRecordScope, type RecordScope } from '@/lib/record-scope'
+import { getRecordScope, canManageAssignments, type RecordScope } from '@/lib/record-scope'
 
 // Mock Session user type
 type MockUser = {
@@ -100,5 +100,43 @@ describe('getRecordScope', () => {
     const user = createMockUser({ roles: ['ADMIN'] })
     const scope = getRecordScope(user as any)
     expect(['ALL', 'DEPARTMENT', 'OWN']).toContain(scope)
+  })
+})
+
+describe('canManageAssignments', () => {
+  it('returns true for SUPER_ADMIN', () => {
+    expect(canManageAssignments({ roles: ['SUPER_ADMIN'] })).toBe(true)
+  })
+
+  it('returns true for ADMIN', () => {
+    expect(canManageAssignments({ roles: ['ADMIN'] })).toBe(true)
+  })
+
+  it('returns true when SUPER_ADMIN is among multiple roles', () => {
+    expect(canManageAssignments({ roles: ['MANAGER', 'SUPER_ADMIN'] })).toBe(true)
+  })
+
+  it('returns true when ADMIN is among multiple roles', () => {
+    expect(canManageAssignments({ roles: ['SALES_EXECUTIVE', 'ADMIN'] })).toBe(true)
+  })
+
+  it('returns false for MANAGER', () => {
+    expect(canManageAssignments({ roles: ['MANAGER'] })).toBe(false)
+  })
+
+  it('returns false for SALES_EXECUTIVE', () => {
+    expect(canManageAssignments({ roles: ['SALES_EXECUTIVE'] })).toBe(false)
+  })
+
+  it('returns false for VIEWER', () => {
+    expect(canManageAssignments({ roles: ['VIEWER'] })).toBe(false)
+  })
+
+  it('returns false for empty roles', () => {
+    expect(canManageAssignments({ roles: [] })).toBe(false)
+  })
+
+  it('returns false for undefined roles', () => {
+    expect(canManageAssignments({})).toBe(false)
   })
 })

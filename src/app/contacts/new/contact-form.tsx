@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createContactAction, type ContactFormState } from '../actions'
 import type { UserOption } from '@/services/user.service'
+import { SEGMENTS, SEGMENT_LABEL } from '@/types/crm'
 
 const initialState: ContactFormState = {}
 
@@ -18,15 +19,10 @@ export interface ContactInitialValues {
   email?: string
   phone?: string
   mobile?: string
+  address?: string
 }
 
-export function ContactForm({
-  owners,
-  initialValues,
-}: {
-  owners: UserOption[]
-  initialValues?: ContactInitialValues
-}) {
+export function ContactForm({ owners, canAssign, currentUser, initialValues }: { owners: UserOption[]; canAssign: boolean; currentUser: UserOption; initialValues?: ContactInitialValues }) {
   const [state, formAction, pending] = useActionState(createContactAction, initialState)
   const router = useRouter()
 
@@ -61,17 +57,48 @@ export function ContactForm({
         <Field label="Mobile" error={state.fieldErrors?.mobile}>
           <Input name="mobile" placeholder="+91 98765 43210" defaultValue={values.mobile || undefined} />
         </Field>
-        <Field label="Owner" error={state.fieldErrors?.ownerId}>
+        <Field label="Address" error={state.fieldErrors?.address}>
+          <Input name="address" placeholder="123 Main St, City, State" defaultValue={values.address || undefined} />
+        </Field>
+        <Field label="Segment" error={state.fieldErrors?.segment}>
           <select
-            name="ownerId"
+            name="segment"
             defaultValue=""
             className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
           >
-            <option value="">Assign to me</option>
-            {owners.map((o) => (
-              <option key={o.id} value={o.id}>{o.name}</option>
+            <option value="">Select segment</option>
+            {SEGMENTS.map((s) => (
+              <option key={s} value={s}>
+                {SEGMENT_LABEL[s]}
+              </option>
             ))}
           </select>
+        </Field>
+        <Field label="Owner" error={state.fieldErrors?.ownerId}>
+          {canAssign ? (
+            <select
+              name="ownerId"
+              defaultValue=""
+              className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            >
+              <option value="">Assign to me</option>
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>{o.name}</option>
+              ))}
+            </select>
+          ) : (
+            <>
+              <input type="hidden" name="ownerId" value={currentUser.id} />
+              <select
+                name="ownerId"
+                defaultValue={currentUser.id}
+                disabled
+                className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white/50 cursor-not-allowed"
+              >
+                <option value={currentUser.id}>{currentUser.name} (you)</option>
+              </select>
+            </>
+          )}
         </Field>
 
         {state.error && (

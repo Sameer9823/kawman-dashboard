@@ -45,7 +45,10 @@ export async function POST(request: Request) {
 
   try {
     const result = await generateReport(type as ReportType)
-    return NextResponse.json(result)
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 500 })
+    }
+    return NextResponse.json({ id: result.data.id })
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Failed to generate report' }, { status: 500 })
   }

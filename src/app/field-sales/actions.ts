@@ -13,6 +13,7 @@ import { findOrCreateCompanyByName } from '@/services/company.service'
 import { findOrCreateContactByName } from '@/services/contact.service'
 import { createCheckIn as createCheckInRow } from '@/services/field-visit.service'
 import { getUserPermissions } from '@/services/permission.service'
+import { canManageAssignments } from '@/lib/record-scope'
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
@@ -83,6 +84,7 @@ export async function createFieldVisitAction(_prev: VisitFormState, formData: Fo
     return { fieldErrors }
   }
   const data = parsed.data
+  if (!canManageAssignments(session.user)) data.assigneeId = session.user.id
 
   const scheduledAt = new Date(data.scheduledAt)
   if (Number.isNaN(scheduledAt.getTime())) {

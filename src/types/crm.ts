@@ -4,6 +4,18 @@
 
 export type LeadStatus = 'NEW' | 'CONTACTED' | 'QUALIFIED' | 'PROPOSAL' | 'NEGOTIATION' | 'WON' | 'LOST'
 
+export type Segment = 'NUTRACEUTICAL' | 'PHARMACEUTICAL' | 'COSMETICS' | 'FUNCTIONAL' | 'OTHER'
+
+export const SEGMENTS: Segment[] = ['NUTRACEUTICAL', 'PHARMACEUTICAL', 'COSMETICS', 'FUNCTIONAL', 'OTHER']
+
+export const SEGMENT_LABEL: Record<Segment, string> = {
+  NUTRACEUTICAL: 'Nutraceutical',
+  PHARMACEUTICAL: 'Pharmaceutical',
+  COSMETICS: 'Cosmetics',
+  FUNCTIONAL: 'Functional',
+  OTHER: 'Other',
+}
+
 export interface Lead {
   id: string
   name: string
@@ -16,6 +28,7 @@ export interface Lead {
   status: LeadStatus
   score: number
   value: number
+  segment: string | null
   createdAt: string
   lastActivityAt: string
 }
@@ -43,12 +56,14 @@ export interface Contact {
   company: string
   designation: string
   email: string
-  phone: string
-  mobile: string
-  owner: string
-  ownerInitials: string
-  status: 'ACTIVE' | 'INACTIVE'
-  lastActivityAt: string
+   phone: string
+   mobile: string
+   address: string
+   owner: string
+   ownerInitials: string
+   status: 'ACTIVE' | 'INACTIVE'
+   segment: string | null
+   lastActivityAt: string
 }
 
 export type DealStage = 'NEW_LEAD' | 'CONTACTED' | 'QUALIFIED' | 'PROPOSAL' | 'NEGOTIATION' | 'WON' | 'LOST'
@@ -66,4 +81,5 @@ export interface Deal {
   ownerInitials: string
   expectedClose: string
   priority: DealPriority
+  segment: string | null
 }

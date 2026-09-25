@@ -8,8 +8,8 @@ import { Card } from '@/components/ui/card'
 import { importLeadsAction, type LeadImportResult } from '@/app/leads/actions'
 
 const TEMPLATE_CSV =
-  'name,company,email,phone,source,status,score,value,notes\r\n' +
-  'Jane Doe,Acme Corp,jane@acme.com,+91 98765 43210,Referral,NEW,50,250000,Interested in bulk pricing\r\n'
+  'name,company,email,phone,source,segment,status,score,value,notes\r\n' +
+  'Jane Doe,Acme Corp,jane@acme.com,+91 98765 43210,Referral,NUTRACEUTICAL,NEW,50,250000,Interested in bulk pricing\r\n'
 
 function downloadTemplate() {
   const blob = new Blob([TEMPLATE_CSV], { type: 'text/csv' })
@@ -45,8 +45,8 @@ export function ImportLeadsSection() {
   return (
     <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-6 space-y-4">
       <p className="text-sm text-white/60">
-        Upload a CSV with columns: <code className="text-white/90">name</code> (required), company, email, phone, source,
-        status, score, value, notes. Up to 1,000 rows per file.
+         Upload a CSV with columns: <code className="text-white/90">name</code> (required), company, email, phone, source,
+         segment, status, score, value, notes. Up to 1,000 rows per file.
       </p>
       <Button variant="ghost" size="sm" className="w-full gap-1.5" onClick={downloadTemplate}>
         <Download className="h-3.5 w-3.5" />

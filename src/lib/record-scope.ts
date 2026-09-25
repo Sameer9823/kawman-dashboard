@@ -23,6 +23,17 @@ export type RecordScope = 'ALL' | 'DEPARTMENT' | 'OWN'
 const FULL_VISIBILITY_ROLES = ['SUPER_ADMIN', 'ADMIN']
 const DEPARTMENT_VISIBILITY_ROLES = ['MANAGER', 'SALES_MANAGER']
 
+/**
+ * Whether the given user (by roles) is permitted to reassign records to
+ * other users — i.e. change the "Assign To" dropdown on create/edit forms
+ * and bulk-assign actions. Only SUPER_ADMIN / ADMIN hold this right; every
+ * other role is locked to assigning the record to themselves.
+ */
+export function canManageAssignments(user: { roles?: string[] }): boolean {
+  const userRoles = user.roles ?? []
+  return userRoles.some((r) => FULL_VISIBILITY_ROLES.includes(r))
+}
+
 export function getRecordScope(user: Session['user']): RecordScope {
   const roles = user.roles ?? []
   if (roles.some((r) => FULL_VISIBILITY_ROLES.includes(r))) return 'ALL'

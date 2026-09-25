@@ -471,6 +471,7 @@ model Lead {
   status         LeadStatus   @default(NEW)
   score          Int          @default(0)
   value          Decimal?     @db.Decimal(15, 2)
+  segment        String?
   notes          String?
   organizationId String
   ownerId        String
@@ -539,6 +540,8 @@ model Contact {
   email          String?
   phone          String?
   mobile         String?
+  address        String?
+  segment        String?
   status         String       @default("ACTIVE")
   organizationId String
   companyId      String?
@@ -572,6 +575,7 @@ model Deal {
   stage          DealStage    @default(NEW_LEAD)
   expectedClose  DateTime?
   priority       String       @default("MEDIUM")
+  segment        String?
   notes          String?
   organizationId String
   ownerId        String

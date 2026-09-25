@@ -4,14 +4,16 @@ import { requireApiSession } from '@/lib/session'
 import type { Contact } from '@/types/crm'
 import type { Session } from '@/lib/auth'
 import type { Prisma } from '@/generated/prisma'
-import { ownerScopeWhere } from '@/lib/record-scope-helpers'
+import { ownerScopeWhere, contactOwnerScopeWhere } from '@/lib/record-scope-helpers'
 import { toInitials } from '@/lib/utils'
 import { buildContactEmailKey } from '@/lib/contact-dedupe'
 
 /** See lib/record-scope.ts — the base "contacts.view" permission only
- * gates page access, not which rows come back. This adds that filter. */
+ * gates page access, not which rows come back. This adds that filter.
+ * Contacts are owner-scoped: only SUPER_ADMIN/ADMIN see all contacts;
+ * every other role sees only their own. */
 function scopeWhere(user: Session['user']): Prisma.ContactWhereInput {
-  return ownerScopeWhere<Prisma.ContactWhereInput>(user)
+  return contactOwnerScopeWhere<Prisma.ContactWhereInput>(user)
 }
 
 type ContactRow = Awaited<ReturnType<typeof fetchContacts>>[number]
@@ -33,9 +35,11 @@ function mapContact(row: ContactRow): Contact {
     email: row.email ?? '',
     phone: row.phone ?? '',
     mobile: row.mobile ?? '',
+    address: row.address ?? '',
     owner: row.owner.name ?? 'Unassigned',
     ownerInitials: toInitials(row.owner.name ?? 'U'),
     status: row.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE',
+    segment: row.segment ?? null,
     lastActivityAt: (row.lastActivityAt ?? row.createdAt).toISOString(),
   }
 }
@@ -133,6 +137,7 @@ export interface ContactDetail extends Contact {
   ownerId: string
   companyId: string | null
   mobile: string
+  address: string
 }
 
 /** Full record for the contact detail page, org- and scope-restricted. Returns null if not found, not in this org, or outside the caller's visibility scope. */
@@ -143,7 +148,7 @@ export async function getContactById(id: string): Promise<ContactDetail | null> 
     include: { owner: { select: { name: true } }, company: { select: { name: true } } },
   })
   if (!row) return null
-  return { ...mapContact(row), ownerId: row.ownerId, companyId: row.companyId, mobile: row.mobile ?? '' }
+  return { ...mapContact(row), ownerId: row.ownerId, companyId: row.companyId, mobile: row.mobile ?? '', address: row.address ?? '' }
 }
 
 /**

@@ -20,6 +20,7 @@ export interface ContactCsvRow {
   email: string
   phone: string
   mobile: string
+  address: string
 }
 
 export const CONTACT_CSV_COLUMNS: CsvColumn<ContactCsvRow>[] = [
@@ -29,6 +30,7 @@ export const CONTACT_CSV_COLUMNS: CsvColumn<ContactCsvRow>[] = [
   { key: 'email', header: 'Email' },
   { key: 'phone', header: 'Phone', asText: true },
   { key: 'mobile', header: 'Mobile', asText: true },
+  { key: 'address', header: 'Address' },
 ]
 
 /**
@@ -46,7 +48,7 @@ export function displayValue(value: unknown): string {
   return str
 }
 
-/** Map raw contacts to the six export fields only — drops owner/status/ids/etc. */
+/** Map raw contacts to the seven export fields only — drops owner/status/ids/etc. */
 export function toContactCsvRows(
   contacts: Partial<Pick<Contact, keyof ContactCsvRow>>[],
 ): ContactCsvRow[] {
@@ -57,6 +59,7 @@ export function toContactCsvRows(
     email: displayValue(c.email),
     phone: withCountryCode(displayValue(c.phone)),
     mobile: withCountryCode(displayValue(c.mobile)),
+    address: displayValue(c.address),
   }))
 }
 

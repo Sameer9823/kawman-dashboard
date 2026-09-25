@@ -28,6 +28,7 @@ const SUGGESTIONS = [
   'Summarize my pipeline health right now',
   'Which leads should I follow up with today?',
   'What deals are at risk of going cold?',
+  'What did Sameer do today?',
 ]
 
 export function ChatPanel({
@@ -290,7 +291,7 @@ export function ChatPanel({
               </div>
               <div>
                 <p className="text-white font-medium">Ask about your pipeline, leads, or deals</p>
-                <p className="text-white/40 text-sm mt-1">Grounded in your live CRM data. Attach a PDF, image, or Excel sheet for file-aware insights.</p>
+                <p className="text-white/40 text-sm mt-1">Grounded in your live CRM data — leads, deals, visits, daily reports, and team activity. Attach a PDF, image, or Excel sheet for file-aware insights.</p>
               </div>
               <div className="flex flex-col gap-2 w-full max-w-sm">
                 {SUGGESTIONS.map((s) => (

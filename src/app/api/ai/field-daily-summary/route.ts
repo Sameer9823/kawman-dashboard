@@ -32,7 +32,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid date' }, { status: 400 })
     }
     const result = await generateFieldSalesDailySummary(date ? { date } : undefined)
-    return NextResponse.json(result)
+    if (!result.success) {
+      const status = result.error.startsWith('Forbidden') ? 403 : 400
+      return NextResponse.json({ error: result.error }, { status })
+    }
+    return NextResponse.json({ id: result.data.id })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Failed to generate summary'
     const status = msg.startsWith('Forbidden') ? 403 : 500

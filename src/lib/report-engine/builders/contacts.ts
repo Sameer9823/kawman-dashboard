@@ -9,6 +9,7 @@ const COLUMNS: ReportColumn[] = [
   { key: 'email', header: 'Email' },
   { key: 'phone', header: 'Phone', format: 'text', csvText: true },
   { key: 'mobile', header: 'Mobile', format: 'text', csvText: true },
+  { key: 'address', header: 'Address' },
 ]
 
 export function buildContactsReport(opts: {

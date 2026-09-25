@@ -8,6 +8,7 @@ import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
 import { logAudit } from '@/lib/audit-log'
+import { canManageAssignments } from '@/lib/record-scope'
 
 const companySchema = z.object({
   name: z.string().trim().min(2, 'Company name is required'),
@@ -45,6 +46,7 @@ export async function createCompanyAction(_prev: CompanyFormState, formData: For
     return { fieldErrors }
   }
   const data = parsed.data
+  if (!canManageAssignments(session.user)) data.ownerId = session.user.id
   const company = await prisma.company.create({
     data: {
       name: data.name,
@@ -101,6 +103,7 @@ export async function updateCompanyAction(
   if (!existing) return { error: 'Company not found.' }
 
   const data = parsed.data
+  if (!canManageAssignments(session.user)) data.ownerId = session.user.id
   await prisma.company.update({
     where: { id },
     data: {

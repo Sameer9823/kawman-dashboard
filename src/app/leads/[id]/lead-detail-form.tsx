@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
 import type { Lead, LeadStatus } from '@/types/crm'
+import { SEGMENTS, SEGMENT_LABEL } from '@/types/crm'
 import type { UserOption } from '@/services/user.service'
 import {
   updateLeadAction,
@@ -21,7 +22,7 @@ import {
 const STATUSES: LeadStatus[] = ['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST']
 const initialState: LeadFormState = {}
 
-export function LeadDetailForm({ lead, owners }: { lead: Lead; owners: UserOption[] }) {
+export function LeadDetailForm({ lead, owners, canAssign, currentUser }: { lead: Lead; owners: UserOption[]; canAssign: boolean; currentUser: UserOption }) {
   const boundUpdate = updateLeadAction.bind(null, lead.id)
   const [state, formAction, pending] = useActionState(boundUpdate, initialState)
   useEffect(() => {
@@ -70,19 +71,47 @@ export function LeadDetailForm({ lead, owners }: { lead: Lead; owners: UserOptio
             ))}
           </select>
         </Field>
-        <Field label="Owner">
+        <Field label="Segment">
           <select
-            name="ownerId"
-            defaultValue=""
+            name="segment"
+            defaultValue={lead.segment ?? ''}
             className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
           >
-            <option value="">{lead.owner} (current)</option>
-            {owners.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.name}
+            <option value="">Select segment</option>
+            {SEGMENTS.map((s) => (
+              <option key={s} value={s}>
+                {SEGMENT_LABEL[s]}
               </option>
             ))}
           </select>
+        </Field>
+        <Field label="Owner">
+          {canAssign ? (
+            <select
+              name="ownerId"
+              defaultValue=""
+              className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            >
+              <option value="">{lead.owner} (current)</option>
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <>
+              <input type="hidden" name="ownerId" value={currentUser.id} />
+              <select
+                name="ownerId"
+                defaultValue={currentUser.id}
+                disabled
+                className="h-9 w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white/50 cursor-not-allowed"
+              >
+                <option value={currentUser.id}>{currentUser.name} (you)</option>
+              </select>
+            </>
+          )}
         </Field>
         <Field label="Score (0-100)">
           <div className="flex items-center gap-2">

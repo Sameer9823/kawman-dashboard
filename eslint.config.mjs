@@ -15,6 +15,13 @@ const eslintConfig = defineConfig([
     // Auto-generated Prisma client — never hand-edited, not our lint surface.
     "src/generated/**",
   ]),
+  // Allow explicit `any` in test files for mocking/typing convenience
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

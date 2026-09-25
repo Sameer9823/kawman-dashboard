@@ -17,6 +17,7 @@ import { NewActionDropdown } from '@/components/dashboard/new-action-dropdown'
 import { ExportMenu } from '@/components/report-engine/export-menu'
 import { buildDashboardReport } from '@/lib/report-engine/builders/dashboard'
 import { getDashboardMetrics } from '@/services/dashboard.service'
+import { VoiceAssistant } from '@/components/voice/voice-assistant'
 import { getSession } from '@/lib/session'
 
 export const metadata = {
@@ -103,6 +104,7 @@ export default async function DashboardPage() {
         {/* Recent activities */}
         <RecentActivities items={metrics.recentActivities} />
       </div>
+      <VoiceAssistant />
     </MainLayout>
   )
 }

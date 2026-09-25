@@ -23,6 +23,8 @@
     "postinstall": "puppeteer browsers install chrome"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1140.0",
     "@cloudinary/react": "^1.14.4",
     "@cloudinary/url-gen": "^1.22.0",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
@@ -80,7 +82,9 @@
     "react-day-picker": "^10.0.1",
     "react-dom": "19.2.8",
     "react-hook-form": "^7.86.0",
+    "react-is": "^19.3.0",
     "recharts": "^3.10.1",
+    "samai-sdk": "^0.3.5",
     "server-only": "^0.0.1",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",

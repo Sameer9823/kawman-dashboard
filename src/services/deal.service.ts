@@ -82,6 +82,8 @@ export interface DealDetail extends Deal {
   companyId: string | null
   contactId: string
   notes: string
+  contactEmail: string | null
+  contactMobile: string | null
 }
 
 /** Full record for the deal detail page, org- and scope-restricted. Returns null if not found, not in this org, or outside the caller's visibility scope. */
@@ -92,7 +94,7 @@ export async function getDealById(id: string): Promise<DealDetail | null> {
     include: {
       owner: { select: { name: true } },
       company: { select: { name: true } },
-      contact: { select: { name: true } },
+      contact: { select: { name: true, email: true, mobile: true } },
     },
   })
   if (!row) return null
@@ -102,5 +104,7 @@ export async function getDealById(id: string): Promise<DealDetail | null> {
     companyId: row.companyId,
     contactId: row.contactId ?? '',
     notes: row.notes ?? '',
+    contactEmail: row.contact?.email ?? null,
+    contactMobile: row.contact?.mobile ?? null,
   }
 }

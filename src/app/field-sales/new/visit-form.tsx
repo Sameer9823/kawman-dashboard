@@ -193,8 +193,14 @@ export function NewVisitForm({ owners, canAssign, currentUser }: { owners: UserO
           <Input name="company" placeholder="Acme Nutraceuticals" />
           <p className="text-[11px] text-white/25 mt-1">Created if it doesn&apos;t exist.</p>
         </Field>
-        <Field label="Contact" error={state.fieldErrors?.contact}>
-          <Input name="contact" placeholder="+91 98765 43210" />
+        <Field label="Contact Name" error={state.fieldErrors?.contactName}>
+          <Input name="contactName" placeholder="Jane Doe" />
+        </Field>
+        <Field label="Contact Email" error={state.fieldErrors?.contactEmail}>
+          <Input name="contactEmail" type="email" placeholder="jane@example.com" />
+        </Field>
+        <Field label="Contact Mobile" error={state.fieldErrors?.contactMobile}>
+          <Input name="contactMobile" placeholder="+91 98765 43210" />
         </Field>
         <Field label="Address" error={state.fieldErrors?.address}>
           <Input name="address" placeholder="Plot 14, MIDC, Andheri East, Mumbai" />

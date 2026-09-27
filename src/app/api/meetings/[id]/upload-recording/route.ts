@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { uploadToCloudinary, isCloudinaryConfigured } from '@/lib/cloudinary'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { queueTranscription } from '@/services/queue.service'
+import { processTranscription } from '@/services/meeting.service'
 
 export async function POST(
   request: NextRequest,
@@ -78,9 +80,23 @@ export async function POST(
       },
     })
 
-    triggerTranscriptionAndMoM(meetingId, recording.id, upload.secureUrl).catch((e) =>
-      console.error('[MEETING-UPLOAD] Transcription/MoM failed:', e)
-    )
+    // Queue transcription in the background — never block the request,
+    // transcription can take many minutes for long videos.
+    const queued = await queueTranscription({
+      meetingId,
+      recordingId: recording.id,
+      videoUrl: upload.secureUrl,
+      organizationId: session.user.organizationId,
+    })
+    if (!queued) {
+      // Redis not available — defer with setTimeout so the HTTP response
+      // flushes before any work begins.
+      setTimeout(() => {
+        void processTranscription(meetingId, upload.secureUrl, session.user.organizationId).catch((e) =>
+          console.error('[MEETING-UPLOAD] Transcription/MoM failed:', e)
+        )
+      }, 0)
+    }
 
     return NextResponse.json({
       success: true,
@@ -94,31 +110,5 @@ export async function POST(
   } catch (error) {
     console.error('Upload recording error:', error)
     return NextResponse.json({ error: 'Upload failed. Please try again.' }, { status: 500 })
-  }
-}
-
-async function triggerTranscriptionAndMoM(meetingId: string, recordingId: string, videoUrl: string) {
-  try {
-    const { transcribeVideo } = await import('@/lib/transcription')
-    const { generateMeetingSummary } = await import('@/services/meeting.service')
-
-    const transcript = await transcribeVideo(videoUrl)
-
-    if (transcript) {
-      await prisma.meetingTranscript.create({
-        data: {
-          meetingId,
-          content: transcript,
-          language: 'en',
-        },
-      })
-
-      await generateMeetingSummary(meetingId)
-    }
-    // Pipeline done (generateMeetingSummary flips PROCESSING -> COMPLETED internally) — ensure final state.
-    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'COMPLETED' } }).catch(() => {})
-  } catch (error) {
-    console.error('Transcription/MoM generation failed:', error)
-    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'FAILED' } }).catch(() => {})
   }
 }

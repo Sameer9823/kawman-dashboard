@@ -35,7 +35,9 @@ const visitSchema = z.object({
   purpose: z.string().trim().min(2, 'Purpose is required'),
   scheduledAt: z.string().trim().min(1, 'Date/time is required'),
   company: z.string().trim().optional(),
-  contact: z.string().trim().optional(),
+  contactName: z.string().trim().optional(),
+  contactEmail: z.string().trim().email('Enter a valid email').optional().or(z.literal('')),
+  contactMobile: z.string().trim().optional(),
   assigneeId: z.string().trim().optional(),
   address: z.string().trim().optional(),
   // Empty string from the form means "no coordinate" — not 0. Without the
@@ -67,7 +69,15 @@ const visitSchema = z.object({
     },
     z.coerce.number().min(-180).max(180).optional()
   ),
-})
+}).refine(
+  (data) => {
+    const email = data.contactEmail || ''
+    const mobile = data.contactMobile || ''
+    if (!email.trim() && !mobile.trim()) return true
+    return Boolean((data.contactName || '').trim())
+  },
+  { message: 'Contact name is required when contact email or mobile is provided', path: ['contactName'] },
+)
 
 export interface VisitFormState {
   error?: string
@@ -99,9 +109,11 @@ export async function createFieldVisitAction(_prev: VisitFormState, formData: Fo
       })
     : null
   const companyId = company?.id ?? null
-  const contact = data.contact?.trim()
+  const contact = data.contactName?.trim()
     ? await findOrCreateContactByName({
-        name: data.contact.trim(),
+        email: data.contactEmail || null,
+        mobile: data.contactMobile || null,
+        name: data.contactName.trim(),
         organizationId: session.user.organizationId,
         ownerId: data.assigneeId || session.user.id,
         companyId,

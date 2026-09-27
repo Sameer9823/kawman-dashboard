@@ -17,7 +17,9 @@ const STAGES = ['NEW_LEAD', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'NEGOTIATION',
 const dealSchema = z.object({
   name: z.string().trim().min(2, 'Deal name is required'),
   company: z.string().trim().optional(),
-  contact: z.string().trim().optional(),
+  contactName: z.string().trim().optional(),
+  contactEmail: z.string().trim().email('Enter a valid email').optional().or(z.literal('')),
+  contactMobile: z.string().trim().optional(),
   value: z.coerce.number().min(0, 'Value must be positive'),
   probability: z.coerce.number().int().min(0).max(100).optional(),
   stage: z.enum(STAGES).optional(),
@@ -25,7 +27,15 @@ const dealSchema = z.object({
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
   segment: z.string().trim().optional(),
   ownerId: z.string().trim().optional(),
-})
+}).refine(
+  (data) => {
+    const email = data.contactEmail || ''
+    const mobile = data.contactMobile || ''
+    if (!email.trim() && !mobile.trim()) return true
+    return Boolean((data.contactName || '').trim())
+  },
+  { message: 'Contact name is required when contact email or mobile is provided', path: ['contactName'] },
+)
 
 export interface DealFormState {
   error?: string
@@ -60,9 +70,11 @@ export async function createDealAction(_prev: DealFormState, formData: FormData)
       })
     : null
   const companyId = company?.id ?? null
-  const contact = data.contact?.trim()
+  const contact = data.contactName?.trim()
     ? await findOrCreateContactByName({
-        name: data.contact.trim(),
+        email: data.contactEmail || null,
+        mobile: data.contactMobile || null,
+        name: data.contactName.trim(),
         organizationId: session.user.organizationId,
         ownerId: data.ownerId || session.user.id,
         companyId,
@@ -83,6 +95,7 @@ export async function createDealAction(_prev: DealFormState, formData: FormData)
       contactId,
       organizationId: session.user.organizationId,
       ownerId: data.ownerId || session.user.id,
+      closedAt: data.stage === 'WON' || data.stage === 'LOST' ? new Date() : null,
     },
   })
   await prisma.activity.create({
@@ -134,15 +147,17 @@ export async function updateDealAction(id: string, _prev: DealFormState, formDat
     : null
   const rawCompany = formData.get('company')
   const companyId = rawCompany !== null ? (company?.id ?? null) : existing.companyId
-  const contact = data.contact?.trim()
+  const contact = data.contactName?.trim()
     ? await findOrCreateContactByName({
-        name: data.contact.trim(),
+        email: data.contactEmail || null,
+        mobile: data.contactMobile || null,
+        name: data.contactName.trim(),
         organizationId: session.user.organizationId,
         ownerId: data.ownerId || existing.ownerId,
         companyId,
       })
     : null
-  const rawContact = formData.get('contact')
+  const rawContact = formData.get('contactName')
   const contactId = rawContact !== null ? (contact?.id ?? null) : existing.contactId
   const notes = formData.get('notes')
 

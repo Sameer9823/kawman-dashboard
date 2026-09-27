@@ -4,7 +4,7 @@ import { requireApiSession } from '@/lib/session'
 import type { Contact } from '@/types/crm'
 import type { Session } from '@/lib/auth'
 import type { Prisma } from '@/generated/prisma'
-import { ownerScopeWhere, contactOwnerScopeWhere } from '@/lib/record-scope-helpers'
+import { contactOwnerScopeWhere } from '@/lib/record-scope-helpers'
 import { toInitials } from '@/lib/utils'
 import { buildContactEmailKey } from '@/lib/contact-dedupe'
 
@@ -152,35 +152,101 @@ export async function getContactById(id: string): Promise<ContactDetail | null> 
 }
 
 /**
- * Find an existing Contact by name (case-insensitive, org-scoped) or create it.
- * Mirrors findOrCreateCompanyByName — used when forms accept free-text contact
- * names instead of a <select> of existing contacts. Returns null for blank input.
+ * Matches strings that look like phone numbers: must start with + or a digit
+ * and contain at least 6 digits (spaces/dashes allowed). Used as a
+ * server-side safeguard so phone numbers can never silently become a
+ * Contact's display `name`.
+ */
+export const PHONE_NUMBER_PATTERN = /^[+\d][\d\s()-]{6,}\d$/
+
+export function looksLikePhoneNumber(value: string): boolean {
+  return PHONE_NUMBER_PATTERN.test(value.trim())
+}
+
+/**
+ * Find an existing Contact by name (case-insensitive, org-scoped) or create
+ * one with **all** provided details. When creating, email/mobile/phone are
+ * stored — never just a bare name (or worse, a phone number as the name).
+ *
+ * Safeguard against phone-number-as-name:
+ *   If `name` looks like a phone number (matches PHONE_NUMBER_PATTERN), the
+ *   function will NOT save it as the Contact.name. Instead it tries to match
+ *   by `mobile`. If no existing contact has that mobile, it returns null so
+ *   no junk Contact row is created.
+ *
+ * Backfill on match:
+ *   When an existing contact is found by name, any *missing* email/mobile
+ *   fields supplied in this call are filled in (blanks only, never overwrite).
+ *
+ * Returns null for blank/whitespace-only name input (no lookup, no create).
  */
 export async function findOrCreateContactByName(input: {
   name: string
   organizationId: string
   ownerId: string
   companyId?: string | null
+  email?: string | null
+  phone?: string | null
+  mobile?: string | null
 }): Promise<{ id: string; name: string } | null> {
-  const trimmed = input.name?.trim()
-  if (!trimmed) return null
+  const trimmedName = input.name?.trim()
+  if (!trimmedName) return null
+
+  // --- Safeguard: reject phone-number-looking names ---
+  if (looksLikePhoneNumber(trimmedName)) {
+    const existingByMobile = await prisma.contact.findFirst({
+      where: {
+        organizationId: input.organizationId,
+        mobile: { equals: trimmedName, mode: 'insensitive' as const },
+      },
+      select: { id: true, name: true },
+    })
+    if (existingByMobile) return existingByMobile
+    // Don't create a Contact whose display name is a phone number
+    return null
+  }
+
+  // --- Normal path: look up by name ---
   const existing = await prisma.contact.findFirst({
-    where: { organizationId: input.organizationId, name: { equals: trimmed, mode: 'insensitive' as const } },
-    select: { id: true, name: true },
+    where: { organizationId: input.organizationId, name: { equals: trimmedName, mode: 'insensitive' as const } },
+    select: { id: true, name: true, email: true, mobile: true },
   })
-  if (existing) return existing
+
+  if (existing) {
+    // Backfill: fill only blank email / mobile fields
+    const updates: { email?: string | null; mobile?: string | null; lastActivityAt: Date } = {
+      lastActivityAt: new Date(),
+    }
+    if (input.email && !existing.email) updates.email = input.email
+    if (input.mobile && !existing.mobile) updates.mobile = input.mobile
+
+    if ((input.email && !existing.email) || (input.mobile && !existing.mobile)) {
+      await prisma.contact.update({
+        where: { id: existing.id },
+        data: {
+          ...updates,
+          emailKey: input.email ? buildContactEmailKey(input.email) : undefined,
+        },
+      })
+    }
+    return { id: existing.id, name: existing.name }
+  }
+
+  // --- Create new contact with full details ---
   const created = await prisma.contact.create({
     data: {
-      name: trimmed,
+      name: trimmedName,
       organizationId: input.organizationId,
       ownerId: input.ownerId,
       companyId: input.companyId ?? null,
-      emailKey: buildContactEmailKey(undefined),
+      email: input.email ?? null,
+      phone: input.phone ?? null,
+      mobile: input.mobile ?? null,
+      emailKey: buildContactEmailKey(input.email ?? null),
+      lastActivityAt: new Date(),
     },
     select: { id: true, name: true },
   })
   return created
 }
-
-export const findOrCreateContact = findOrCreateContactByName
 

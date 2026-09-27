@@ -4,6 +4,7 @@ import { requireApiSession } from '@/lib/session'
 import { generateCompletion } from '@/lib/ai'
 import { uploadToCloudinary } from '@/lib/cloudinary'
 import { transcribeVideo } from '@/lib/transcription'
+import { queueTranscription } from '@/services/queue.service'
 import type { MeetingListItem, MeetingDetail, MeetingType, MeetingStatus } from '@/types/meetings'
 import type { Prisma } from '@/generated/prisma'
 import { getRecordScope } from '@/lib/record-scope'
@@ -385,10 +386,10 @@ function extractJson(text: string): string {
  * its free-text notes if no transcript has been added yet) via the
  * configured AI provider, and upserts it as the meeting's MeetingSummary.
  */
-export async function generateMeetingSummary(meetingId: string) {
-  const session = await requireApiSession()
+export async function generateMeetingSummary(meetingId: string, organizationId?: string) {
+  const orgId = organizationId ?? (await requireApiSession()).user.organizationId
   const meeting = await prisma.meeting.findFirst({
-    where: { id: meetingId, organizationId: session.user.organizationId },
+    where: { id: meetingId, organizationId: orgId },
     include: { transcripts: { orderBy: { createdAt: 'desc' } } },
   })
   if (!meeting) throw new Error('Meeting not found')
@@ -459,9 +460,8 @@ export async function updateMeetingSummaryText(meetingId: string, summary: strin
  * This runs as a background process - the meeting status is set to PROCESSING
  * and updated to COMPLETED or FAILED when done.
  */
-export async function processMeetingVideo(meetingId: string, videoBuffer: Buffer, fileName: string, mimeType: string) {
-  const session = await requireApiSession()
-  const orgId = session.user.organizationId
+export async function processMeetingVideoBackground(meetingId: string, videoBuffer: Buffer, fileName: string, mimeType: string, organizationId: string) {
+  const orgId = organizationId
 
   try {
     // 1. Upload video to Cloudinary
@@ -494,8 +494,8 @@ export async function processMeetingVideo(meetingId: string, videoBuffer: Buffer
         },
       })
 
-      // 5. Generate MoM from transcript
-      await generateMeetingSummary(meetingId)
+       // 5. Generate MoM from transcript
+      await generateMeetingSummary(meetingId, orgId)
     }
 
     // 6. Update meeting status to COMPLETED
@@ -507,7 +507,7 @@ export async function processMeetingVideo(meetingId: string, videoBuffer: Buffer
     return { success: true }
   } catch (error) {
     logger.error('Video processing failed', {}, error as Error)
-    
+
     // Update meeting status to FAILED
     await prisma.meeting.update({
       where: { id: meetingId },
@@ -515,6 +515,34 @@ export async function processMeetingVideo(meetingId: string, videoBuffer: Buffer
     }).catch(() => {}) // Ignore update errors
 
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}
+
+/**
+ * Transcribes a meeting video and generates the MoM.
+ * Used both by the BullMQ transcription worker and as a fallback
+ * (via setTimeout) when Redis is not available.
+ */
+export async function processTranscription(meetingId: string, videoUrl: string, organizationId: string) {
+  try {
+    const transcript = await transcribeVideo(videoUrl)
+
+    if (transcript) {
+      await prisma.meetingTranscript.create({
+        data: {
+          meetingId,
+          content: transcript,
+          language: 'en',
+        },
+      })
+
+      await generateMeetingSummary(meetingId, organizationId)
+    }
+
+    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'COMPLETED' } }).catch(() => {})
+  } catch (err) {
+    console.error('[TRANSCRIPTION] Failed:', err)
+    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'FAILED' } }).catch(() => {})
   }
 }
 
@@ -558,15 +586,36 @@ export async function createMeetingWithVideo(
     },
   })
 
-  // Start background processing (fire and forget)
-  processMeetingVideo(meeting.id, data.videoBuffer, data.fileName, data.mimeType)
-    .then(() => {
-      // Revalidate paths when done
-      // Note: In a real app, you might use a queue system like BullMQ
-    })
-    .catch((err) => {
-      logger.error('Background processing error', {}, err as Error)
-    })
+  // Upload to Cloudinary and create recording record first
+  const uploadResult = await uploadToCloudinary(data.videoBuffer, {
+    organizationId: orgId,
+    fileName: data.fileName,
+    mimeType: data.mimeType,
+  })
+
+  await prisma.meetingRecording.create({
+    data: {
+      meetingId: meeting.id,
+      cloudinaryPublicId: uploadResult.publicId,
+      secureUrl: uploadResult.secureUrl,
+      fileSize: BigInt(uploadResult.fileSize),
+      duration: null,
+    },
+  })
+
+  // Queue transcription in the background (never blocks the caller)
+  const queued = await queueTranscription({
+    meetingId: meeting.id,
+    recordingId: '',
+    videoUrl: uploadResult.secureUrl,
+    organizationId: orgId,
+  })
+  if (!queued) {
+    setTimeout(() => {
+      void processTranscription(meeting.id, uploadResult.secureUrl, orgId)
+        .catch((err) => logger.error('Background transcription error', {}, err as Error))
+    }, 0)
+  }
 
   return meeting
 }
@@ -595,22 +644,20 @@ export async function retryMeetingVideoProcessing(meetingId: string) {
     data: { status: 'PROCESSING' },
   })
 
-  // Download video from Cloudinary and reprocess
-  try {
-    const response = await fetch(recording.secureUrl)
-    if (!response.ok) throw new Error('Failed to download video from Cloudinary')
-    const videoBuffer = Buffer.from(await response.arrayBuffer())
-
-    // Start background processing
-    processMeetingVideo(meetingId, videoBuffer, recording.secureUrl.split('/').pop() || 'video.mp4', 'video/mp4')
-      .catch((err) => logger.error('Retry processing error', {}, err as Error))
-
-    return { success: true }
-  } catch (error) {
-    await prisma.meeting.update({
-      where: { id: meetingId },
-      data: { status: 'FAILED' },
-    }).catch(() => {})
-    throw error
+  // Queue transcription in the background — the video is already on
+  // Cloudinary, so the worker fetches it directly by URL.
+  const queued = await queueTranscription({
+    meetingId,
+    recordingId: recording.id,
+    videoUrl: recording.secureUrl,
+    organizationId: orgId,
+  })
+  if (!queued) {
+    setTimeout(() => {
+      void processTranscription(meetingId, recording.secureUrl, orgId)
+        .catch((err) => logger.error('Retry processing error', {}, err as Error))
+    }, 0)
   }
+
+  return { success: true }
 }

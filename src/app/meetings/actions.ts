@@ -5,15 +5,16 @@ import { validateCsrf } from '@/lib/csrf'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { after } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
-import { saveTranscript, addRecordingLink, generateMeetingSummary, updateMeetingSummaryText } from '@/services/meeting.service'
+import { saveTranscript, addRecordingLink, generateMeetingSummary, updateMeetingSummaryText, processTranscription } from '@/services/meeting.service'
 import { isCloudinaryConfigured, uploadToCloudinary } from '@/lib/cloudinary'
-import { getTranscriptionService } from '@/lib/transcription'
 import { findOrCreateCompanyByName } from '@/services/company.service'
 import { findOrCreateContactByName } from '@/services/contact.service'
 import { logAudit } from '@/lib/audit-log'
+import { queueTranscription } from '@/services/queue.service'
 
 async function assertPermission(permission: string) {
   const session = await requireApiSession()
@@ -29,10 +30,20 @@ const meetingSchema = z.object({
   title: z.string().trim().min(2, 'Title is required'),
   notes: z.string().trim().optional(),
   company: z.string().trim().optional(),
-  contact: z.string().trim().optional(),
+  contactName: z.string().trim().optional(),
+  contactEmail: z.string().trim().email('Enter a valid email').optional().or(z.literal('')),
+  contactMobile: z.string().trim().optional(),
   dealId: z.string().trim().optional(),
   participantIds: z.string().trim().optional(),
-})
+}).refine(
+  (data) => {
+    const email = data.contactEmail || ''
+    const mobile = data.contactMobile || ''
+    if (!email.trim() && !mobile.trim()) return true
+    return Boolean((data.contactName || '').trim())
+  },
+  { message: 'Contact name is required when contact email or mobile is provided', path: ['contactName'] },
+)
 
 export interface MeetingFormState {
   error?: string
@@ -63,9 +74,11 @@ export async function createMeetingAction(_prev: MeetingFormState, formData: For
       })
     : null
   const companyId = company?.id ?? null
-  const contact = data.contact?.trim()
+  const contact = data.contactName?.trim()
     ? await findOrCreateContactByName({
-        name: data.contact.trim(),
+        email: data.contactEmail || null,
+        mobile: data.contactMobile || null,
+        name: data.contactName.trim(),
         organizationId: session.user.organizationId,
         ownerId: session.user.id,
         companyId,
@@ -315,10 +328,9 @@ export async function uploadRecordingAction(
       },
     })
 
-    // Trigger transcription in background (don't await)
-    transcribeAndGenerateMom(meetingId, recording.id, upload.secureUrl).catch(err => {
-      console.error('[UPLOAD] Background transcription failed:', err)
-    })
+    // Queue transcription in the background (never await — would block the
+    // server action response for minutes on long videos)
+    await scheduleTranscription(meetingId, recording.id, upload.secureUrl, session.user.organizationId)
 
     revalidatePath(`/meetings/${meetingId}`)
     revalidatePath('/meetings/videos')
@@ -333,26 +345,25 @@ export async function uploadRecordingAction(
   }
 }
 
-async function transcribeAndGenerateMom(meetingId: string, recordingId: string, videoUrl: string) {
-  try {
-    const transcriptionService = getTranscriptionService()
-    const result = await transcriptionService.transcribe(videoUrl)
+// ============================================================
+// Background transcription + MoM
+// ============================================================
 
-    await prisma.meetingTranscript.create({
-      data: {
-        meetingId,
-        content: result.text,
-        language: result.language || 'en',
-      },
-    })
-
-    await generateMeetingSummary(meetingId)
-    // generateMeetingSummary already flips PROCESSING -> COMPLETED, but
-    // ensure it even when the AI provider returns empty (still done).
-    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'COMPLETED' } }).catch(() => {})
-  } catch (err) {
-    console.error('[TRANSCRIPTION] Failed:', err)
-    await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'FAILED' } }).catch(() => {})
+async function scheduleTranscription(
+  meetingId: string,
+  recordingId: string,
+  videoUrl: string,
+  organizationId: string,
+): Promise<void> {
+  const queued = await queueTranscription({ meetingId, recordingId, videoUrl, organizationId })
+  if (!queued) {
+    // Redis not available — defer with setTimeout so the HTTP response
+    // flushes before any work begins.
+    setTimeout(() => {
+      processTranscription(meetingId, videoUrl, organizationId).catch((err) => {
+        console.error('[MEETING] Background transcription failed:', err)
+      })
+    }, 0)
   }
 }
 
@@ -376,7 +387,8 @@ export async function createMeetingWithVideoAction(
   const title = formData.get('title')?.toString().trim() || ''
   const notes = formData.get('notes')?.toString().trim()
   const companyName = formData.get('company')?.toString().trim() || undefined
-  const contactName = formData.get('contact')?.toString().trim() || undefined
+  const contactName = formData.get('contactName')?.toString().trim() || undefined
+  const contactEmail = formData.get('contactEmail')?.toString().trim() || undefined
   const dealId = formData.get('dealId')?.toString().trim() || undefined
   const participantIds = formData.get('participantIds')?.toString().trim()
   const file = formData.get('videoFile')
@@ -414,15 +426,6 @@ export async function createMeetingWithVideoAction(
     : []
   if (!participantIdsArray.includes(session.user.id)) participantIdsArray.push(session.user.id)
 
-  // Upload video to Cloudinary
-  const videoFile = file as File
-  const buffer = Buffer.from(await videoFile.arrayBuffer())
-  const upload = await uploadToCloudinary(buffer, {
-    organizationId: session.user.organizationId,
-    fileName: videoFile.name,
-    mimeType: videoFile.type || 'video/mp4',
-  })
-
   const company = companyName
     ? await findOrCreateCompanyByName({
         name: companyName,
@@ -433,6 +436,8 @@ export async function createMeetingWithVideoAction(
   const companyId = company?.id ?? null
   const contact = contactName
     ? await findOrCreateContactByName({
+        email: contactEmail || null,
+        mobile: formData.get('contactMobile')?.toString().trim() || null,
         name: contactName,
         organizationId: session.user.organizationId,
         ownerId: session.user.id,
@@ -471,17 +476,6 @@ export async function createMeetingWithVideoAction(
     },
   })
 
-  // Create recording record
-  await prisma.meetingRecording.create({
-    data: {
-      meetingId: meeting.id,
-      cloudinaryPublicId: upload.publicId,
-      secureUrl: upload.secureUrl,
-      duration: null,
-      fileSize: BigInt(upload.fileSize),
-    },
-  })
-
   await logAudit({
     organizationId: session.user.organizationId,
     actorId: session.user.id,
@@ -491,9 +485,35 @@ export async function createMeetingWithVideoAction(
     metadata: { title: meeting.title, type: meeting.type, status: meeting.status, hasVideo: true },
   })
 
-  // Start background processing (fire and forget)
-  transcribeAndGenerateMom(meeting.id, '', upload.secureUrl).catch(err => {
-    console.error('[MEETING] Background processing failed:', err)
+  // Defer the video upload (can take minutes for large files) and
+  // transcription to AFTER the response is sent. The meeting page
+  // already shows a "Processing…" state while status === PROCESSING.
+  const videoFile = file as File
+  const orgId = session.user.organizationId
+  after(async () => {
+    try {
+      const buffer = Buffer.from(await videoFile.arrayBuffer())
+      const upload = await uploadToCloudinary(buffer, {
+        organizationId: orgId,
+        fileName: videoFile.name,
+        mimeType: videoFile.type || 'video/mp4',
+      })
+
+      await prisma.meetingRecording.create({
+        data: {
+          meetingId: meeting.id,
+          cloudinaryPublicId: upload.publicId,
+          secureUrl: upload.secureUrl,
+          duration: null,
+          fileSize: BigInt(upload.fileSize),
+        },
+      })
+
+      await scheduleTranscription(meeting.id, '', upload.secureUrl, orgId)
+    } catch (err) {
+      console.error('[MEETING] Background upload/transcription failed:', err)
+      await prisma.meeting.update({ where: { id: meeting.id }, data: { status: 'FAILED' } }).catch(() => {})
+    }
   })
 
   revalidatePath('/meetings')
@@ -527,10 +547,9 @@ export async function retryMeetingVideoProcessingAction(meetingId: string) {
     data: { status: 'PROCESSING' },
   })
 
-  // Start background processing
-  transcribeAndGenerateMom(meetingId, '', recording.secureUrl).catch(err => {
-    console.error('[MEETING] Retry processing error:', err)
-  })
+  // Queue transcription in the background (never await — would block the
+  // server action response for minutes on long videos)
+  await scheduleTranscription(meetingId, '', recording.secureUrl, session.user.organizationId)
 
   revalidatePath(`/meetings/${meetingId}`)
   revalidatePath('/meetings')

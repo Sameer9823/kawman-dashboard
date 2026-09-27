@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import './globals.css'
+import '@/lib/worker-startup'
 import { Providers } from '@/components/providers'
 import { ServiceWorkerRegistration } from '@/components/service-worker-registration'
 

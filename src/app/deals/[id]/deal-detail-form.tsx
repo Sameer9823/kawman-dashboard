@@ -57,8 +57,14 @@ export function DealDetailForm({
         <Field label="Company" error={state.fieldErrors?.company}>
           <Input name="company" defaultValue={deal.company === '—' ? '' : deal.company} />
         </Field>
-        <Field label="Contact" error={state.fieldErrors?.contact}>
-          <Input name="contact" defaultValue={deal.contact === '—' ? '' : deal.contact} placeholder="+91 98765 43210" />
+        <Field label="Contact Name" error={state.fieldErrors?.contactName}>
+          <Input name="contactName" defaultValue={deal.contact === '—' ? '' : deal.contact} placeholder="Jane Doe" />
+        </Field>
+        <Field label="Contact Email" error={state.fieldErrors?.contactEmail}>
+          <Input name="contactEmail" type="email" defaultValue={deal.contactEmail || ''} placeholder="jane@example.com" />
+        </Field>
+        <Field label="Contact Mobile" error={state.fieldErrors?.contactMobile}>
+          <Input name="contactMobile" defaultValue={deal.contactMobile || ''} placeholder="+91 98765 43210" />
         </Field>
         <Field label="Value (₹) *" error={state.fieldErrors?.value}>
           <Input name="value" type="number" min={0} defaultValue={deal.value} required />

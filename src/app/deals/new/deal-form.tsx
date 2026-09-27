@@ -41,8 +41,14 @@ export function DealForm({
         <Field label="Company" error={state.fieldErrors?.company}>
           <Input name="company" placeholder="Acme Nutraceuticals" />
         </Field>
-        <Field label="Contact" error={state.fieldErrors?.contact}>
-          <Input name="contact" placeholder="+91 98765 43210" />
+        <Field label="Contact Name" error={state.fieldErrors?.contactName}>
+          <Input name="contactName" placeholder="Jane Doe" />
+        </Field>
+        <Field label="Contact Email" error={state.fieldErrors?.contactEmail}>
+          <Input name="contactEmail" type="email" placeholder="jane@example.com" />
+        </Field>
+        <Field label="Contact Mobile" error={state.fieldErrors?.contactMobile}>
+          <Input name="contactMobile" placeholder="+91 98765 43210" />
         </Field>
         <Field label="Deal value (₹) *" error={state.fieldErrors?.value}>
           <Input name="value" type="number" min={0} step="1000" placeholder="1200000" required />

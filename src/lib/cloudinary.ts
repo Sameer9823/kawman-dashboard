@@ -5,6 +5,63 @@ export function isCloudinaryConfigured(): boolean {
   return Boolean(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET)
 }
 
+export const MAX_VIDEO_SIZE = 500 * 1024 * 1024
+
+/**
+ * Public (safe-to-send-to-client) Cloudinary configuration.
+ * Mirrors `configure()` so the v2 instance and env are read consistently,
+ * but never exposes the API secret.
+ */
+export function getCloudinaryPublicConfig() {
+  configure()
+  return {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME!,
+    apiKey: process.env.CLOUDINARY_API_KEY!,
+  }
+}
+
+/**
+ * Folder that Cloudinary uploads are placed under for a given org.
+ * Always derived server-side from the session — never trusted from the client.
+ */
+export function cloudinaryOrgFolder(organizationId: string): string {
+  return `kawman-exact/${organizationId}`
+}
+
+/**
+ * URL prefix that all Cloudinary video delivery URLs for this account carry.
+ * Used to validate signed-upload results the client sends back to us.
+ */
+export function cloudinaryVideoUrlPrefix(): string {
+  return `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/video/upload/`
+}
+
+/**
+ * Validates a Cloudinary upload result returned by the browser after a direct
+ * (signed) upload. Returns an error message string, or null when valid.
+ *
+ * The secure_url and public_id are client-controlled at the boundary, so the
+ * server must re-check them against the trusted org folder and Cloudinary
+ * account before trusting them.
+ */
+export function validateCloudinaryVideoUpload(
+  videoUrl: string,
+  videoPublicId: string,
+  videoBytes: number,
+  organizationId: string,
+): string | null {
+  if (!videoUrl.startsWith(cloudinaryVideoUrlPrefix())) {
+    return 'Video upload is missing or invalid'
+  }
+  if (!videoPublicId.startsWith(`${cloudinaryOrgFolder(organizationId)}/`)) {
+    return 'Video upload is missing or invalid'
+  }
+  if (!Number.isFinite(videoBytes) || videoBytes <= 0 || videoBytes > MAX_VIDEO_SIZE) {
+    return 'Video upload is missing or invalid'
+  }
+  return null
+}
+
 function configure() {
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

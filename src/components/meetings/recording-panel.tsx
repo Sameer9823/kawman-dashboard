@@ -5,6 +5,7 @@ import { Video, Plus, Loader2, ExternalLink, AlertTriangle, Upload, X } from 'lu
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { addRecordingLinkAction } from '@/app/meetings/actions'
+import { uploadVideoDirect } from '@/lib/cloudinary-client'
 import type { MeetingRecording } from '@/types/meetings'
 
 export function RecordingPanel({ meetingId, recordings }: { meetingId: string; recordings: MeetingRecording[] }) {
@@ -28,45 +29,36 @@ export function RecordingPanel({ meetingId, recordings }: { meetingId: string; r
     })
   }
 
-  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
 
     setError(null)
     setUploadProgress({ loaded: 0, total: file.size })
 
-    const formData = new FormData()
-    formData.append('file', file)
+    try {
+      const upload = await uploadVideoDirect(file, (loaded, total) => setUploadProgress({ loaded, total }))
 
-    const xhr = new XMLHttpRequest()
-    xhr.upload.addEventListener('progress', (event) => {
-      if (event.lengthComputable) {
-        setUploadProgress({ loaded: event.loaded, total: event.total })
-      }
-    })
+      const res = await fetch(`/api/meetings/${meetingId}/upload-recording`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ publicId: upload.public_id, secureUrl: upload.secure_url, bytes: upload.bytes }),
+      })
+      const result = await res.json().catch(() => ({}))
 
-    xhr.addEventListener('load', () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        const result = JSON.parse(xhr.responseText)
-        if (result.error) {
-          setError(result.error)
-        } else {
-          setShowUpload(false)
-          setUploadProgress(null)
-          e.target.value = ''
-          window.dispatchEvent(new Event('storage:refresh'))
-        }
+      if (!res.ok || result.error) {
+        setError(result.error || 'Upload failed. Please try again.')
       } else {
-        setError('Upload failed. Please try again.')
+        setShowUpload(false)
+        setUploadProgress(null)
+        e.target.value = ''
+        window.dispatchEvent(new Event('storage:refresh'))
       }
-    })
-
-    xhr.addEventListener('error', () => {
-      setError('Upload failed. Please check your connection.')
-    })
-
-    xhr.open('POST', `/api/meetings/${meetingId}/upload-recording`)
-    xhr.send(formData)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed. Please check your connection.')
+    } finally {
+      setUploadProgress(null)
+    }
   }
 
   function formatBytes(bytes: number): string {

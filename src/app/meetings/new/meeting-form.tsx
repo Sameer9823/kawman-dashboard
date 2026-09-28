@@ -1,16 +1,20 @@
 'use client'
 
 import * as React from 'react'
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useTransition, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { createMeetingWithVideoAction, type CreateMeetingWithVideoState } from '../actions'
+import { uploadVideoDirect } from '@/lib/cloudinary-client'
 import type { UserOption } from '@/services/user.service'
 
 const initialState: CreateMeetingWithVideoState = {}
+
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska']
+const MAX_VIDEO_SIZE = 500 * 1024 * 1024
 
 export function NewMeetingForm({
   users,
@@ -19,7 +23,8 @@ export function NewMeetingForm({
   users: UserOption[]
   currentUserId: string
 }) {
-  const [state, formAction, pending] = useActionState(createMeetingWithVideoAction, initialState)
+  const [state, formAction, formPending] = useActionState(createMeetingWithVideoAction, initialState)
+  const [isMutating, startTransition] = useTransition()
   const router = useRouter()
   useEffect(() => {
     if (state.error) toast.error(state.error)
@@ -30,14 +35,59 @@ export function NewMeetingForm({
     }
   }, [state.error, state.meetingId, router])
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([currentUserId])
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<{ loaded: number; total: number } | null>(null)
 
   function toggleParticipant(id: string) {
     setSelectedParticipants((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]))
   }
 
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+
+    const fd = new FormData(e.currentTarget)
+    const file = fd.get('videoFile')
+
+    if (!file || !(file instanceof File)) {
+      toast.error('Please select a video file')
+      return
+    }
+    if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+      toast.error('Invalid file type. Please upload MP4, WebM, MOV, AVI, or MKV files.')
+      return
+    }
+    if (file.size > MAX_VIDEO_SIZE) {
+      toast.error('Video file exceeds 500MB limit')
+      return
+    }
+
+    try {
+      setIsUploading(true)
+      setUploadProgress({ loaded: 0, total: file.size })
+
+      const upload = await uploadVideoDirect(file, (loaded, total) => setUploadProgress({ loaded, total }))
+
+      fd.delete('videoFile')
+      fd.set('videoUrl', upload.secure_url)
+      fd.set('videoPublicId', upload.public_id)
+      fd.set('videoBytes', String(upload.bytes))
+
+      startTransition(() => {
+        formAction(fd)
+      })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload failed')
+    } finally {
+      setIsUploading(false)
+      setUploadProgress(null)
+    }
+  }
+
+  const isBusy = isUploading || formPending || isMutating
+
   return (
     <Card className="bg-[#0a111c]/80 border-white/[0.08] p-6">
-      <form action={formAction} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <input type="hidden" name="participantIds" value={selectedParticipants.join(',')} />
 
         <Field label="Meeting title *" error={state.fieldErrors?.title}>
@@ -107,6 +157,23 @@ export function NewMeetingForm({
           />
         </div>
 
+        {uploadProgress && (
+          <div className="sm:col-span-2 space-y-1">
+            <div className="flex justify-between text-xs text-white/50">
+              <span>Uploading video…</span>
+              <span>
+                {formatBytes(uploadProgress.loaded)} / {formatBytes(uploadProgress.total)}
+              </span>
+            </div>
+            <div className="h-2 bg-white/[0.1] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-purple-500 transition-all duration-300"
+                style={{ width: `${Math.min(100, (uploadProgress.loaded / uploadProgress.total) * 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
+
         {state.error && (
           <div className="sm:col-span-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-400">
             {state.error}
@@ -114,13 +181,21 @@ export function NewMeetingForm({
         )}
 
         <div className="sm:col-span-2 flex justify-end">
-          <Button type="submit" loading={pending} disabled={pending}>
-            {pending ? 'Uploading…' : 'Upload meeting'}
+          <Button type="submit" loading={isBusy} disabled={isBusy}>
+            {isUploading ? 'Uploading…' : formPending ? 'Creating meeting…' : 'Upload meeting'}
           </Button>
         </div>
       </form>
     </Card>
   )
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {

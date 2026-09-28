@@ -55,11 +55,6 @@ vi.mock('next/server', () => ({
   }),
 }))
 
-vi.mock('@/lib/cloudinary', () => ({
-  isCloudinaryConfigured: vi.fn(),
-  uploadToCloudinary: vi.fn(),
-}))
-
 vi.mock('@/services/queue.service', () => ({
   queueTranscription: vi.fn().mockResolvedValue('job-id'),
 }))
@@ -72,6 +67,18 @@ vi.mock('next/navigation', () => ({
   redirect: vi.fn(),
 }))
 
+// Partial mock: keep the real (pure, env-based) validation helpers so the
+// rejection tests exercise the actual server-side checks, but stub out the
+// side-effectful Cloudinary calls that the action no longer uses directly.
+vi.mock('@/lib/cloudinary', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/cloudinary')>()
+  return {
+    ...actual,
+    isCloudinaryConfigured: vi.fn(),
+    uploadToCloudinary: vi.fn(),
+  }
+})
+
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { validateCsrf } from '@/lib/csrf'
@@ -82,7 +89,6 @@ import { createMeetingAction, createMeetingWithVideoAction } from '@/app/meeting
 import { queueTranscription } from '@/services/queue.service'
 
 const mockQueueTranscription = vi.mocked(queueTranscription)
-
 const mockMeetingCreate = vi.mocked(prisma.meeting.create)
 const mockMeetingRecordingCreate = vi.mocked(prisma.meetingRecording.create)
 const mockContactCreate = vi.mocked(prisma.contact.create)
@@ -109,10 +115,21 @@ const mockSession = {
   },
 }
 
-const mockVideoFile = new File(['fake-video-content'], 'test.mp4', { type: 'video/mp4' })
+const VALID_VIDEO_URL = 'https://res.cloudinary.com/test-cloud/video/upload/test-vid.mp4'
+const VALID_PUBLIC_ID = 'kawman-exact/org-A/test-recording'
+const VALID_BYTES = 1024
+
+function videoFormData(overrides: Record<string, string> = {}): FormData {
+  const fd = formData({ title: 'Video Meeting', ...overrides })
+  fd.set('videoUrl', VALID_VIDEO_URL)
+  fd.set('videoPublicId', VALID_PUBLIC_ID)
+  fd.set('videoBytes', String(VALID_BYTES))
+  return fd
+}
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.stubEnv('CLOUDINARY_CLOUD_NAME', 'test-cloud')
   mockRequireApiSession.mockResolvedValue(mockSession)
   mockValidateCsrf.mockResolvedValue(undefined)
   mockFindOrCreateCompanyByName.mockResolvedValue(null)
@@ -205,12 +222,7 @@ describe('createMeetingWithVideoAction', () => {
   it('creates/links contact when contactName is provided', async () => {
     mockFindOrCreateContactByName.mockResolvedValue({ id: 'contact-456', name: 'Video Contact' })
 
-    const fd = formData({
-      title: 'Video Meeting',
-      contactName: 'Video Contact',
-      contactEmail: 'video@test.com',
-    })
-    fd.set('videoFile', mockVideoFile)
+    const fd = videoFormData({ contactName: 'Video Contact', contactEmail: 'video@test.com' })
 
     const result = await createMeetingWithVideoAction({} as never, fd)
 
@@ -235,10 +247,9 @@ describe('createMeetingWithVideoAction', () => {
   it('links existing contactId when findOrCreateContactByName returns one', async () => {
     mockFindOrCreateContactByName.mockResolvedValue({ id: 'contact-456', name: 'Existing Contact' })
 
-    const fd = formData({ title: 'Video Meeting', contactName: 'Existing Contact' })
-    fd.set('videoFile', mockVideoFile)
+    const fd = videoFormData({ contactName: 'Existing Contact' })
 
-    await createMeetingWithVideoAction({} as never, fd)
+    const result = await createMeetingWithVideoAction({} as never, fd)
 
     expect(mockFindOrCreateContactByName).toHaveBeenCalledWith({
       email: null,
@@ -255,16 +266,63 @@ describe('createMeetingWithVideoAction', () => {
         }),
       }),
     )
+    expect(result.meetingId).toBe('meeting-1')
   })
 
-  it('defers video upload and transcription — returns meetingId without uploading', async () => {
-    const fd = formData({ title: 'Video Meeting' })
-    fd.set('videoFile', mockVideoFile)
+  it('creates a meetingRecording and queues transcription without uploading server-side', async () => {
+    const fd = videoFormData()
 
     const result = await createMeetingWithVideoAction({} as never, fd)
 
     expect(result.meetingId).toBe('meeting-1')
     expect(mockUploadToCloudinary).not.toHaveBeenCalled()
-    expect(mockQueueTranscription).not.toHaveBeenCalled()
+    expect(mockMeetingRecordingCreate).toHaveBeenCalledWith({
+      data: {
+        meetingId: 'meeting-1',
+        cloudinaryPublicId: VALID_PUBLIC_ID,
+        secureUrl: VALID_VIDEO_URL,
+        duration: null,
+        fileSize: BigInt(VALID_BYTES),
+      },
+    })
+    expect(mockQueueTranscription).toHaveBeenCalledWith({
+      meetingId: 'meeting-1',
+      recordingId: '',
+      videoUrl: VALID_VIDEO_URL,
+      organizationId: 'org-A',
+    })
+  })
+
+  it('rejects a videoUrl from another cloud', async () => {
+    const fd = videoFormData()
+    fd.set('videoUrl', 'https://example.com/video/upload/test-vid.mp4')
+
+    const result = await createMeetingWithVideoAction({} as never, fd)
+
+    expect(result.fieldErrors?.videoFile).toBe('Video upload is missing or invalid')
+    expect(mockMeetingCreate).not.toHaveBeenCalled()
+    expect(mockMeetingRecordingCreate).not.toHaveBeenCalled()
+  })
+
+  it('rejects a publicId outside the user org folder', async () => {
+    const fd = videoFormData()
+    fd.set('videoPublicId', 'kawman-exact/other-org/test-recording')
+
+    const result = await createMeetingWithVideoAction({} as never, fd)
+
+    expect(result.fieldErrors?.videoFile).toBe('Video upload is missing or invalid')
+    expect(mockMeetingCreate).not.toHaveBeenCalled()
+    expect(mockMeetingRecordingCreate).not.toHaveBeenCalled()
+  })
+
+  it('rejects bad videoBytes', async () => {
+    const fd = videoFormData()
+    fd.set('videoBytes', '0')
+
+    const result = await createMeetingWithVideoAction({} as never, fd)
+
+    expect(result.fieldErrors?.videoFile).toBe('Video upload is missing or invalid')
+    expect(mockMeetingCreate).not.toHaveBeenCalled()
+    expect(mockMeetingRecordingCreate).not.toHaveBeenCalled()
   })
 })

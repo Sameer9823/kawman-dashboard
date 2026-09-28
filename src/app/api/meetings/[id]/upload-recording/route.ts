@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { uploadToCloudinary, isCloudinaryConfigured } from '@/lib/cloudinary'
+import { validateCloudinaryVideoUpload } from '@/lib/cloudinary'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { queueTranscription } from '@/services/queue.service'
 import { processTranscription } from '@/services/meeting.service'
@@ -30,10 +30,6 @@ export async function POST(
       )
     }
 
-    if (!isCloudinaryConfigured()) {
-      return NextResponse.json({ error: 'File uploads are not configured.' }, { status: 503 })
-    }
-
     const { id: meetingId } = await params
 
     const meeting = await prisma.meeting.findFirst({
@@ -45,54 +41,51 @@ export async function POST(
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 })
     }
 
-    const formData = await request.formData()
-    const file = formData.get('file') as File | null
+    // The video was uploaded directly to Cloudinary by the browser via a signed
+    // (chunked) upload, to dodge Vercel's 4.5MB request-body limit. The body
+    // here is small JSON — only the resulting URL, public id and byte count.
+    // These values are client-controlled, so re-validate them server-side
+    // before trusting them (see step 4 of the direct-upload change).
+    const body = (await request.json().catch(() => null)) as
+      | { secureUrl?: string; publicId?: string; bytes?: number }
+      | null
 
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+    if (!body) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
-    const allowedTypes = new Set(['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'])
-    if (!allowedTypes.has(file.type)) {
-      return NextResponse.json({ error: 'Invalid file type. Please upload a video file.' }, { status: 400 })
+    const secureUrl = body.secureUrl?.trim() || ''
+    const publicId = body.publicId?.trim() || ''
+    const bytes = Number(body.bytes)
+
+    const uploadError = validateCloudinaryVideoUpload(secureUrl, publicId, bytes, session.user.organizationId)
+    if (uploadError) {
+      return NextResponse.json({ error: uploadError }, { status: 400 })
     }
-
-    const maxSize = 500 * 1024 * 1024 // 500 MB — matches serverActions/proxyClientMaxBodySize for /meetings/new
-    if (file.size > maxSize) {
-      return NextResponse.json({ error: 'File too large. Maximum size is 500 MB.' }, { status: 400 })
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer())
-
-    const upload = await uploadToCloudinary(buffer, {
-      organizationId: session.user.organizationId,
-      fileName: file.name,
-      mimeType: file.type || 'video/mp4',
-    })
 
     const recording = await prisma.meetingRecording.create({
       data: {
         meetingId,
-        cloudinaryPublicId: upload.publicId,
-        secureUrl: upload.secureUrl,
+        cloudinaryPublicId: publicId,
+        secureUrl,
         duration: null,
-        fileSize: upload.fileSize,
+        fileSize: BigInt(bytes),
       },
     })
 
     // Queue transcription in the background — never block the request,
-    // transcription can take many minutes for long videos.
+    // transcription can take many minutes for long videos. Same pattern as today.
     const queued = await queueTranscription({
       meetingId,
       recordingId: recording.id,
-      videoUrl: upload.secureUrl,
+      videoUrl: secureUrl,
       organizationId: session.user.organizationId,
     })
     if (!queued) {
       // Redis not available — defer with setTimeout so the HTTP response
       // flushes before any work begins.
       setTimeout(() => {
-        void processTranscription(meetingId, upload.secureUrl, session.user.organizationId).catch((e) =>
+        void processTranscription(meetingId, secureUrl, session.user.organizationId).catch((e) =>
           console.error('[MEETING-UPLOAD] Transcription/MoM failed:', e)
         )
       }, 0)

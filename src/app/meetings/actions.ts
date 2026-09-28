@@ -10,7 +10,7 @@ import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import { PERMISSIONS } from '@/lib/permissions-data'
 import { saveTranscript, addRecordingLink, generateMeetingSummary, updateMeetingSummaryText, processTranscription } from '@/services/meeting.service'
-import { isCloudinaryConfigured, uploadToCloudinary } from '@/lib/cloudinary'
+import { validateCloudinaryVideoUpload } from '@/lib/cloudinary'
 import { findOrCreateCompanyByName } from '@/services/company.service'
 import { findOrCreateContactByName } from '@/services/contact.service'
 import { logAudit } from '@/lib/audit-log'
@@ -269,83 +269,6 @@ export async function editMomSummaryAction(meetingId: string, summary: string): 
 }
 
 // ============================================================
-// Video Upload + Auto Transcription + MoM
-// ============================================================
-
-export interface UploadRecordingState {
-  error?: string
-  success?: boolean
-  recordingId?: string
-  transcriptId?: string
-  summaryId?: string
-}
-
-export async function uploadRecordingAction(
-  meetingId: string,
-  formData: FormData
-): Promise<UploadRecordingState> {
-  try {
-    await validateCsrf()
-    const session = await assertPermission(PERMISSIONS['meetings.update'].name)
-    
-    const file = formData.get('file')
-    if (!file || !(file instanceof File)) {
-      return { error: 'No video file provided' }
-    }
-
-    // Validate file type
-    const allowedTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska']
-    if (!allowedTypes.includes(file.type)) {
-      return { error: 'Invalid file type. Please upload MP4, WebM, MOV, AVI, or MKV files.' }
-    }
-
-    // Validate file size (500MB max for videos)
-    const MAX_VIDEO_SIZE = 500 * 1024 * 1024
-    if (file.size > MAX_VIDEO_SIZE) {
-      return { error: 'Video file exceeds 500MB limit' }
-    }
-
-    if (!isCloudinaryConfigured()) {
-      return { error: 'Cloudinary is not configured. Ask an admin to set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.' }
-    }
-
-    // Upload to Cloudinary
-    const buffer = Buffer.from(await file.arrayBuffer())
-    const upload = await uploadToCloudinary(buffer, {
-      organizationId: session.user.organizationId,
-      fileName: file.name,
-      mimeType: file.type,
-    })
-
-    // Create meeting recording record
-    const recording = await prisma.meetingRecording.create({
-      data: {
-        meetingId,
-        cloudinaryPublicId: upload.publicId,
-        secureUrl: upload.secureUrl,
-        duration: null, // Could extract from video metadata
-        fileSize: BigInt(upload.fileSize),
-      },
-    })
-
-    // Queue transcription in the background (never await — would block the
-    // server action response for minutes on long videos)
-    await scheduleTranscription(meetingId, recording.id, upload.secureUrl, session.user.organizationId)
-
-    revalidatePath(`/meetings/${meetingId}`)
-    revalidatePath('/meetings/videos')
-
-    return { 
-      success: true, 
-      recordingId: recording.id,
-    }
-  } catch (err) {
-    console.error('[UPLOAD] Upload recording failed:', err)
-    return { error: err instanceof Error ? err.message : 'Failed to upload recording' }
-  }
-}
-
-// ============================================================
 // Background transcription + MoM
 // ============================================================
 
@@ -358,7 +281,9 @@ async function scheduleTranscription(
   const queued = await queueTranscription({ meetingId, recordingId, videoUrl, organizationId })
   if (!queued) {
     // Redis not available — defer with setTimeout so the HTTP response
-    // flushes before any work begins.
+    // flushes before any work begins. Callers MUST invoke this from within an
+    // `after()` callback (or otherwise keep the request alive), so the
+    // serverless invocation isn't torn down before the deferred task runs.
     setTimeout(() => {
       processTranscription(meetingId, videoUrl, organizationId).catch((err) => {
         console.error('[MEETING] Background transcription failed:', err)
@@ -391,34 +316,29 @@ export async function createMeetingWithVideoAction(
   const contactEmail = formData.get('contactEmail')?.toString().trim() || undefined
   const dealId = formData.get('dealId')?.toString().trim() || undefined
   const participantIds = formData.get('participantIds')?.toString().trim()
-  const file = formData.get('videoFile')
+  const videoUrl = formData.get('videoUrl')?.toString().trim() || ''
+  const videoPublicId = formData.get('videoPublicId')?.toString().trim() || ''
+  const videoBytesRaw = formData.get('videoBytes')?.toString().trim() || ''
+  const videoBytes = Number(videoBytesRaw)
 
-  // Validate required fields
+  // The video itself was uploaded straight to Cloudinary by the browser via a
+  // signed (chunked) upload to dodge Vercel's 4.5MB request-body limit. The
+  // server only receives the resulting URL, public id and byte count. Those
+  // values are client-controlled, so re-validate them server-side: the
+  // secure_url must point at our Cloudinary account, the public id must live
+  // under this org's folder, and the byte count must be non-zero and within
+  // the 500MB cap.
   const fieldErrors: Record<string, string> = {}
   if (!title || title.length < 2) {
     fieldErrors.title = 'Title is required (minimum 2 characters)'
   }
-  if (!file || !(file instanceof File)) {
-    fieldErrors.videoFile = 'Video file is required'
-  } else {
-    // Validate file type
-    const allowedTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska']
-    if (!allowedTypes.includes(file.type)) {
-      fieldErrors.videoFile = 'Invalid file type. Please upload MP4, WebM, MOV, AVI, or MKV files.'
-    }
-    // Validate file size (500MB max)
-    const MAX_VIDEO_SIZE = 500 * 1024 * 1024
-    if (file.size > MAX_VIDEO_SIZE) {
-      fieldErrors.videoFile = 'Video file exceeds 500MB limit'
-    }
+  const uploadError = validateCloudinaryVideoUpload(videoUrl, videoPublicId, videoBytes, session.user.organizationId)
+  if (uploadError) {
+    fieldErrors.videoFile = uploadError
   }
 
   if (Object.keys(fieldErrors).length > 0) {
     return { fieldErrors }
-  }
-
-  if (!isCloudinaryConfigured()) {
-    return { error: 'Cloudinary is not configured. Ask an admin to set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.' }
   }
 
   const participantIdsArray = participantIds
@@ -446,7 +366,8 @@ export async function createMeetingWithVideoAction(
     : null
   const contactId = contact?.id ?? null
 
-  // Create meeting with PROCESSING status
+  // Create meeting with PROCESSING status — the page already shows a
+  // "Processing…" state while status === PROCESSING.
   const meeting = await prisma.meeting.create({
     data: {
       organizationId: session.user.organizationId,
@@ -485,33 +406,24 @@ export async function createMeetingWithVideoAction(
     metadata: { title: meeting.title, type: meeting.type, status: meeting.status, hasVideo: true },
   })
 
-  // Defer the video upload (can take minutes for large files) and
-  // transcription to AFTER the response is sent. The meeting page
-  // already shows a "Processing…" state while status === PROCESSING.
-  const videoFile = file as File
-  const orgId = session.user.organizationId
+  await prisma.meetingRecording.create({
+    data: {
+      meetingId: meeting.id,
+      cloudinaryPublicId: videoPublicId,
+      secureUrl: videoUrl,
+      duration: null,
+      fileSize: BigInt(videoBytes),
+    },
+  })
+
+  // Transcription + MoM generation can take minutes on long videos; defer it
+  // to AFTER the response is sent, inside `after()` so the serverless
+  // invocation stays alive (Vercel extends it via waitUntil).
   after(async () => {
     try {
-      const buffer = Buffer.from(await videoFile.arrayBuffer())
-      const upload = await uploadToCloudinary(buffer, {
-        organizationId: orgId,
-        fileName: videoFile.name,
-        mimeType: videoFile.type || 'video/mp4',
-      })
-
-      await prisma.meetingRecording.create({
-        data: {
-          meetingId: meeting.id,
-          cloudinaryPublicId: upload.publicId,
-          secureUrl: upload.secureUrl,
-          duration: null,
-          fileSize: BigInt(upload.fileSize),
-        },
-      })
-
-      await scheduleTranscription(meeting.id, '', upload.secureUrl, orgId)
+      await scheduleTranscription(meeting.id, '', videoUrl, session.user.organizationId)
     } catch (err) {
-      console.error('[MEETING] Background upload/transcription failed:', err)
+      console.error('[MEETING] Background transcription failed:', err)
       await prisma.meeting.update({ where: { id: meeting.id }, data: { status: 'FAILED' } }).catch(() => {})
     }
   })
@@ -529,7 +441,7 @@ export async function createMeetingWithVideoAction(
 export async function retryMeetingVideoProcessingAction(meetingId: string) {
   await validateCsrf()
   const session = await assertPermission(PERMISSIONS['meetings.update'].name)
-  
+
   const meeting = await prisma.meeting.findFirst({
     where: { id: meetingId, organizationId: session.user.organizationId },
     include: { recordings: { take: 1 } },
@@ -548,8 +460,16 @@ export async function retryMeetingVideoProcessingAction(meetingId: string) {
   })
 
   // Queue transcription in the background (never await — would block the
-  // server action response for minutes on long videos)
-  await scheduleTranscription(meetingId, '', recording.secureUrl, session.user.organizationId)
+  // server action response for minutes on long videos). Run inside `after()`
+  // so the no-Redis setTimeout fallback stays alive on a serverless runtime.
+  after(async () => {
+    try {
+      await scheduleTranscription(meetingId, '', recording.secureUrl, session.user.organizationId)
+    } catch (err) {
+      console.error('[MEETING] Background transcription failed:', err)
+      await prisma.meeting.update({ where: { id: meetingId }, data: { status: 'FAILED' } }).catch(() => {})
+    }
+  })
 
   revalidatePath(`/meetings/${meetingId}`)
   revalidatePath('/meetings')

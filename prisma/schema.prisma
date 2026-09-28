@@ -102,7 +102,7 @@ model User {
   sessions               Session[]
   managedTeams           Team[]               @relation("TeamManager")
   department             Department?          @relation("UserDepartment", fields: [departmentId], references: [id])
-  manager                User?                @relation("UserManager", fields: [managerId], references: [id])
+   manager                User?                @relation("UserManager", fields: [managerId], references: [id], onDelete: SetNull)
   subordinates           User[]               @relation("UserManager")
   organization           Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   team                   Team?                @relation("TeamMembers", fields: [teamId], references: [id])
@@ -268,7 +268,7 @@ model Department {
   managerId       String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-  manager         User?            @relation("DepartmentManager", fields: [managerId], references: [id])
+   manager         User?            @relation("DepartmentManager", fields: [managerId], references: [id], onDelete: SetNull)
   organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   filePermissions FilePermission[]
   teams           Team[]
@@ -290,7 +290,7 @@ model Team {
   updatedAt       DateTime         @updatedAt
   filePermissions FilePermission[]
   department      Department?      @relation(fields: [departmentId], references: [id])
-  manager         User?            @relation("TeamManager", fields: [managerId], references: [id])
+   manager         User?            @relation("TeamManager", fields: [managerId], references: [id], onDelete: SetNull)
   organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   users           User[]           @relation("TeamMembers")
 
@@ -309,7 +309,7 @@ model Folder {
   updatedAt      DateTime         @updatedAt
   files          File[]
   permissions    FilePermission[]
-  createdBy      User             @relation("FolderCreator", fields: [createdById], references: [id])
+   createdBy      User             @relation("FolderCreator", fields: [createdById], references: [id], onDelete: Cascade)
   organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   parent         Folder?          @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children       Folder[]         @relation("FolderHierarchy")
@@ -338,7 +338,7 @@ model File {
   updatedAt              DateTime                @updatedAt
   folder                 Folder?                 @relation(fields: [folderId], references: [id])
   organization           Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  uploadedBy             User                    @relation("FileUploader", fields: [uploadedById], references: [id])
+   uploadedBy             User                    @relation("FileUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
   activities             FileActivity[]
   permissions            FilePermission[]
   shares                 FileShare[]
@@ -367,7 +367,7 @@ model FileVersion {
   uploadedById           String
   createdAt              DateTime @default(now())
   file                   File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  uploadedBy             User     @relation("FileVersionUploader", fields: [uploadedById], references: [id])
+   uploadedBy             User     @relation("FileVersionUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
 
   @@unique([fileId, versionNumber])
   @@index([fileId])
@@ -400,7 +400,7 @@ model FilePermission {
   createdAt    DateTime            @default(now())
   createdById  String
   folderId     String?
-  createdBy    User                @relation("FilePermissionCreator", fields: [createdById], references: [id])
+   createdBy    User                @relation("FilePermissionCreator", fields: [createdById], references: [id], onDelete: Cascade)
   department   Department?         @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   file         File?               @relation(fields: [fileId], references: [id], onDelete: Cascade)
   folder       Folder?             @relation(fields: [folderId], references: [id], onDelete: Cascade)
@@ -423,7 +423,7 @@ model FileShare {
   expiresAt    DateTime?
   createdAt    DateTime            @default(now())
   file         File                @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  sharedBy     User                @relation("FileShareBy", fields: [sharedById], references: [id])
+   sharedBy     User                @relation("FileShareBy", fields: [sharedById], references: [id], onDelete: Cascade)
   sharedWith   User                @relation("FileShareWith", fields: [sharedWithId], references: [id], onDelete: Cascade)
 
   @@index([fileId])
@@ -454,7 +454,7 @@ model FileActivity {
   metadata  Json?
   createdAt DateTime @default(now())
   file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([fileId])
   @@index([userId])
@@ -486,7 +486,7 @@ model Lead {
   companyRef     Company?     @relation(fields: [companyId], references: [id])
   contact        Contact?     @relation(fields: [contactId], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  owner          User         @relation("LeadOwner", fields: [ownerId], references: [id])
+   owner          User         @relation("LeadOwner", fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@index([organizationId])
   @@index([ownerId])
@@ -517,7 +517,7 @@ model Company {
   updatedAt      DateTime     @updatedAt
   activities     Activity[]
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  owner          User         @relation("CompanyOwner", fields: [ownerId], references: [id])
+   owner          User         @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   contacts       Contact[]
   deals          Deal[]
   visits         FieldVisit[]
@@ -553,7 +553,7 @@ model Contact {
   activities     Activity[]
   company        Company?     @relation(fields: [companyId], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  owner          User         @relation("ContactOwner", fields: [ownerId], references: [id])
+   owner          User         @relation("ContactOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   deals          Deal[]
   visits         FieldVisit[]
   leads          Lead[]
@@ -590,7 +590,7 @@ model Deal {
   contact        Contact?     @relation(fields: [contactId], references: [id])
   lead           Lead?        @relation(fields: [leadId], references: [id])
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  owner          User         @relation("DealOwner", fields: [ownerId], references: [id])
+   owner          User         @relation("DealOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   visits         FieldVisit[]
   followUps      FollowUp[]
   meetings       Meeting[]
@@ -617,7 +617,7 @@ model Activity {
   contactId      String?
   dealId         String?
   createdAt      DateTime     @default(now())
-  actor          User         @relation("ActivityActor", fields: [actorId], references: [id])
+   actor          User         @relation("ActivityActor", fields: [actorId], references: [id], onDelete: Cascade)
   company        Company?     @relation(fields: [companyId], references: [id])
   contact        Contact?     @relation(fields: [contactId], references: [id])
   deal           Deal?        @relation(fields: [dealId], references: [id])
@@ -683,7 +683,7 @@ model FollowUp {
   deal           Deal?          @relation(fields: [dealId], references: [id])
   lead           Lead?          @relation(fields: [leadId], references: [id])
   organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  owner          User           @relation("FollowUpOwner", fields: [ownerId], references: [id])
+   owner          User           @relation("FollowUpOwner", fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@index([organizationId])
   @@index([ownerId])
@@ -713,7 +713,7 @@ model FieldVisit {
   updatedAt      DateTime      @updatedAt
   completedAt    DateTime?
   checkIns       CheckIn[]
-  assignee       User          @relation("VisitAssignee", fields: [assigneeId], references: [id])
+   assignee       User          @relation("VisitAssignee", fields: [assigneeId], references: [id], onDelete: Cascade)
   company        Company?      @relation(fields: [companyId], references: [id])
   contact        Contact?      @relation(fields: [contactId], references: [id])
   deal           Deal?         @relation(fields: [dealId], references: [id])
@@ -742,7 +742,7 @@ model CheckIn {
   photoUrl             String?
   notes                String?
   createdAt            DateTime   @default(now())
-  user                 User       @relation(fields: [userId], references: [id])
+  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   visit                FieldVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   @@index([visitId])
@@ -783,7 +783,7 @@ model VisitReport {
   createdById      String
   createdAt        DateTime                @default(now())
   updatedAt        DateTime                @updatedAt
-  createdBy        User                    @relation("VisitReportCreator", fields: [createdById], references: [id])
+   createdBy        User                    @relation("VisitReportCreator", fields: [createdById], references: [id], onDelete: Cascade)
   visit            FieldVisit              @relation(fields: [visitId], references: [id], onDelete: Cascade)
   attachments      VisitReportAttachment[]
 
@@ -825,7 +825,7 @@ model Meeting {
   endedAt        DateTime?
   company        Company?             @relation(fields: [companyId], references: [id])
   contact        Contact?             @relation(fields: [contactId], references: [id])
-  createdBy      User                 @relation("MeetingCreator", fields: [createdById], references: [id])
+  createdBy      User                 @relation("MeetingCreator", fields: [createdById], references: [id], onDelete: Cascade)
   deal           Deal?                @relation(fields: [dealId], references: [id])
   organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   participants   MeetingParticipant[]
@@ -896,7 +896,7 @@ model MeetingSummary {
   editedById       String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  editedBy         User?    @relation("MeetingSummaryEditor", fields: [editedById], references: [id])
+   editedBy         User?    @relation("MeetingSummaryEditor", fields: [editedById], references: [id], onDelete: SetNull)
   meeting          Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
 
   @@index([meetingId])
@@ -976,7 +976,7 @@ model AIReport {
   generatedById  String
   dailyReportId  String?      @unique
   createdAt      DateTime     @default(now())
-  generatedBy    User         @relation("AIReportGenerator", fields: [generatedById], references: [id])
+   generatedBy    User         @relation("AIReportGenerator", fields: [generatedById], references: [id], onDelete: Cascade)
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   dailyReport    DailyReport? @relation(fields: [dailyReportId], references: [id])
 
@@ -1017,7 +1017,7 @@ model AuditLog {
   organizationId String
   actorId        String
   createdAt      DateTime     @default(now())
-  actor          User         @relation("AuditActor", fields: [actorId], references: [id])
+   actor          User         @relation("AuditActor", fields: [actorId], references: [id], onDelete: Cascade)
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId])

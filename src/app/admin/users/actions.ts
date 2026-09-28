@@ -181,15 +181,19 @@ export async function deleteUserAction(id: string): Promise<{ success?: boolean;
   const target = await prisma.user.findFirst({ where: { id, organizationId: session.user.organizationId } })
   if (!target) return { error: 'User not found.' }
 
-  await prisma.user.delete({ where: { id } })
+  await prisma.$transaction(async (tx) => {
+    await tx.user.delete({ where: { id } })
 
-  await logAudit({
-    organizationId: session.user.organizationId,
-    actorId: session.user.id,
-    action: 'USER_DELETION',
-    resource: 'user',
-    resourceId: id,
-    metadata: { email: target.email },
+    await tx.auditLog.create({
+      data: {
+        organizationId: session.user.organizationId,
+        actorId: session.user.id,
+        action: 'USER_DELETION',
+        resource: 'user',
+        resourceId: id,
+        metadata: { email: target.email },
+      },
+    })
   })
 
   revalidatePath('/admin/users')

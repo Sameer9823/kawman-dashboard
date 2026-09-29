@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import type { Session } from '@/lib/auth'
 
 export interface MobileSession {
   user: {

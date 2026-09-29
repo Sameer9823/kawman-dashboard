@@ -3,6 +3,7 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { nextCookies } from 'better-auth/next-js'
 import { customSession } from 'better-auth/plugins/custom-session'
+import { bearer } from 'better-auth/plugins/bearer'
 import { prisma } from '@/lib/db'
 import { getUserPermissions } from '@/services/permission.service'
 import { sendPasswordResetEmail } from '@/lib/email'
@@ -97,6 +98,11 @@ export const auth = betterAuth({
   },
 
   plugins: [
+    // Bearer plugin: enables token-based auth (Authorization: Bearer) for the
+    // mobile app. The sign-in endpoint returns the session token in the
+    // `set-auth-token` response header so the mobile client can store it
+    // and send it back as a Bearer token. Cookie-based web auth is unaffected.
+    bearer(),
     // Generic OAuth (Zoho) — only registered when ZOHO_CLIENT_ID +
     // ZOHO_CLIENT_SECRET are set; otherwise returns [] and the app behaves
     // exactly as before (password login only).

@@ -26,6 +26,10 @@ function LoginForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+  const [zohoPending, setZohoPending] = useState(false)
+
+  const zohoError = searchParams.get('error')
+  const zohoEnabled = process.env.NEXT_PUBLIC_ZOHO_LOGIN_ENABLED === 'true'
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -43,6 +47,22 @@ function LoginForm() {
     router.push(redirectTo)
     router.refresh()
     logLoginAction().catch(() => {})
+  }
+
+  async function handleZohoSignIn() {
+    setZohoPending(true)
+    setError(null)
+
+    const { error: signInError } = await signIn.social({
+      provider: 'zoho',
+      callbackURL: redirectTo,
+      errorCallbackURL: '/login',
+    })
+
+    if (signInError) {
+      setError(signInError.message || 'Zoho sign-in failed. Use your company Zoho account, or ask an admin to create your user first.')
+      setZohoPending(false)
+    }
   }
 
   return (
@@ -101,9 +121,39 @@ function LoginForm() {
                 </div>
               )}
 
+              {zohoError && (
+                <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+                  Zoho sign-in failed. Use your company Zoho account, or ask an admin to create your user first.
+                </div>
+              )}
+
               <Button type="submit" className="w-full" loading={pending} disabled={pending}>
                 {pending ? 'Signing in…' : 'Sign in'}
               </Button>
+
+              {zohoEnabled && (
+                <>
+                  <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-white/20"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs">
+                      <span className="bg-[#0f172a] px-2 text-white/50">Or continue with</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    loading={zohoPending}
+                    disabled={zohoPending}
+                    onClick={handleZohoSignIn}
+                  >
+                    {zohoPending ? 'Redirecting…' : 'Sign in with Zoho'}
+                  </Button>
+                </>
+              )}
             </form>
 
             <p className="mt-6 text-center text-sm text-white/50">

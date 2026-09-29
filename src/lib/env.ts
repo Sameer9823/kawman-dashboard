@@ -18,7 +18,7 @@ const OPTIONAL_DEV_WARNINGS: Record<string, string> = {
   GOOGLE_GENERATIVE_AI_API_KEY: 'AI chat/completions will fail without an AI provider key',
   CLOUDINARY_CLOUD_NAME: 'File uploads will fail without Cloudinary credentials',
   REDIS_URL: 'Background jobs (BullMQ queue) and rate-limiting cache will fall back to in-memory',
-  RESEND_API_KEY: 'Transactional emails (password reset, invites) will log to console instead',
+  SMTP_HOST: 'Transactional emails (password reset, invites) will log to console instead of being sent via SMTP',
 }
 
 export function assertEnv(): void {

@@ -75,7 +75,7 @@ npm install
 cp .env.example .env
 # Required: DATABASE_URL (Neon pooled), DIRECT_URL (Neon direct, for migrations)
 #           BETTER_AUTH_SECRET (openssl rand -hex 32), BETTER_AUTH_URL, NEXT_PUBLIC_APP_URL
-# Optional: OPENAI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY, CLOUDINARY_*, NEXT_PUBLIC_MAPBOX_TOKEN, RESEND_API_KEY/EMAIL_FROM
+# Optional: OPENAI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY, CLOUDINARY_*, NEXT_PUBLIC_MAPBOX_TOKEN, SMTP_HOST/SMTP_USER/SMTP_PASS/EMAIL_FROM, ZOHO_CLIENT_ID/ZOHO_CLIENT_SECRET/ZOHO_ACCOUNTS_URL
 # Background Jobs: REDIS_URL (required for queues), QUEUE_PREFIX, AUTO_START_WORKERS
 
 # 2. DB
@@ -162,4 +162,4 @@ Nil `TODO` in `src/` (only `src/generated/prisma` vendor TODOs).
 ## Deployment
 
 - Set `DATABASE_URL` (pooled) + `DIRECT_URL` (direct) + `BETTER_AUTH_SECRET` + `BETTER_AUTH_URL`/`NEXT_PUBLIC_APP_URL` in your host (Vercel/Neon). Run `prisma migrate deploy` + `prisma generate` in CI (`postinstall: prisma generate` if you gitignore `src/generated/prisma`).
-- Optional: `OPENAI_API_KEY` or `GOOGLE_GENERATIVE_AI_API_KEY`, `CLOUDINARY_*`, `NEXT_PUBLIC_MAPBOX_TOKEN`, `REDIS_URL`, `RESEND_API_KEY`/`EMAIL_FROM`.
+- Optional: `OPENAI_API_KEY` or `GOOGLE_GENERATIVE_AI_API_KEY`, `CLOUDINARY_*`, `NEXT_PUBLIC_MAPBOX_TOKEN`, `REDIS_URL`, `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS`/`EMAIL_FROM`, `ZOHO_CLIENT_ID`/`ZOHO_CLIENT_SECRET`/`ZOHO_ACCOUNTS_URL` (see DEPLOY.md → "Zoho Sign-In").

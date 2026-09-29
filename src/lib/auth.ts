@@ -6,6 +6,8 @@ import { customSession } from 'better-auth/plugins/custom-session'
 import { prisma } from '@/lib/db'
 import { getUserPermissions } from '@/services/permission.service'
 import { sendPasswordResetEmail } from '@/lib/email'
+import { zohoOAuthPlugins } from '@/lib/zoho-oauth'
+import { sessionCreateBefore, sessionCreateAfter } from '@/lib/auth-hooks'
 import { logger } from '@/lib/logger'
 
 /**
@@ -29,9 +31,10 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     autoSignIn: true,
     resetPasswordTokenExpiresIn: 60 * 60, // 1 hour
-    // Uses the Resend-backed email service in lib/email.ts when
-    // RESEND_API_KEY + EMAIL_FROM are set; otherwise falls back to
-    // logging the link server-side so the flow stays testable in dev.
+    // Uses the SMTP-backed email service in lib/email.ts when
+    // SMTP_HOST + SMTP_USER + SMTP_PASS + EMAIL_FROM are set; otherwise
+    // falls back to logging the link server-side so the flow stays
+    // testable in dev.
     sendResetPassword: async ({ user, url }) => {
       await sendPasswordResetEmail(user.email, url)
     },
@@ -73,7 +76,31 @@ export const auth = betterAuth({
     },
   },
 
+  databaseHooks: {
+    user: {
+       create: {
+        // Enforce company-domain users: reject signups whose email does not
+        // end with @kawmanexact.com. Returning false aborts user creation.
+        before: async (user) => {
+          const email = (user as { email?: string }).email
+          const domain = process.env.ALLOWED_EMAIL_DOMAIN || 'kawmanexact.com'
+          if (!email || !email.endsWith(`@${domain}`)) return false
+        },
+      },
+    },
+    session: {
+      create: {
+        before: sessionCreateBefore,
+        after: sessionCreateAfter,
+      },
+    },
+  },
+
   plugins: [
+    // Generic OAuth (Zoho) — only registered when ZOHO_CLIENT_ID +
+    // ZOHO_CLIENT_SECRET are set; otherwise returns [] and the app behaves
+    // exactly as before (password login only).
+    ...zohoOAuthPlugins(),
     // Every session response (server AND client) is enriched here with the
     // caller's resolved org/department/team/roles/permissions, computed
     // fresh from the DB — never trust a client-cached permission list.

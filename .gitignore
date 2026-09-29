@@ -68,3 +68,7 @@ write_page*.py
 
 # Uploads / generated files
 uploads/
+
+# Local session / auth cookie dumps (may contain real credentials)
+cookie.txt
+cookies.txt

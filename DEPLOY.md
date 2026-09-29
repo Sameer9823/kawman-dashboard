@@ -55,7 +55,15 @@ user with no demo data.
 ## 4. Set the remaining env vars
 
 - `BETTER_AUTH_SECRET` — a random 64-char hex string (`openssl rand -hex 32`). One is already filled in for local dev; **generate a new one for production**.
-- `BETTER_AUTH_URL` / `NEXT_PUBLIC_APP_URL` — your deployed URL (e.g. `https://your-app.vercel.app`).
+- `BETTER_AUTH_URL` / `NEXT_PUBLIC_APP_URL` — your deployed URL (e.g. `https://your-app.vercel.app`). For the Vercel deployment this MUST be
+  `https://kawman-dashboard.vercel.app` (no trailing slash), otherwise
+  password-reset links point back at `localhost` instead of the live app.
+- `SMTP_HOST`, `SMTP_PORT` (default `465`), `SMTP_USER`, `SMTP_PASS`,
+  `EMAIL_FROM` — Zoho Mail SMTP credentials. `EMAIL_FROM` must be the same
+  mailbox as `SMTP_USER`; use an app-specific password if 2FA is on. Use
+  `smtp.zoho.com` instead of `smtp.zoho.in` when the Zoho account is on the
+  US data center. Without these, password-reset and invite emails fall back
+  to server-console logging and are **not** delivered.
 
 Everything else in `.env.example` (AI keys, Cloudinary, Mapbox, Redis)
 is optional — those power modules (AI insights, file uploads, maps,
@@ -68,6 +76,16 @@ Any Node host that supports Next.js works (Vercel is the path of
 least resistance). Set the env vars above in your host's dashboard,
 point it at this repo, and deploy. Add `prisma generate` to your
 build/postinstall step if your host doesn't already run it.
+
+> **Install on Vercel:** If the install step fails with `ERESOLVE`,
+> set the **Install Command** in the Vercel project settings (Project
+> Settings → General → Build & Deployment → Build Settings) to
+> `npm install --legacy-peer-deps`. This is required because
+> `samai-sdk@0.3.5` carries an optional peer dep on
+> `@anthropic-ai/sdk@^0.30` while this project depends on `^0.128`.
+> The `postinstall` script (`puppeteer browsers install chrome`) is
+> also skipped by `--ignore-scripts`; you can keep the default install
+> command if you prefer to pre-install Chrome separately.
 
 ---
 
@@ -100,3 +118,43 @@ and I'll keep going module by module:
 - AI chat / AI-generated reports (the dashboard's "AI insights" are
   real deterministic stats computed from your data today, not an LLM
   call — wiring an actual model in is the next step if you want it)
+
+---
+
+## Zoho Sign-In (optional SSO)
+
+For company employees whose Zoho Mail account is on the same data center.
+Only **existing** `@kawmanexact.com` users in the database can sign in —
+no new users are created (the provider runs with `disableSignUp: true`).
+
+### 1. Register the application in the Zoho API Console
+
+1. Go to the API Console for your Zoho data center:
+   - **IN** (India): https://api-console.zoho.in
+   - **US**: https://api-console.zoho.com
+2. Click **Add Client** → choose **Server-based Application**.
+3. Fill in:
+   - **Client Name**: `Kawman ExAct` (or any name you like)
+   - **Homepage URL**: your app URL, e.g. `https://kawman-dashboard.vercel.app`
+   - **Authorized Redirect URI**: `https://kawman-dashboard.vercel.app/api/auth/callback/zoho`
+4. Leave **JavaScript Domain** empty, **JavaScript Key Type** unchecked.
+5. Click **Save** and copy the generated **Client ID** and **Client Secret**.
+6. In the Zoho app's **Scopes** tab, add: `openid`, `profile`, `email`.
+
+### 2. Set the environment variables
+
+| Variable | Value (IN data center) | Notes |
+|---|---|---|
+| `ZOHO_CLIENT_ID` | (from Zoho console) | Leave blank to hide the Zoho button |
+| `ZOHO_CLIENT_SECRET` | (from Zoho console) | Treat as a secret — never commit |
+| `ZOHO_ACCOUNTS_URL` | `https://accounts.zoho.in` | Use `https://accounts.zoho.com` for US DC |
+| `ALLOWED_EMAIL_DOMAIN` | `kawmanexact.com` | Only this domain can sign in |
+| `NEXT_PUBLIC_ZOHO_LOGIN_ENABLED` | `true` | Toggles the button client-side |
+
+> **Data-center note:** The client only works on the data center where it
+> was created. `ZOHO_ACCOUNTS_URL` must match, and the redirect URI
+> registered with Zoho must use the same `BETTER_AUTH_URL` value.
+
+> **Vercel redeploy:** `NEXT_PUBLIC_*` variables are baked in at build
+> time. Changing `NEXT_PUBLIC_ZOHO_LOGIN_ENABLED`, `NEXT_PUBLIC_APP_URL`,
+> or `BETTER_AUTH_URL` requires a new deployment.

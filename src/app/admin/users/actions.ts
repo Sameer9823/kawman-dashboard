@@ -67,6 +67,11 @@ export async function createUserAction(_prev: UserFormState, formData: FormData)
   const existing = await prisma.user.findUnique({ where: { email: data.email } })
   if (existing) return { fieldErrors: { email: 'A user with this email already exists' } }
 
+  // Enforce company domain — admin-created users must also be @kawmanexact.com
+  if (!data.email.endsWith('@kawmanexact.com')) {
+    return { fieldErrors: { email: 'Only @kawmanexact.com email addresses are allowed' } }
+  }
+
   const role = await prisma.role.findUnique({ where: { name: data.role } })
   if (!role) return { error: 'That role does not exist yet — run the permission seed first.' }
 

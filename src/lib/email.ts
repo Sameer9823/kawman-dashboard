@@ -4,19 +4,19 @@ import 'server-only'
  * Transactional email, abstracted behind one function so call sites never
  * need to know which provider is behind it (audit: "Add Email Service").
  *
- * Provider: Resend, called via plain `fetch` against their REST API — no
- * SDK dependency needed, keeps package.json untouched. Set RESEND_API_KEY
- * and EMAIL_FROM to go live; see .env.example.
+ * Provider: SMTP via nodemailer. A single transporter is lazily created
+ * and cached for the lifetime of the process. Configure with SMTP_HOST,
+ * SMTP_PORT (default 465 — 465 = implicit TLS, 587 = STARTTLS),
+ * SMTP_USER, SMTP_PASS and EMAIL_FROM; see .env.example.
  *
- * Fallback: if no API key is configured, emails are logged to the server
+ * Fallback: if the SMTP_* vars are missing, emails are logged to the server
  * console instead of failing outright, so every flow that sends mail
  * (password reset, user invites) stays fully testable in dev without an
  * account or without the send actually reaching an address that may not
  * exist.
- *
- * Queue Support: Emails can be queued via BullMQ for async processing.
- * Use `queueEmail()` from `@/services/queue.service` for background sending.
  */
+
+import nodemailer, { type Transporter } from 'nodemailer'
 
 export interface SendEmailInput {
   to: string
@@ -27,7 +27,25 @@ export interface SendEmailInput {
 }
 
 export function isEmailConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM)
+  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS && process.env.EMAIL_FROM)
+}
+
+let cachedTransporter: Transporter | null = null
+
+function getTransporter(): Transporter | null {
+  if (cachedTransporter) return cachedTransporter
+  const host = process.env.SMTP_HOST
+  const user = process.env.SMTP_USER
+  const pass = process.env.SMTP_PASS
+  if (!host || !user || !pass) return null
+  const port = Number(process.env.SMTP_PORT || 465)
+  cachedTransporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465, // 465 = implicit TLS, 587 = STARTTLS
+    auth: { user, pass },
+  })
+  return cachedTransporter
 }
 
 function stripHtml(html: string): string {
@@ -39,38 +57,41 @@ function stripHtml(html: string): string {
  * Use for immediate sends like password reset
  */
 export async function sendEmail(input: SendEmailInput): Promise<{ delivered: boolean }> {
-  const apiKey = process.env.RESEND_API_KEY
+  const transporter = getTransporter()
   const from = process.env.EMAIL_FROM
 
-  if (!apiKey || !from) {
-    const missing = [!apiKey && 'RESEND_API_KEY', !from && 'EMAIL_FROM'].filter(Boolean).join(', ')
+  if (!transporter || !from) {
+    const missing = [
+      !process.env.SMTP_HOST && 'SMTP_HOST',
+      !process.env.SMTP_USER && 'SMTP_USER',
+      !process.env.SMTP_PASS && 'SMTP_PASS',
+      !from && 'EMAIL_FROM',
+    ]
+      .filter(Boolean)
+      .join(', ')
     // Verbose in dev so the missing-config mode is impossible to miss
     console.warn(
-      `[email:dev] ✗ NOT SENT — missing ${missing}. To: ${input.to} | Subject: "${input.subject}" | Mode: dev-log (set RESEND_API_KEY + EMAIL_FROM to actually deliver).`
+      `[email:dev] ✗ NOT SENT — missing ${missing}. To: ${input.to} | Subject: "${input.subject}" | Mode: dev-log (set SMTP_* + EMAIL_FROM to actually deliver).`
     )
     return { delivered: false }
   }
 
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+  try {
+    await transporter.sendMail({
       from,
       to: input.to,
       subject: input.subject,
       html: input.html,
       text: input.text ?? stripHtml(input.html),
-    }),
-  })
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => '')
-    console.error(`[email] ✗ Resend send failed (${res.status}): ${body} | To: ${input.to} | Subject: "${input.subject}"`)
+    })
+    console.log(`[email] ✓ Sent via SMTP | To: ${input.to} | Subject: "${input.subject}"`)
+    return { delivered: true }
+  } catch (err) {
+    console.error(
+      `[email] ✗ SMTP send failed: ${err instanceof Error ? err.message : String(err)} | To: ${input.to} | Subject: "${input.subject}"`
+    )
     return { delivered: false }
   }
-
-  console.log(`[email] ✓ Sent via Resend | To: ${input.to} | Subject: "${input.subject}"`)
-  return { delivered: true }
 }
 
 // ============================================================

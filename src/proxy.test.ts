@@ -4,9 +4,10 @@ import { proxy } from '@/proxy'
 
 const SESSION_COOKIE = 'better-auth.session_token'
 
-function req(pathname: string, opts: { withSession?: boolean; headers?: Record<string, string> } = {}) {
+function req(pathname: string, opts: { withSession?: boolean; withToken?: boolean; headers?: Record<string, string> } = {}) {
   const headers = new Headers(opts.headers)
   if (opts.withSession) headers.set('cookie', `${SESSION_COOKIE}=valid-token`)
+  if (opts.withToken) headers.set('authorization', 'Bearer test-token')
   return new NextRequest(`https://app.example.com${pathname}`, { headers })
 }
 
@@ -95,5 +96,23 @@ describe('proxy', () => {
         expect(res.status).toBe(200)
       }
     )
+  })
+
+  describe('requests carrying a Bearer token (mobile auth)', () => {
+    it.each(['/dashboard', '/admin/ai-analytics', '/api/leads/export', '/leads', '/api/mobile/visits'])(
+      'lets %s continue to the route',
+      (path) => {
+        const res = proxy(req(path, { withToken: true }))
+        expect(isRedirect(res)).toBe(false)
+        expect(res.status).toBe(200)
+      }
+    )
+  })
+
+  describe('upload-signature endpoint is publicly accessible', () => {
+    it('allows /api/mobile/upload-signature without auth', () => {
+      const res = proxy(req('/api/mobile/upload-signature'))
+      expect(isBlocked(res)).toBe(false)
+    })
   })
 })

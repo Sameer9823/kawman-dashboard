@@ -9,8 +9,8 @@ import { getSessionCookie } from 'better-auth/cookies'
  * before the route is resolved, so a future route that forgets its own check
  * fails closed here instead of rendering data to an anonymous visitor.
  *
- * What it deliberately does NOT do: check permissions. Permission data lives in
- * Postgres and is resolved per-request in lib/auth.ts's customSession plugin;
+ * What it deliberately does NOT do: check permissions. Permission data lives
+ * in Postgres and is resolved per-request in lib/auth.ts's customSession plugin;
  * doing that at the proxy layer would mean a DB round trip on every asset
  * request. Role/permission enforcement stays in the route.
  */
@@ -21,7 +21,14 @@ const PUBLIC_EXACT = ['/login', '/forgot-password', '/reset-password'] as const
 
 /** Prefix-match public paths. `=== p || startsWith(p + '/')` so `/api/auth`
  *  never accidentally matches a sibling like `/api/auth-bypass`. */
-const PUBLIC_PREFIXES = ['/superadmin', '/api/auth', '/api/health'] as const
+const PUBLIC_PREFIXES = [
+  '/superadmin',
+  '/api/auth',
+  '/api/health',
+  '/api/mobile/upload-signature',
+  '/_next',
+  '/static',
+] as const
 
 function isPublicPath(pathname: string): boolean {
   if ((PUBLIC_EXACT as readonly string[]).includes(pathname)) return true
@@ -39,6 +46,17 @@ function hasSessionCookie(request: NextRequest): boolean {
   return getSessionCookie(request) !== null
 }
 
+/**
+ * Presence-only check for a Bearer token (mobile/API auth via the
+ * better-auth bearer plugin). This only checks that an Authorization header
+ * with a Bearer scheme exists — the token itself is validated later by
+ * `auth.api.getSession` inside each route handler.
+ */
+function hasBearerToken(request: NextRequest): boolean {
+  const authHeader = request.headers.get('authorization')
+  return !!(authHeader && authHeader.startsWith('Bearer '))
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -46,7 +64,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  if (!hasSessionCookie(request)) {
+  if (!hasSessionCookie(request) && !hasBearerToken(request)) {
     // API routes get a 401 JSON body rather than a redirect to an HTML page,
     // so fetch()/SSE clients get a parseable response instead of HTML.
     if (pathname.startsWith('/api/')) {

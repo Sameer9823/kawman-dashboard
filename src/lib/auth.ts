@@ -160,4 +160,14 @@ export const auth = betterAuth({
   ],
 })
 
-export type Session = typeof auth.$Infer.Session
+export type Session = typeof auth.$Infer.Session & {
+  user: {
+    organizationId: string
+    organization: { id: string; name: string; slug: string } | null
+    department: { id: string; name: string } | null
+    team: { id: string; name: string } | null
+    status: string
+    roles: string[]
+    permissions: string[]
+  }
+}

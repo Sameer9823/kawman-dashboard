@@ -4,12 +4,14 @@ Next.js 16.3.3 (App Router) + TypeScript + Tailwind v4 + Prisma 7 + Neon Postgre
 
 ## Status
 
-All routes pass `tsc --noEmit`, `eslint`, and `next build` (74+ static/dynamic routes, `ƒ Proxy (Middleware)`). DB schema validates (`prisma validate 🚀`). Client regenerated to `src/generated/prisma` (Prisma 7.10, output `../src/generated/prisma`, **not** `node_modules/.prisma`).
+All gates are green on this commit: `tsc --noEmit` 0, `eslint .` 0 errors / 0 warnings, `vitest run` 35 files / 378 passing (8 skipped), `next build` succeeds (98 routes, `ƒ Proxy (Middleware)`). DB schema validates (`prisma validate 🚀`). Client regenerated to `src/generated/prisma` (Prisma 7.10, output `../src/generated/prisma`, **not** `node_modules/.prisma`).
 
 ### What ships
 
-- **Auth** — `better-auth` with `prismaAdapter(postgresql)`, `emailAndPassword` + `emailOTP`, `customSession` (enriches every session from DB: `organization`, `department`, `team`, `roles`, `permissions` via `permission.service`), `nextCookies`, rate-limit (`/sign-in/email: 5/60s`). `Session` extended with `lastSeenAt`/`endedAt` (online presence). `auth.ts:customSession` is hardened with `try/catch` so a Prisma throw never crashes login.
-- **RBAC** — `permissions-data.ts` is the source of truth (`PERMISSIONS` + `ROLE_PERMISSIONS`), `permissions.ts` is the client hook (`usePermissions`), `permission.service.ts` is the server source of truth (`getUserPermissions/hasPermission/requirePermission`), `rbac-seed.ts` seeds. New permissions: `team.view`, `team.view_all`, `reports.submit`, `reports.view_all`. `SUPER_ADMIN` gets all, `ADMIN`/`MANAGER` get `team.view*`, sales roles get `team.view`/`reports.submit`, etc. Every service scopes by `session.user.organizationId`; cross-org access is structurally impossible.
+- **Auth** — `better-auth` with `prismaAdapter(postgresql)`, `emailAndPassword`, `customSession` (enriches every session from DB: `organization`, `department`, `team`, `roles`, `permissions` via `permission.service`), `nextCookies`, rate-limit (`/sign-in/email: 5/60s`). `Session` extended with `lastSeenAt`/`endedAt` (online presence). `auth.ts:customSession` is hardened with `try/catch` so a Prisma throw never crashes login.
+- **Proxy** — `src/proxy.ts` (Next 16 `proxy`, formerly `middleware`) redirects any request without a session cookie: pages to `/login?callbackUrl=…`, `/api/*` to a `401` JSON body. Public allowlist: `/login`, `/forgot-password`, `/reset-password`, `/superadmin`, `/api/auth`, `/api/health`. **This is a backstop, not the authorization layer** — every Server Action / Route Handler still does its own `requireApiSession()` + permission check. Proxy does *presence-only* cookie detection (no DB round trip) and never checks roles.
+- **RBAC** — `permissions-data.ts` is the source of truth (`PERMISSIONS` + `ROLE_PERMISSIONS`), `permissions.ts` is the client hook (`usePermissions`), `permission.service.ts` is the server source of truth (`getUserPermissions/hasPermission/requirePermission`), `rbac-seed.ts` seeds. `session.ts` exposes `requirePermission` (all-of) and `requireAnyPermission` (any-of). `SUPER_ADMIN` gets all, `ADMIN` gets `ai.analytics.view`/`settings.manage`/`audit_logs.view`, sales roles get `team.view`/`reports.submit`, etc. Every service scopes by `session.user.organizationId`.
+- **AI analytics** (`/admin/ai-analytics`, `api/admin/ai-analytics{,/records,/summary}`) — per-person AI token counts and cost are **admin-only**, enforced in three places: the page (`requireAnyPermission`), each route (`canViewAIAnalytics` → `403`), and inside `ai-analytics.service.ts` itself so the service is safe to call from anywhere. Grants: `ai.analytics.view` **or** `settings.manage` **or** `audit_logs.view`. Deliberately **not** `ai.use` — every role up to and including `VIEWER` holds that. The org id always comes from the session; a caller-supplied `organizationId` filter is ignored.
 - **Dashboard** (`/dashboard`) — KPI cards, sparklines, sales pipeline, AI insights, today's field activity, live map preview, leads-by-source, follow-ups, recent activity. All via `dashboard.service.ts` (`server-only`, `requireApiSession`).
 - **CRM** — Leads, Companies, Contacts, Deals (kanban `DEALS_KANBAN_LIMIT=500`), Follow-ups, Calendar, Field Visits, Sales Reports. Scoped helpers (`getCompanyOptions`/`getContactOptions` use `scopeWhere`), `$transaction` on `createLead`, magic-byte file validation, MIME allowlist (no `text/html`/`svg`).
 - **Files** (`/files/*`) — Folders, upload (Cloudinary `resourceTypeForMime`, `safeName` CRLF strip, extension guard), visibility (`PRIVATE/TEAM/DEPARTMENT/ORGANIZATION/SHARED`), folder permissions (`FilePermission.folderId`), shares (`FileShare`), versioning (`FileVersion`), activity (`FileActivity`), star/trash.
@@ -59,9 +61,11 @@ dashboard/
       redis.ts, cloudinary.ts, transcription.ts (tmpdir + pipeline), ai.ts, db.ts (PrismaPg + assertEnv), env.ts (assertEnv), utils.ts
     hooks/                 # useHeartbeat
     generated/prisma/      # generated client (output = ../src/generated/prisma) — gitignored in practice, committed here for offline build
+    proxy.ts               # Next 16 Proxy (was middleware) — session-cookie gate, redirects anon requests to /login, 401 JSON for /api/*
+    instrumentation.ts     # register() → assertEnv() at server boot, not on first db.ts import
     stores/ types/
-  next.config.ts           # serverActions.bodySizeLimit = "10mb"
-  src/proxy.ts             # Security headers (CSP script-src 'self' 'unsafe-inline' 'unsafe-eval'), PUBLIC_EXACT/PREFIXES, getSessionCookie pre-check, matcher (api/auth + upload-recording + meetings/new excluded)
+  next.config.ts           # images.remotePatterns (Cloudinary)
+  scripts/setup-chrome.mjs # guarded Puppeteer Chrome download (skips Vercel/CI, never fails install)
   src/components/providers.tsx # QueryClientProvider + ReactQueryDevtools gated by canUseLocalStorage (fixes SecurityError in sandboxed iframe)
 ```
 
@@ -113,21 +117,24 @@ npm run dev          # next dev
 npm run build        # next build (Turbopack) — must show ƒ Proxy (Middleware)
 npm run start        # next start
 npm run lint         # eslint
-npm run typecheck    # tsc --noEmit (or npx tsc --noEmit --skipLibCheck for the fast gate)
+npm run typecheck    # tsc --noEmit
 npm run test         # vitest run
-npm run test:e2e     # playwright test
+npm run test:watch   # vitest --watch
+npm run test:coverage
+npm run test:e2e     # playwright test (no specs committed yet)
 npm run db:generate  # prisma generate
 npm run db:migrate   # prisma migrate dev
 npm run db:deploy    # prisma migrate deploy
 npm run db:seed      # prisma db seed (tsx prisma/seed.ts)
 npm run db:studio    # prisma studio
+npm run setup:chrome # force the Puppeteer Chrome download (postinstall skips it on Vercel/CI)
 ```
 
-All three gates are green on this commit: `tsc --noEmit --skipLibCheck` 0, `eslint` 0, `next build` 0, `prisma validate` 🚀.
+All gates green on this commit: `tsc --noEmit` 0, `eslint .` 0 errors / 0 warnings, `vitest run` 35 files / 378 passing, `next build` 0, `prisma validate` 🚀.
 
 ## Environment
 
-See `.env.example` (38 lines, Neon + better-auth + optional integrations). `src/lib/env.ts:assertEnv()` fails fast in production if `DATABASE_URL`/`BETTER_AUTH_SECRET` (≥32 chars) are missing, wired on first `src/lib/db.ts` import (Next 16 has no `instrumentationHook`). `src/lib/db.ts` uses `PrismaPg` adapter + `log: ['error']` only (no `query` log/PII).
+See `.env.example` for Neon + better-auth + optional integrations. `src/lib/env.ts:assertEnv()` fails fast in production if `DATABASE_URL`/`BETTER_AUTH_SECRET` (≥32 chars) are missing. It is called from `src/instrumentation.ts` `register()`, so a misconfigured deploy now fails **at server boot** rather than on the first request that touches auth or the DB (it is still also called from `db.ts` for the `tsx`-run seed path). `src/lib/db.ts` uses the `PrismaPg` adapter + `log: ['error']` only (no `query` log/PII).
 
 ## Conventions (read before contributing)
 
@@ -135,31 +142,38 @@ See `.env.example` (38 lines, Neon + better-auth + optional integrations). `src/
 - **Mutations:** colocated Server Actions (`'use server'`, Zod schema, `validateCsrf()` inside `try` when the action returns `{error}`, `requireApiSession()`/`assertPermission('users.create')`, `logAudit()`, `revalidatePath()`). Pattern: `admin/users/actions.ts`, `admin/my-team/actions.ts`.
 - **REST:** only where a client must `POST`/`fetch` outside a page render (e.g. `api/ai/reports`, `api/ai/employee-summary`, `api/presence/heartbeat`): `requireApiSession()`, `checkRateLimit(key,limit,window)`, `isAIConfigured()` gate, explicit `401/429/503` JSON.
 - **Scoping:** every service scopes by `session.user.organizationId`; `scopeWhere`/`scopeFilterForAI` for record-level isolation.
-- **Permissions:** add to `permissions-data.ts` + seed in `rbac-seed.ts`; enforce server-side (`(session.user.permissions as string[]).includes(...)`), never UI-only.
+- **Permissions:** add to `permissions-data.ts` + seed in `rbac-seed.ts`; enforce server-side (`(session.user.permissions as string[]).includes(...)`), never UI-only. Use `requireAnyPermission([...])` when several distinct capabilities each imply the same access.
+- **Reading ≠ deleting.** `getReport`/`listReports` intentionally share non-employee reports org-wide. `deleteReport` is narrower: only the report's `generatedById`, a holder of `reports.view_all`, or SUPER_ADMIN/ADMIN may delete. Not-found and not-allowed return the same `'Report not found'` so the endpoint can't be used to probe for report ids.
 
 ## Security
 
-- `proxy.ts` — `PUBLIC_EXACT` + `PUBLIC_PREFIXES` (`=== p || startsWith(p+'/')`) so `/api/auth` never matches `/api/auth-bypass`; `isAuthOnlyPath`/`isAuthApiRoute` exact+prefix; `getSessionCookie` pre-check + full `auth.api.getSession` verification for authed users; security headers (`X-Frame-Options DENY`, `X-Content-Type-Options nosniff`, `Referrer-Policy`, `Permissions-Policy`, CSP `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'` for Next inline/HMR, `object-src 'none'`); rate-limit headers on auth API.
-- `csrf.ts` — `validateCsrf()` (Origin vs Host, allows missing Origin, localhost in dev) — wired into 73 Server Actions across 19 files.
+- `proxy.ts` — session-cookie **presence** gate in front of every page and API route. Public allowlist is exact-match (`=== p`) for `/login`, `/forgot-password`, `/reset-password` and prefix-match (`=== p || startsWith(p + '/')`) for `/superadmin`, `/api/auth`, `/api/health`, so `/api/auth` never matches `/api/auth-bypass`. Anonymous page requests redirect to `/login?callbackUrl=…`; anonymous `/api/*` requests get a `401` JSON body (not HTML). `matcher` excludes `_next/static`, `_next/image`, `favicon.ico`, `sitemap.xml`, `robots.txt` and any path with a file extension. Proxy is defense-in-depth only — authorization stays in each Server Action / Route Handler.
+- `csrf.ts` — `validateCsrf()` (Origin vs Host, allows missing Origin, localhost in dev) — wired into the Server Actions that mutate state.
 - Uploads — MIME allowlist without executable types, extension guard for `.html/.js/.css/.xml/.svg`, `file.slice(0,12)` magic-byte check, `file.type` never trusted, `safeName` CRLF strip, PII logs redacted.
 - `rate-limit.ts` — `MAX_MEMORY_BUCKETS=10000` LRU; `redis.ts` — no `lazyConnect`, gated log.
 - `transcription.ts` — `os.tmpdir()` + `pipeline` streaming, no `src/` temps.
-- `proxy.matcher` — `api/meetings/[^/]+/upload-recording` (not `.*`), `favicon\.ico` escaped, known `requestData.body.finalize()` race noted.
+- `api/health` — unauthenticated and internet-reachable, so it returns **only** `{ status: 'ok' | 'degraded' | 'error' }`. Raw driver error strings, latency and uptime were removed; set `HEALTH_DETAIL_TOKEN` and send `Authorization: Bearer <token>` to get the per-service breakdown. Responses are `Cache-Control: no-store`.
 - `page.tsx` — session-aware redirect (`getSession()` → `/dashboard` or `/login`), not unconditional.
 - `providers.tsx` — `ReactQueryDevtools` dynamically imported, gated by `canUseLocalStorage()` `try/catch` (fixes `SecurityError: Failed to read localStorage` in sandboxed iframe).
+
+## Known issues
+
+- **Background workers never start.** `lib/queue.ts` builds its `Worker` on the shared `lib/redis.ts` client, which sets `maxRetriesPerRequest: 3`. BullMQ requires `maxRetriesPerRequest: null` and throws `BullMQ: Your redis options maxRetriesPerRequest must be null.` at startup. The error is caught and logged, so the build and the app are unaffected, but transcription/queue jobs do not run. Fix by giving `Worker`/`Queue` a dedicated connection with `maxRetriesPerRequest: null`.
+- **`/notifications` says "Click to view →" but the row is not clickable.** The orphaned `openAndRemove` handler (which also `DELETE`d the notification) was removed as dead code. Wiring navigation back up is a product decision: a view-click should not delete.
 
 ## Verification
 
 ```bash
-npx tsc --noEmit --skipLibCheck
-npx eslint .
-npx prisma validate
-npm run build   # expect: ✓ Compiled successfully, Generating static pages (74+), ƒ Proxy (Middleware)
+npm run typecheck   # tsc --noEmit
+npm run lint        # eslint
+npm run test        # vitest run
+npm run build       # expect: ✓ Compiled successfully, Generating static pages (98), ƒ Proxy (Middleware)
 ```
-
-Nil `TODO` in `src/` (only `src/generated/prisma` vendor TODOs).
 
 ## Deployment
 
 - Set `DATABASE_URL` (pooled) + `DIRECT_URL` (direct) + `BETTER_AUTH_SECRET` + `BETTER_AUTH_URL`/`NEXT_PUBLIC_APP_URL` in your host (Vercel/Neon). Run `prisma migrate deploy` + `prisma generate` in CI (`postinstall: prisma generate` if you gitignore `src/generated/prisma`).
-- Optional: `OPENAI_API_KEY` or `GOOGLE_GENERATIVE_AI_API_KEY`, `CLOUDINARY_*`, `NEXT_PUBLIC_MAPBOX_TOKEN`, `REDIS_URL`, `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS`/`EMAIL_FROM`, `ZOHO_CLIENT_ID`/`ZOHO_CLIENT_SECRET`/`ZOHO_ACCOUNTS_URL` (see DEPLOY.md → "Zoho Sign-In").
+- `postinstall` is `node scripts/setup-chrome.mjs`, which **skips** the ~150MB Puppeteer Chrome download on Vercel/CI/Netlify/etc. and never fails the install. Nothing in `src/` imports `puppeteer` (it is a devDependency, test tooling only), so it is not needed to build or run the app.
+- `vercel.json` pins `installCommand: npm install --legacy-peer-deps`. This is required because `samai-sdk@0.3.5` declares an optional peer dep on `@anthropic-ai/sdk@^0.30` while this project depends on `^0.128`. It is a broad hammer — it disables peer-dep validation for the entire tree, not just samai-sdk. If that matters, pin the conflict with an npm `overrides` entry and drop the flag. (I could not verify this end-to-end here: the sandbox blocks npm registry fetches.)
+- `samai-sdk` is first-party: MIT, published 2026-08-02, sole maintainer `sameer9823`, no install/postinstall hooks, and a single runtime dependency (`zod-to-json-schema`). It is genuinely used by `services/voice-agent.ts` and `api/voice/ask/route.ts`.
+- Optional: `OPENAI_API_KEY` or `GOOGLE_GENERATIVE_AI_API_KEY`, `CLOUDINARY_*`, `NEXT_PUBLIC_MAPBOX_TOKEN`, `REDIS_URL`, `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS`/`EMAIL_FROM`, `ZOHO_CLIENT_ID`/`ZOHO_CLIENT_SECRET`/`ZOHO_ACCOUNTS_URL` (see DEPLOY.md → "Zoho Sign-In"), `HEALTH_DETAIL_TOKEN` (unlocks the detailed `/api/health` view).

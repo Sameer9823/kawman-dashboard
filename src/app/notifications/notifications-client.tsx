@@ -1,8 +1,7 @@
 
 'use client'
 
-import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { formatRelativeTime } from '@/lib/utils'
 import { X, Trash2, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -16,20 +15,6 @@ type Notif = {
   data: { userId?: string; dailyReportId?: string; visitId?: string; assignedById?: string; scheduledAt?: string } | null
   createdAt: string
   isRead: boolean
-}
-
-const NOTIF_COLOR: Record<string, string> = {
-  NEW_LEAD: 'bg-purple-500/15 text-purple-400',
-  DEAL_UPDATED: 'bg-blue-500/15 text-blue-400',
-  MEETING_REMINDER: 'bg-emerald-500/15 text-emerald-400',
-  FOLLOW_UP_DUE: 'bg-orange-500/15 text-orange-400',
-  FILE_SHARED: 'bg-cyan-500/15 text-cyan-400',
-  FILE_UPLOADED: 'bg-cyan-500/15 text-cyan-400',
-  AI_REPORT_READY: 'bg-fuchsia-500/15 text-fuchsia-400',
-  CHECK_IN_COMPLETED: 'bg-emerald-500/15 text-emerald-400',
-  SECURITY_EVENT: 'bg-red-500/15 text-red-400',
-  DAILY_REPORT_SUBMITTED: 'bg-indigo-500/15 text-indigo-400',
-  VISIT_ASSIGNED: 'bg-amber-500/15 text-amber-400',
 }
 
 function hrefFor(n: Notif): string | null {
@@ -56,7 +41,6 @@ function getTypeIcon(type: string) {
 }
 
 export function NotificationsClient({ initial }: { initial: Notif[] }) {
-  const router = useRouter()
   const queryClient = useQueryClient()
   const [items, setItems] = useState<Notif[]>(initial)
   const [clearing, setClearing] = useState(false)
@@ -125,7 +109,7 @@ export function NotificationsClient({ initial }: { initial: Notif[] }) {
       const res = await fetch('/api/notifications?limit=20&offset=' + offset)
       if (res.ok) {
         const data = await res.json()
-        const newItems = (data.notifications || []).map((n: any) => ({
+        const newItems = ((data.notifications || []) as Notif[]).map((n) => ({
           id: n.id,
           type: n.type,
           title: n.title,
@@ -142,20 +126,6 @@ export function NotificationsClient({ initial }: { initial: Notif[] }) {
       }
     } catch {}
     setLoadingMore(false)
-  }
-
-  async function openAndRemove(n: Notif) {
-    const href = hrefFor(n)
-    setItems((prev) => prev.filter((x) => x.id !== n.id))
-    try {
-      await fetch('/api/notifications', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: n.id }),
-      })
-    } catch {}
-    if (href) router.push(href)
-    queryClient.invalidateQueries({ queryKey: ['notifications'] })
   }
 
   function toggleExpand(id: string) {
@@ -206,7 +176,6 @@ export function NotificationsClient({ initial }: { initial: Notif[] }) {
         {items.map((n) => {
           const href = hrefFor(n)
           const isExpanded = expandedIds.has(n.id)
-          const typeColor = NOTIF_COLOR[n.type] || 'bg-white/10 text-white/60'
 
           return (
             <div

@@ -3,10 +3,8 @@ import {
   sanitizeFileNamePart,
   buildExportFilename,
   contentTypeFor,
-  createTableReport,
-  dispatchExport,
 } from '@/lib/report-engine'
-import type { UniversalReportDefinition, ExportFormat } from '@/lib/report-engine/types'
+import type { ExportFormat } from '@/lib/report-engine/types'
 
 describe('report-engine index', () => {
   describe('sanitizeFileNamePart', () => {

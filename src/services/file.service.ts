@@ -44,8 +44,7 @@ async function logActivity(fileId: string, userId: string, action: string, metad
 async function canAccessFolder(
   folderId: string,
   userId: string,
-  organizationId: string,
-  permissions: string[]
+  organizationId: string
 ): Promise<boolean> {
   const folder = await prisma.folder.findFirst({
     where: { id: folderId, organizationId },
@@ -63,8 +62,7 @@ async function canAccessFolder(
 /** Same rule as canAccessFolder, batched for a list of sibling folders. */
 async function filterAccessibleFolders(
   folders: { id: string; createdById: string }[],
-  userId: string,
-  permissions: string[]
+  userId: string
 ): Promise<Set<string>> {
   if (folders.length === 0) return new Set()
 
@@ -295,7 +293,7 @@ export async function getFolderContents(folderId: string | null): Promise<{ fold
   // is what actually keeps someone from typing another folder's id into
   // the URL and browsing its contents anyway.
   if (folderId) {
-    const allowed = await canAccessFolder(folderId, session.user.id, organizationId, session.user.permissions)
+    const allowed = await canAccessFolder(folderId, session.user.id, organizationId)
     if (!allowed) throw new Error('You do not have access to this folder.')
   }
 
@@ -313,8 +311,7 @@ export async function getFolderContents(folderId: string | null): Promise<{ fold
   // list just because they can see its parent.
   const visibleFolderIds = await filterAccessibleFolders(
     folderRows.map((f) => ({ id: f.id, createdById: f.createdById })),
-    session.user.id,
-    session.user.permissions
+    session.user.id
   )
 
   const allFiles = await mapFiles(fileRows, session.user.id)
@@ -375,7 +372,7 @@ export async function getAllFoldersFlat(): Promise<{ id: string; name: string; p
 export async function createFolder(name: string, parentId: string | null) {
   const session = await requireApiSession()
   if (parentId) {
-    const allowed = await canAccessFolder(parentId, session.user.id, session.user.organizationId, session.user.permissions)
+    const allowed = await canAccessFolder(parentId, session.user.id, session.user.organizationId)
     if (!allowed) throw new Error('You do not have access to parent folder.')
   }
   await prisma.folder.create({

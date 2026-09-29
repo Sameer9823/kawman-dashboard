@@ -44,3 +44,18 @@ export async function requirePermission(permission: string) {
   }
   return session
 }
+
+/**
+ * Same as requirePermission, but satisfied by holding ANY ONE of the listed
+ * permissions. Use for admin surfaces where several distinct capabilities
+ * (e.g. 'ai.analytics.view' | 'settings.manage' | 'audit_logs.view') each
+ * imply the same access.
+ */
+export async function requireAnyPermission(permissions: string[]) {
+  const session = await requireSession()
+  const granted = session.user.permissions as string[]
+  if (!permissions.some((p) => granted.includes(p))) {
+    redirect(`/dashboard?error=forbidden&section=${encodeURIComponent(permissions.join(','))}`)
+  }
+  return session
+}

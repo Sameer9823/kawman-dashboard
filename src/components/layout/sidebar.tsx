@@ -209,12 +209,16 @@ export function Sidebar() {
   const { hasPermission, hasAnyPermission } = usePermissions()
   const pathname = usePathname()
   const [storage, setStorage] = React.useState<StorageUsage | null>(null)
-  const [mounted, setMounted] = React.useState(false)
 
-  // Set mounted after hydration to avoid SSR mismatch from permission-based rendering
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
+  // Permission-based rendering differs between the server HTML (no session)
+  // and the client, so the nav is only filtered after hydration. useSyncExternalStore
+  // reports "server" during SSR and "client" after hydration without the
+  // setState-in-effect (and extra render pass) that a `mounted` flag needs.
+  const mounted = React.useSyncExternalStore(
+    React.useCallback(() => () => {}, []),
+    () => true,
+    () => false
+  )
 
   const refreshStorage = React.useCallback(async () => {
     try {

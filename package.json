@@ -21,7 +21,8 @@
     "db:studio": "prisma studio",
     "db:backfill-email-key": "tsx prisma/scripts/backfill-contact-email-key.ts",
     "db:cleanup-phone-names": "tsx prisma/scripts/cleanup-phone-number-as-name.ts",
-    "postinstall": "puppeteer browsers install chrome"
+    "setup:chrome": "node scripts/setup-chrome.mjs",
+    "postinstall": "node scripts/setup-chrome.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
@@ -79,7 +80,6 @@
     "pdfjs-dist": "^4.0.0",
     "pg": "^8.23.0",
     "prisma": "^7.10.0",
-    "puppeteer": "^25.11.0",
     "react": "19.2.8",
     "react-day-picker": "^10.0.1",
     "react-dom": "19.2.8",
@@ -97,6 +97,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
+    "puppeteer": "^25.11.0",
     "@tailwindcss/postcss": "^4",
     "@types/fluent-ffmpeg": "^2.1.28",
     "@types/nodemailer": "^8.0.2",

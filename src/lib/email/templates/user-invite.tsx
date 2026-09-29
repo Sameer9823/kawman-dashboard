@@ -1,12 +1,12 @@
-import 'server-only'
-import { BaseTemplate, TextTemplate } from './base'
+import "server-only";
+import { BaseTemplate, TextTemplate } from "./base";
 
 export interface UserInviteTemplateProps {
-  loginUrl: string
-  userName: string
-  tempPassword: string
-  organizationName: string
-  invitedByName?: string
+  loginUrl: string;
+  userName: string;
+  tempPassword: string;
+  organizationName: string;
+  invitedByName?: string;
 }
 
 export function UserInviteTemplate({
@@ -16,14 +16,13 @@ export function UserInviteTemplate({
   organizationName,
   invitedByName,
 }: UserInviteTemplateProps): { html: string; text: string } {
-  const inviterText = invitedByName ? ` by ${invitedByName}` : ''
+  const inviterText = invitedByName ? ` by ${invitedByName}` : "";
 
- 
-const html = BaseTemplate({
-  title: `Welcome to ${organizationName}`,
-  preheader: 'Your Kawman ExAct account is ready — sign in to get started',
+  const html = BaseTemplate({
+    title: `Welcome to ${organizationName}`,
+    preheader: "Your Kawman ExAct account is ready — sign in to get started",
 
-  children: `
+    children: `
     <p>Hi ${userName},</p>
 
     <p>
@@ -62,25 +61,23 @@ const html = BaseTemplate({
     </p>
   `,
 
-  cta: {
-    text: 'Sign In to Kawman ExAct',
-    url: "https://kawman-dashboard.vercel.app/login",
-  },
+    cta: {
+      text: "Sign In to Kawman ExAct",
+      url: "https://kawman-dashboard.vercel.app/login",
+    },
 
-  footer:
-    'For your security, please change your temporary password immediately after your first login. If you did not expect this invitation, please contact your administrator.',
-})
-
-
+    footer:
+      "For your security, please change your temporary password immediately after your first login. If you did not expect this invitation, please contact your administrator.",
+  });
 
   const text = TextTemplate({
     title: `Welcome to ${organizationName}`,
     children: `Hi ${userName},\n\nYou've been added to ${organizationName} on Kawman ExAct${inviterText}. Your account has been created.\n\nEmail: ${userName}\nTemporary Password: ${tempPassword}\n\nPlease sign in and change your password immediately.`,
     cta: {
-      text: 'Sign In',
+      text: "Sign In",
       url: "https://kawman-dashboard.vercel.app/login",
     },
-  })
+  });
 
-  return { html, text }
+  return { html, text };
 }

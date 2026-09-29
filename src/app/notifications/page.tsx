@@ -7,7 +7,8 @@ import { headers } from 'next/headers'
 export const metadata = { title: 'Notifications | Kawman ExAct' }
 
 export default async function NotificationsPage() {
-  const session = await requireSession()
+  // Redirects to /login when there is no session.
+  await requireSession()
 
   // Get session token from cookies for API call
   const headersList = await headers()
@@ -33,7 +34,15 @@ export default async function NotificationsPage() {
 
   if (res.ok) {
     const data = await res.json()
-    initial = (data.notifications || []).map((n: any) => ({
+    initial = ((data.notifications || []) as Array<{
+      id: string
+      type: string
+      title: string
+      message: string
+      data: { userId?: string; dailyReportId?: string; visitId?: string } | null
+      createdAt: string
+      isRead: boolean
+    }>).map((n) => ({
       id: n.id,
       type: n.type,
       title: n.title,

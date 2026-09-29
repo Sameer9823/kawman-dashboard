@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock Redis
 vi.mock('@/lib/redis', () => ({
@@ -6,7 +6,7 @@ vi.mock('@/lib/redis', () => ({
 }))
 
 import { getRedisClient } from '@/lib/redis'
-import { checkRateLimit, getRateLimitStatus, RateLimitResult } from './rate-limit'
+import { checkRateLimit, getRateLimitStatus } from './rate-limit'
 
 const mockGetRedisClient = vi.mocked(getRedisClient)
 

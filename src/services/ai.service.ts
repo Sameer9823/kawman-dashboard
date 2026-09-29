@@ -816,15 +816,36 @@ export async function generateFieldSalesDailySummary(opts?: { date?: Date }): Pr
   }
 }
 
+/**
+ * Deletion is narrower than viewing. Reading a non-employee report is
+ * intentional org-wide sharing (see listReports/getReport), but deleting one
+ * is destructive, so it is limited to:
+ *   - the report's creator (generatedById), or
+ *   - holders of 'reports.view_all', or
+ *   - SUPER_ADMIN / ADMIN (record scope ALL).
+ * The previous check only tested *view* access, which let any org member who
+ * could see a report delete it too.
+ */
+function canDeleteReport(user: Session['user'], generatedById: string): boolean {
+  if (generatedById === user.id) return true
+  if ((user.permissions as string[]).includes('reports.view_all')) return true
+  return getRecordScope(user) === 'ALL'
+}
+
 export async function deleteReport(id: string): Promise<Result<void>> {
   try {
     const session = await requireApiSession()
     const existing = await prisma.aIReport.findFirst({
       where: { id, organizationId: session.user.organizationId },
-      select: { id: true, type: true, dailyReport: { select: { userId: true } } },
+      select: { id: true, type: true, generatedById: true, dailyReport: { select: { userId: true } } },
     })
+    // Report-not-found and not-allowed are deliberately indistinguishable so
+    // the endpoint can't be used to probe for report ids in the org.
     if (!existing) return err('Report not found')
     if (existing.type === 'employee_daily_summary' && !canViewEmployeeSummary(session.user, existing.dailyReport?.userId)) {
+      return err('Report not found')
+    }
+    if (!canDeleteReport(session.user, existing.generatedById)) {
       return err('Report not found')
     }
     await prisma.aIReport.delete({ where: { id } })

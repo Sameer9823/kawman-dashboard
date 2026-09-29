@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getRecordScope, canManageAssignments, type RecordScope } from '@/lib/record-scope'
+import { getRecordScope, canManageAssignments } from '@/lib/record-scope'
 
 // Mock Session user type
 type MockUser = {

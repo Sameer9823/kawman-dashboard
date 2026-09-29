@@ -98,6 +98,11 @@ export const auth = betterAuth({
   },
 
   plugins: [
+    // Bearer plugin: enables token-based auth (Authorization: Bearer) for the
+    // mobile app. The sign-in endpoint returns the session token in the
+    // `set-auth-token` response header so the mobile client can store it
+    // and send it back as a Bearer token. Cookie-based web auth is unaffected.
+    bearer(),
     // Generic OAuth (Zoho) — only registered when ZOHO_CLIENT_ID +
     // ZOHO_CLIENT_SECRET are set; otherwise returns [] and the app behaves
     // exactly as before (password login only).
@@ -159,4 +164,14 @@ export const auth = betterAuth({
   ],
 })
 
-export type Session = typeof auth.$Infer.Session
+export type Session = typeof auth.$Infer.Session & {
+  user: {
+    organizationId: string
+    organization: { id: string; name: string; slug: string } | null
+    department: { id: string; name: string } | null
+    team: { id: string; name: string } | null
+    status: string
+    roles: string[]
+    permissions: string[]
+  }
+}

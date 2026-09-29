@@ -5,9 +5,10 @@ import { proxy } from './proxy';
 
 const SESSION_COOKIE = 'better-auth.session_token'
 
-function req(pathname: string, opts: { withSession?: boolean; headers?: Record<string, string> } = {}) {
+function req(pathname: string, opts: { withSession?: boolean; withToken?: boolean; headers?: Record<string, string> } = {}) {
   const headers = new Headers(opts.headers)
   if (opts.withSession) headers.set('cookie', `${SESSION_COOKIE}=valid-token`)
+  if (opts.withToken) headers.set('authorization', 'Bearer test-token')
   return new NextRequest(`https://app.example.com${pathname}`, { headers })
 }
 
@@ -97,6 +98,14 @@ describe('proxy', () => {
       }
     )
   })
+
+  describe('upload-signature endpoint is publicly accessible', () => {
+    it('allows /api/mobile/upload-signature without auth', () => {
+      const res = proxy(req('/api/mobile/upload-signature'))
+      expect(isBlocked(res)).toBe(false)
+    })
+  })
+
   describe('bearer token (Kawman Field Android app)', () => {
     it('lets an /api/ request with an Authorization: Bearer header reach the route handler', () => {
       const res = proxy(req('/api/mobile/visits', { headers: { authorization: 'Bearer some.token.value' } }))

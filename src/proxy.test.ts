@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { NextRequest } from 'next/server'
-import { proxy } from '@/proxy'
+import { proxy } from './proxy';
+
 
 const SESSION_COOKIE = 'better-auth.session_token'
 
@@ -98,21 +99,30 @@ describe('proxy', () => {
     )
   })
 
-  describe('requests carrying a Bearer token (mobile auth)', () => {
-    it.each(['/dashboard', '/admin/ai-analytics', '/api/leads/export', '/leads', '/api/mobile/visits'])(
-      'lets %s continue to the route',
-      (path) => {
-        const res = proxy(req(path, { withToken: true }))
-        expect(isRedirect(res)).toBe(false)
-        expect(res.status).toBe(200)
-      }
-    )
-  })
-
   describe('upload-signature endpoint is publicly accessible', () => {
     it('allows /api/mobile/upload-signature without auth', () => {
       const res = proxy(req('/api/mobile/upload-signature'))
       expect(isBlocked(res)).toBe(false)
+    })
+  })
+
+  describe('bearer token (Kawman Field Android app)', () => {
+    it('lets an /api/ request with an Authorization: Bearer header reach the route handler', () => {
+      const res = proxy(req('/api/mobile/visits', { headers: { authorization: 'Bearer some.token.value' } }))
+      expect(isBlocked(res)).toBe(false)
+    })
+
+    it('still blocks /api/ requests with no cookie and no bearer token', () => {
+      expect(proxy(req('/api/mobile/visits')).status).toBe(401)
+    })
+
+    it('does not accept a bearer header as a session for page routes', () => {
+      const res = proxy(req('/dashboard', { headers: { authorization: 'Bearer some.token.value' } }))
+      expect(isRedirect(res)).toBe(true)
+    })
+
+    it('rejects an empty bearer value', () => {
+      expect(proxy(req('/api/mobile/visits', { headers: { authorization: 'Bearer ' } })).status).toBe(401)
     })
   })
 })

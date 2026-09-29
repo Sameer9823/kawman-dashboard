@@ -43,7 +43,12 @@ function isPublicPath(pathname: string): boolean {
  * `auth.api.getSession` check in the route.
  */
 function hasSessionCookie(request: NextRequest): boolean {
-  return getSessionCookie(request) !== null
+  if (getSessionCookie(request) !== null) return true
+  // Native clients (Kawman Field Android app) send a bearer token instead of
+  // a cookie. Presence-only, exactly like the cookie check: the route's own
+  // auth.api.getSession() call validates the token (better-auth `bearer`
+  // plugin) and rejects forged values.
+  return request.nextUrl.pathname.startsWith('/api/') && /^Bearer\s+\S+/i.test(request.headers.get('authorization') ?? '')
 }
 
 /**
@@ -64,7 +69,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  if (!hasSessionCookie(request) && !hasBearerToken(request)) {
+  if (!hasSessionCookie(request) && !(pathname.startsWith('/api/') && hasBearerToken(request))) {
     // API routes get a 401 JSON body rather than a redirect to an HTML page,
     // so fetch()/SSE clients get a parseable response instead of HTML.
     if (pathname.startsWith('/api/')) {

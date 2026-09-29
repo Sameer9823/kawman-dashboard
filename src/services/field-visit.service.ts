@@ -2,7 +2,7 @@ import 'server-only'
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
 import type { FieldVisit, CheckIn, GeoFence, VisitReport, LiveMapVisit, VisitStatus, ActiveUserPin } from '@/types/field-sales'
-import { ok, err, Result, tryCatch } from '@/lib/result'
+import { ok, err, Result } from '@/lib/result'
 
 function initials(name: string): string {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)

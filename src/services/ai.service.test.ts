@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock dependencies
 vi.mock('@/lib/db', () => ({
@@ -34,7 +34,7 @@ vi.mock('@/lib/record-scope', () => ({
 
 import { prisma } from '@/lib/db'
 import { requireApiSession } from '@/lib/session'
-import { streamChatCompletion, generateCompletion, isAIConfigured } from '@/lib/ai'
+import { generateCompletion, isAIConfigured } from '@/lib/ai'
 import { getRecordScope } from '@/lib/record-scope'
 import {
   generateEmployeeDailySummary,
@@ -45,7 +45,6 @@ import {
 
 const mockPrisma = vi.mocked(prisma)
 const mockRequireApiSession = vi.mocked(requireApiSession)
-const mockStreamChatCompletion = vi.mocked(streamChatCompletion)
 const mockGenerateCompletion = vi.mocked(generateCompletion)
 const mockIsAIConfigured = vi.mocked(isAIConfigured)
 const mockGetRecordScope = vi.mocked(getRecordScope)
@@ -82,6 +81,10 @@ describe('ai.service', () => {
     mockPrisma.checkIn.findMany.mockResolvedValue([])
     mockPrisma.visitReport.findMany.mockResolvedValue([])
     mockPrisma.meeting.findMany.mockResolvedValue([])
+    mockPrisma.user.findMany.mockResolvedValue([])
+    mockPrisma.dailyReport.findMany.mockResolvedValue([])
+    mockPrisma.activity.findMany.mockResolvedValue([])
+    mockPrisma.session.findMany.mockResolvedValue([])
   })
 
   describe('generateEmployeeDailySummary', () => {
@@ -250,6 +253,74 @@ describe('ai.service', () => {
 
       expect(result.success).toBe(false)
       expect(result.error).toContain('Not authenticated')
+    })
+
+    it('allows the report creator to delete their own report', async () => {
+      mockPrisma.aIReport.findFirst.mockResolvedValue({
+        id: 'report-1',
+        type: 'weekly',
+        generatedById: 'user-1',
+      } as never)
+      mockPrisma.aIReport.delete.mockResolvedValue({})
+
+      const result = await deleteReport('report-1')
+
+      expect(result.success).toBe(true)
+      expect(mockPrisma.aIReport.delete).toHaveBeenCalledWith({ where: { id: 'report-1' } })
+    })
+
+    it('refuses deletion by a non-creator without reports.view_all', async () => {
+      mockPrisma.aIReport.findFirst.mockResolvedValue({
+        id: 'report-1',
+        type: 'weekly',
+        generatedById: 'someone-else',
+      } as never)
+      mockRequireApiSession.mockResolvedValue({
+        user: { ...mockSession.user, permissions: ['ai.use', 'reports.view'] },
+      } as never)
+      mockGetRecordScope.mockReturnValue('OWN')
+
+      const result = await deleteReport('report-1')
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Report not found')
+      expect(mockPrisma.aIReport.delete).not.toHaveBeenCalled()
+    })
+
+    it('allows deletion by a holder of reports.view_all', async () => {
+      mockPrisma.aIReport.findFirst.mockResolvedValue({
+        id: 'report-1',
+        type: 'weekly',
+        generatedById: 'someone-else',
+      } as never)
+      mockRequireApiSession.mockResolvedValue({
+        user: { ...mockSession.user, permissions: ['reports.view_all'] },
+      } as never)
+      mockGetRecordScope.mockReturnValue('OWN')
+      mockPrisma.aIReport.delete.mockResolvedValue({})
+
+      const result = await deleteReport('report-1')
+
+      expect(result.success).toBe(true)
+      expect(mockPrisma.aIReport.delete).toHaveBeenCalled()
+    })
+
+    it('allows deletion by an ADMIN even without reports.view_all', async () => {
+      mockPrisma.aIReport.findFirst.mockResolvedValue({
+        id: 'report-1',
+        type: 'weekly',
+        generatedById: 'someone-else',
+      } as never)
+      mockRequireApiSession.mockResolvedValue({
+        user: { ...mockSession.user, permissions: ['ai.use'] },
+      } as never)
+      mockGetRecordScope.mockReturnValue('ALL')
+      mockPrisma.aIReport.delete.mockResolvedValue({})
+
+      const result = await deleteReport('report-1')
+
+      expect(result.success).toBe(true)
+      expect(mockPrisma.aIReport.delete).toHaveBeenCalled()
     })
   })
 })

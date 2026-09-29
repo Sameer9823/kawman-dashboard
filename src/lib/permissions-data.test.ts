@@ -105,8 +105,7 @@ describe('ROLE_PERMISSIONS', () => {
 
   it('ADMIN has most permissions but not all', () => {
     const adminPerms = ROLE_PERMISSIONS.ADMIN
-    const allPerms = Object.keys(PERMISSIONS)
-    
+
     // ADMIN should have most permissions
     expect(adminPerms.length).toBeGreaterThan(50)
     
@@ -182,7 +181,7 @@ describe('ROLE_PERMISSIONS', () => {
   it('all role permissions reference valid permission keys', () => {
     const allPermKeys = new Set(Object.keys(PERMISSIONS))
     
-    for (const [role, perms] of Object.entries(ROLE_PERMISSIONS)) {
+    for (const perms of Object.values(ROLE_PERMISSIONS)) {
       for (const perm of perms) {
         expect(allPermKeys.has(perm)).toBe(true)
       }
@@ -190,7 +189,7 @@ describe('ROLE_PERMISSIONS', () => {
   })
 
   it('no duplicate permissions within a role', () => {
-    for (const [role, perms] of Object.entries(ROLE_PERMISSIONS)) {
+    for (const perms of Object.values(ROLE_PERMISSIONS)) {
       const uniquePerms = new Set(perms)
       expect(uniquePerms.size).toBe(perms.length)
     }

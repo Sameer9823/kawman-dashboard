@@ -98,7 +98,7 @@ function IntegrationRow({ integration }: { integration: IntegrationItem }) {
       } else {
         alert('Failed to queue test: ' + data.message)
       }
-    } catch (error) {
+    } catch {
       alert('Failed to test webhook')
     } finally {
       setTestPending(false)
@@ -119,7 +119,7 @@ function IntegrationRow({ integration }: { integration: IntegrationItem }) {
       } else {
         alert('Failed to queue retry: ' + data.message)
       }
-    } catch (error) {
+    } catch {
       alert('Failed to retry webhook')
     }
   }

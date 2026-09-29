@@ -1,6 +1,7 @@
 'use client'
 
 import { format } from 'date-fns'
+import Image from 'next/image'
 import { MapPin, Building2, ShieldCheck, ShieldAlert } from 'lucide-react'
 import { Badge, type BadgeVariant } from '@/components/ui/badge'
 import { DeleteRowButton } from '@/components/crm/delete-row-button'
@@ -109,7 +110,13 @@ export function VisitRow({
               </span>
               {hasPhoto && visit.lastCheckIn.photoUrl && (
                 <a href={visit.lastCheckIn.photoUrl} target="_blank" rel="noreferrer" className="h-7 w-7 rounded overflow-hidden border border-white/10 inline-block">
-                  <img src={visit.lastCheckIn.photoUrl} alt="proof" className="h-full w-full object-cover" />
+                  <Image
+                    src={visit.lastCheckIn.photoUrl}
+                    alt="Check-in proof"
+                    width={28}
+                    height={28}
+                    className="h-full w-full object-cover"
+                  />
                 </a>
               )}
             </div>

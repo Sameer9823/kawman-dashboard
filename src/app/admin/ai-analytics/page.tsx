@@ -2,8 +2,8 @@ import { MainLayout } from '@/components/layout'
 import { PageHeader } from '@/components/crm/page-header'
 import { Badge } from '@/components/ui/badge'
 import { BarChart3, DollarSign, Users, Package } from 'lucide-react'
-import { requirePermission } from '@/lib/session'
-import { getAIUsageSummary } from '@/services/ai-analytics.service'
+import { requireAnyPermission } from '@/lib/session'
+import { getAIUsageSummary, AI_ANALYTICS_PERMISSIONS } from '@/services/ai-analytics.service'
 
 export const metadata = { title: 'AI Analytics | Kawman ExAct Admin' }
 
@@ -17,7 +17,9 @@ function formatCurrency(amount: number): string {
 }
 
 export default async function AIAnalyticsPage() {
-  await requirePermission('ai.use')
+  // Per-person AI token counts and cost are admin-only. 'ai.use' is held by
+  // every role including VIEWER, so it must not gate this page.
+  await requireAnyPermission([...AI_ANALYTICS_PERMISSIONS])
 
   const summaryResult = await getAIUsageSummary()
   if (!summaryResult.success) {

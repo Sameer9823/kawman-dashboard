@@ -18,14 +18,11 @@ vi.mock('@/lib/rate-limit', () => ({
 }))
 
 import { requireApiSession } from '@/lib/session'
-import { isCloudinaryConfigured, uploadToCloudinary } from '@/lib/cloudinary'
-import { createFileRecord } from '@/services/file.service'
+import { isCloudinaryConfigured } from '@/lib/cloudinary'
 import { checkRateLimit } from '@/lib/rate-limit'
 
 const mockRequireApiSession = vi.mocked(requireApiSession)
 const mockIsCloudinaryConfigured = vi.mocked(isCloudinaryConfigured)
-const mockUploadToCloudinary = vi.mocked(uploadToCloudinary)
-const mockCreateFileRecord = vi.mocked(createFileRecord)
 const mockCheckRateLimit = vi.mocked(checkRateLimit)
 
 describe('POST /api/files/upload', () => {

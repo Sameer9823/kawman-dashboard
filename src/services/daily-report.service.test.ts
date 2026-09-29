@@ -56,9 +56,6 @@ import { generateEmployeeSummary } from '@/services/ai.service'
 import {
   getTodayReportDraft,
   submitDailyReport,
-  listDailyReports,
-  getEmployeeProfile,
-  getTeamDailyReports,
 } from '@/services/daily-report.service'
 
 const mockPrisma = vi.mocked(prisma)

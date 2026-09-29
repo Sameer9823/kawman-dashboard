@@ -4,6 +4,21 @@ import { requireApiSession } from '@/lib/session'
 import type { Prisma } from '@/generated/prisma'
 import { ok, err, Result } from '@/lib/result'
 
+/**
+ * AI analytics exposes per-person token counts and cost, so it is admin-only.
+ * Any ONE of these permissions is sufficient — 'ai.analytics.view' is the
+ * dedicated grant, the other two are the pre-existing admin capabilities that
+ * already imply full visibility into the workspace. Deliberately NOT
+ * 'ai.use': every role up to and including VIEWER holds that, which is what
+ * made the dashboard readable by any employee before this guard existed.
+ */
+export const AI_ANALYTICS_PERMISSIONS = ['ai.analytics.view', 'settings.manage', 'audit_logs.view'] as const
+
+export function canViewAIAnalytics(permissions: readonly string[] | undefined | null): boolean {
+  if (!permissions) return false
+  return AI_ANALYTICS_PERMISSIONS.some((p) => permissions.includes(p))
+}
+
 export interface AIUsageRecord {
   id: string
   organizationId: string
@@ -28,8 +43,14 @@ export interface AIUsageAggregate {
   daily: Array<{ date: string; requests: number; inputTokens: number; outputTokens: number; cost: number }>
 }
 
+/**
+ * Note there is deliberately NO `organizationId` field here. The org scope is
+ * always taken from the session inside each function below, so making it
+ * impossible to pass an org id is stronger than ignoring one that was passed.
+ * The query params that reach these functions are userId/model/provider/
+ * feature/date/limit/offset only.
+ */
 export interface AIUsageFilters {
-  organizationId?: string
   userId?: string
   model?: string
   provider?: string
@@ -93,13 +114,30 @@ export async function recordAIUsage(params: {
 }
 
 /**
+ * Single enforcement point for every AI-analytics read. Enforced here (not
+ * only in the route/page) so the service is safe to call from anywhere —
+ * a route handler, a server component, or a future internal caller.
+ * Throws when unauthenticated or lacking an admin-level permission.
+ */
+async function requireAIAnalyticsSession() {
+  const session = await requireApiSession()
+  if (!canViewAIAnalytics(session.user.permissions as string[] | undefined)) {
+    throw new Error('Permission denied: ai.analytics.view')
+  }
+  return session
+}
+
+/**
  * Fetches paginated AI usage records for the session's organization,
  * scoped by optional filters (userId, model, provider, feature, date range).
  */
 export async function getAIUsage(filters: AIUsageFilters = {}): Promise<Result<{ data: AIUsageRecord[]; total: number }>> {
   try {
-    const session = await requireApiSession()
-    const orgId = filters.organizationId || session.user.organizationId
+    const session = await requireAIAnalyticsSession()
+    // The org always comes from the session. `filters.organizationId` is
+    // accepted for call-site compatibility but deliberately ignored, so no
+    // caller can widen the query into another organization.
+    const orgId = session.user.organizationId
 
     const where: Prisma.AIUsageWhereInput = {
       organizationId: orgId,
@@ -140,8 +178,8 @@ export async function getAIUsage(filters: AIUsageFilters = {}): Promise<Result<{
  */
 export async function getAIUsageAggregate(filters: AIUsageFilters = {}): Promise<Result<AIUsageAggregate>> {
   try {
-    const session = await requireApiSession()
-    const orgId = filters.organizationId || session.user.organizationId
+    const session = await requireAIAnalyticsSession()
+    const orgId = session.user.organizationId
 
     const where: Prisma.AIUsageWhereInput = {
       organizationId: orgId,
@@ -255,7 +293,7 @@ export async function getAIUsageSummary(): Promise<Result<{
   topUsers: Array<{ userId: string; name: string; requests: number; cost: number }>
 }>> {
   try {
-    const session = await requireApiSession()
+    const session = await requireAIAnalyticsSession()
     const orgId = session.user.organizationId
 
     const now = new Date()

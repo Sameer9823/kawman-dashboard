@@ -62,6 +62,11 @@ const html = BaseTemplate({
     </p>
   `,
 
+  cta: {
+    text: 'Sign In to Kawman ExAct',
+    url: "https://kawman-dashboard.vercel.app/login",
+  },
+
   footer:
     'For your security, please change your temporary password immediately after your first login. If you did not expect this invitation, please contact your administrator.',
 })

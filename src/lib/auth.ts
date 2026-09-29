@@ -3,6 +3,7 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { nextCookies } from 'better-auth/next-js'
 import { customSession } from 'better-auth/plugins/custom-session'
+import { bearer } from 'better-auth/plugins/bearer'
 import { prisma } from '@/lib/db'
 import { getUserPermissions } from '@/services/permission.service'
 import { sendPasswordResetEmail } from '@/lib/email'
@@ -150,6 +151,10 @@ export const auth = betterAuth({
         }
       }
     }),
+    // Lets the Android app (no cookie jar) authenticate with
+    // `Authorization: Bearer <token>`. The token is returned in the
+    // `set-auth-token` response header on sign-in.
+    bearer(),
     nextCookies(), // must be registered last: applies Set-Cookie on Server Actions
   ],
 })

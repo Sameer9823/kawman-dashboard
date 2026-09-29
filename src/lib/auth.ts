@@ -156,6 +156,10 @@ export const auth = betterAuth({
         }
       }
     }),
+    // Lets the Android app (no cookie jar) authenticate with
+    // `Authorization: Bearer <token>`. The token is returned in the
+    // `set-auth-token` response header on sign-in.
+    bearer(),
     nextCookies(), // must be registered last: applies Set-Cookie on Server Actions
   ],
 })

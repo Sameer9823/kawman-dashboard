@@ -10,15 +10,35 @@ export async function GET(request: Request) {
   const g = await mobileGuard('field_visits.view')
   if ('error' in g) return g.error
   const { session } = g
-  const scope = new URL(request.url).searchParams.get('scope') ?? 'all'
+  const url = new URL(request.url)
+  const scope = url.searchParams.get('scope') ?? 'all'
+  const fromParam = url.searchParams.get('from')
+  const toParam = url.searchParams.get('to')
+  const fromDate = fromParam ? new Date(fromParam) : null
+  const toDate = toParam ? new Date(toParam) : null
+
+  let rangeFrom: Date | null = null
+  let rangeTo: Date | null = null
+  if (
+    fromDate != null && toDate != null &&
+    !Number.isNaN(fromDate.getTime()) && !Number.isNaN(toDate.getTime()) &&
+    toDate.getTime() > fromDate.getTime() &&
+    toDate.getTime() - fromDate.getTime() <= 48 * 60 * 60 * 1000
+  ) {
+    rangeFrom = fromDate
+    rangeTo = toDate
+  }
 
   const start = new Date()
   start.setHours(0, 0, 0, 0)
   const end = new Date(start)
   end.setDate(end.getDate() + 1)
   const when =
-    scope === 'today' ? { scheduledAt: { gte: start, lt: end } } :
-    scope === 'upcoming' ? { scheduledAt: { gte: start } } : {}
+    scope === 'today'
+      ? { scheduledAt: { gte: rangeFrom ?? start, lt: rangeTo ?? end } }
+      : scope === 'upcoming'
+        ? { scheduledAt: { gte: rangeFrom ?? start } }
+        : {}
 
   const rows = await prisma.fieldVisit.findMany({
     where: { organizationId: session.user.organizationId, assigneeId: session.user.id, ...when },

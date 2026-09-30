@@ -11,14 +11,12 @@ import { findOrCreateCompanyByName } from '@/services/company.service'
  * result in the app. The scan itself uses the existing POST /api/contacts/scan.
  * Mirrors scanAndCreateContactAction in src/app/contacts/actions.ts.
  */
+const dash = (v: unknown) => (typeof v === 'string' && v.trim() === '-' ? '' : v)
+const opt = z.preprocess(dash, z.string().trim().optional())
 const schema = z.object({
   name: z.string().trim().min(2, 'Name is required'),
-  company: z.string().trim().optional(),
-  designation: z.string().trim().optional(),
-  email: z.string().trim().email().optional().or(z.literal('')),
-  phone: z.string().trim().optional(),
-  mobile: z.string().trim().optional(),
-  address: z.string().trim().optional(),
+  company: opt, designation: opt, phone: opt, mobile: opt, address: opt,
+  email: z.preprocess(dash, z.string().trim().email().optional().or(z.literal(''))),
 })
 
 export async function POST(request: Request) {

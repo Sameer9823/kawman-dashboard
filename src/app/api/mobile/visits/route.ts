@@ -5,20 +5,70 @@ import { mobileGuard, badRequest } from '@/lib/mobile-api'
 import { findOrCreateCompanyByName } from '@/services/company.service'
 import { findOrCreateContactByName } from '@/services/contact.service'
 
+type VisitRow = {
+  id: string
+  title: string
+  purpose: string
+  status: string
+  scheduledAt: Date
+  address: string | null
+  latitude: unknown
+  longitude: unknown
+  company: { name: string } | null
+  contact: { name: string } | null
+  checkIns: { createdAt: Date }[]
+}
+
+export function mapVisitRow(r: VisitRow) {
+  return {
+    id: r.id,
+    title: r.title,
+    purpose: r.purpose,
+    status: r.status,
+    scheduledAt: r.scheduledAt.toISOString(),
+    address: r.address,
+    latitude: r.latitude != null ? Number(r.latitude) : null,
+    longitude: r.longitude != null ? Number(r.longitude) : null,
+    company: r.company?.name ?? null,
+    contact: r.contact?.name ?? null,
+    lastCheckInAt: r.checkIns[0]?.createdAt.toISOString() ?? null,
+  }
+}
+
 /** My visits (assigned to me), newest schedule first. ?scope=today|upcoming|all */
 export async function GET(request: Request) {
   const g = await mobileGuard('field_visits.view')
   if ('error' in g) return g.error
   const { session } = g
-  const scope = new URL(request.url).searchParams.get('scope') ?? 'all'
+  const url = new URL(request.url)
+  const scope = url.searchParams.get('scope') ?? 'all'
+  const fromParam = url.searchParams.get('from')
+  const toParam = url.searchParams.get('to')
+  const fromDate = fromParam ? new Date(fromParam) : null
+  const toDate = toParam ? new Date(toParam) : null
+
+  let rangeFrom: Date | null = null
+  let rangeTo: Date | null = null
+  if (
+    fromDate != null && toDate != null &&
+    !Number.isNaN(fromDate.getTime()) && !Number.isNaN(toDate.getTime()) &&
+    toDate.getTime() > fromDate.getTime() &&
+    toDate.getTime() - fromDate.getTime() <= 48 * 60 * 60 * 1000
+  ) {
+    rangeFrom = fromDate
+    rangeTo = toDate
+  }
 
   const start = new Date()
   start.setHours(0, 0, 0, 0)
   const end = new Date(start)
   end.setDate(end.getDate() + 1)
   const when =
-    scope === 'today' ? { scheduledAt: { gte: start, lt: end } } :
-    scope === 'upcoming' ? { scheduledAt: { gte: start } } : {}
+    scope === 'today'
+      ? { scheduledAt: { gte: rangeFrom ?? start, lt: rangeTo ?? end } }
+      : scope === 'upcoming'
+        ? { scheduledAt: { gte: rangeFrom ?? start } }
+        : {}
 
   const rows = await prisma.fieldVisit.findMany({
     where: { organizationId: session.user.organizationId, assigneeId: session.user.id, ...when },
@@ -32,19 +82,7 @@ export async function GET(request: Request) {
   })
 
   return NextResponse.json({
-    visits: rows.map((r) => ({
-      id: r.id,
-      title: r.title,
-      purpose: r.purpose,
-      status: r.status,
-      scheduledAt: r.scheduledAt.toISOString(),
-      address: r.address,
-      latitude: r.latitude != null ? Number(r.latitude) : null,
-      longitude: r.longitude != null ? Number(r.longitude) : null,
-      company: r.company?.name ?? null,
-      contact: r.contact?.name ?? null,
-      lastCheckInAt: r.checkIns[0]?.createdAt.toISOString() ?? null,
-    })),
+    visits: rows.map(mapVisitRow),
   })
 }
 

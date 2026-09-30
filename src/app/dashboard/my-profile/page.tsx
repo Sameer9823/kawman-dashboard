@@ -6,7 +6,7 @@ import { getEmployeeProfile } from '@/services/daily-report.service'
 import { isAIConfigured } from '@/lib/ai'
 import { getInitials } from '@/lib/utils'
 import { requireSession } from '@/lib/session'
-import { prisma } from '@/lib/db'
+import { listEmployeeReports, type ReportSummary } from '@/services/ai.service'
 import { EmployeeTabs } from '@/app/admin/my-team/[userId]/employee-tabs'
 import { TeamDateFilter } from '@/app/admin/my-team/team-date-filter'
 
@@ -46,15 +46,10 @@ export default async function MyProfilePage({ searchParams }: { searchParams: Pr
   const { from, to, preset } = parseDateRange(sp)
 
   // Self only — no team.view_all needed; getEmployeeProfile allows self via reports.submit/team.view etc.
-  const [profileResult, aiConfigured, myReports] = await Promise.all([
+  const [profileResult, aiConfigured, employeeReports] = await Promise.all([
     getEmployeeProfile(session.user.id, from && to ? { from, to } : undefined),
     Promise.resolve(isAIConfigured()),
-    prisma.aIReport.findMany({
-      where: { organizationId: session.user.organizationId, generatedById: session.user.id, type: 'employee_daily_summary' },
-      orderBy: { createdAt: 'desc' },
-      take: 10,
-      select: { id: true, type: true, title: true, createdAt: true, generatedBy: { select: { name: true } } },
-    }),
+    listEmployeeReports(session.user.id).catch(() => [] as ReportSummary[]),
   ])
 
   if (!profileResult.success) {
@@ -71,14 +66,6 @@ export default async function MyProfilePage({ searchParams }: { searchParams: Pr
   }
 
   const profile = profileResult.data
-
-  const employeeReports = myReports.map((r) => ({
-    id: r.id,
-    type: r.type,
-    title: r.title,
-    createdAt: r.createdAt.toISOString(),
-    generatedByName: r.generatedBy.name ?? 'Unknown',
-  }))
 
   return (
     <MainLayout>

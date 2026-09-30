@@ -91,7 +91,7 @@ export function EmployeeTabs({ profile, aiConfigured, employeeReports }: { profi
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="text-left text-white/40 text-xs uppercase tracking-wide border-b border-white/[0.06]">
-                  <tr><th className="py-2 font-medium">Date</th><th className="py-2 font-medium">Status</th><th className="py-2 font-medium">Tasks</th><th className="py-2 font-medium">CRM</th><th className="py-2 font-medium">Minutes</th><th className="py-2 font-medium">AI</th></tr>
+                  <tr><th className="py-2 font-medium">Date</th><th className="py-2 font-medium">Status</th><th className="py-2 font-medium">Tasks</th><th className="py-2 font-medium">CRM</th><th className="py-2 font-medium">Minutes</th><th className="py-2 font-medium">Visit Reports</th><th className="py-2 font-medium">AI</th></tr>
                 </thead>
                 <tbody>
                   {profile.recentReports.map((r) => (
@@ -101,6 +101,7 @@ export function EmployeeTabs({ profile, aiConfigured, employeeReports }: { profi
                       <td className="py-2 text-white/60">{r.tasksCompletedCount}</td>
                       <td className="py-2 text-white/60">{r.crmRecordsUpdatedCount}</td>
                       <td className="py-2 text-white/60">{r.activeWorkingTimeMinutes}</td>
+                      <td className="py-2 text-white/60">{r.visitReportsCount}</td>
                       <td className="py-2">
                         <Button size="sm" variant="outline" disabled={!aiConfigured || genId !== null} onClick={() => generateForReport(r.id)}>
                           {genId === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} Generate

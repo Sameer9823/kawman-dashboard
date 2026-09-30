@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/crm/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { getEmployeeProfile } from '@/services/daily-report.service'
-import { listReports } from '@/services/ai.service'
+import { listEmployeeReports, type ReportSummary } from '@/services/ai.service'
 import { isAIConfigured } from '@/lib/ai'
 import { getInitials } from '@/lib/utils'
 import { logAudit } from '@/lib/audit-log'
@@ -71,7 +71,7 @@ export default async function EmployeeProfilePage({ params, searchParams }: { pa
   const [profileResult, aiConfigured, employeeReports] = await Promise.all([
     getEmployeeProfile(userId, from && to ? { from, to } : undefined),
     Promise.resolve(isAIConfigured()),
-    listReports().then((rows) => rows.filter((r) => r.type === 'employee_daily_summary').slice(0, 10)).catch(() => []),
+    listEmployeeReports(userId).catch(() => [] as ReportSummary[]),
   ])
 
   if (!profileResult.success) {

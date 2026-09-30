@@ -47,6 +47,7 @@ export interface DailyReportWithRelations {
   updatedAt: Date
   user: { id: string; name: string | null; email: string }
   aiReport: { id: string; content: string } | null
+  visitReportsCount: number
 }
 
 export interface EmployeeProfileData {
@@ -193,6 +194,7 @@ export async function getTodayReportDraft(targetUserId?: string): Promise<Result
         updatedAt: existingReport.updatedAt,
         user: existingReport.user,
         aiReport: existingReport.aiReport,
+        visitReportsCount: 0,
       }
     : null
 
@@ -310,6 +312,7 @@ export async function submitDailyReport(input: DailyReportInput & { targetUserId
     updatedAt: row.updatedAt,
     user: row.user,
     aiReport: row.aiReport,
+    visitReportsCount: 0,
   })
 }
 
@@ -359,6 +362,7 @@ export async function listDailyReports(filters?: { from?: Date; to?: Date; statu
     updatedAt: r.updatedAt,
     user: { id: r.user.id, name: r.user.name ?? null, email: r.user.email } as unknown as { id: string; name: string | null; email: string },
     aiReport: r.aiReport,
+    visitReportsCount: 0,
   } as DailyReportWithRelations)))
 }
 
@@ -389,7 +393,7 @@ export async function getEmployeeProfile(userId: string, dateRange?: { from: Dat
   const from = dateRange?.from ?? daysAgo(29)
   const to = dateRange?.to ?? endOfDay()
 
-  const [allReports, recentReports, activities, sessions] = await Promise.all([
+  const [allReports, recentReports, activities, sessions, fieldVisits] = await Promise.all([
     prisma.dailyReport.findMany({ where: { organizationId, userId, date: { gte: from, lte: to } } }),
     prisma.dailyReport.findMany({
       where: { organizationId, userId },
@@ -399,7 +403,17 @@ export async function getEmployeeProfile(userId: string, dateRange?: { from: Dat
     }),
     prisma.activity.findMany({ where: { organizationId, actorId: userId, createdAt: { gte: from, lte: to } }, orderBy: { createdAt: 'desc' }, take: 50 }),
     prisma.session.findMany({ where: { userId, createdAt: { gte: from, lte: to } }, orderBy: { createdAt: 'desc' }, take: 20 }),
+    prisma.fieldVisit.findMany({
+      where: { organizationId, assigneeId: userId, scheduledAt: { gte: from, lte: to } },
+      select: { scheduledAt: true, _count: { select: { visitReports: true } } },
+    }),
   ])
+
+  const visitReportsByDate = new Map<string, number>()
+  for (const fv of fieldVisits) {
+    const dateKey = formatDateKey(fv.scheduledAt)
+    visitReportsByDate.set(dateKey, (visitReportsByDate.get(dateKey) ?? 0) + fv._count.visitReports)
+  }
 
   const totalReports = allReports.length
   const submittedReports = allReports.filter((r) => r.status === 'SUBMITTED').length
@@ -472,6 +486,7 @@ export async function getEmployeeProfile(userId: string, dateRange?: { from: Dat
           updatedAt: r.updatedAt,
           user: { id: (r.user as { id: string; name: string | null; email: string }).id, name: r.user.name ?? null, email: r.user.email },
           aiReport: r.aiReport,
+          visitReportsCount: visitReportsByDate.get(formatDateKey(r.date)) ?? 0,
         }) as unknown as DailyReportWithRelations,
     ),
     activityTimeline: activities.map((a) => ({ id: a.id, type: a.type, description: a.description, createdAt: a.createdAt })),

@@ -493,6 +493,18 @@ function canViewEmployeeSummary(
   return dailyReportUserId === user.id
 }
 
+type AIReportRow = {
+  type: string
+  generatedById: string
+  dailyReport?: { userId: string } | null
+}
+
+function canViewReport(user: Session['user'], report: AIReportRow): boolean {
+  if (getRecordScope(user) === 'ALL') return true
+  if (report.type === 'employee_daily_summary') return canViewEmployeeSummary(user, report.dailyReport?.userId)
+  return report.generatedById === user.id
+}
+
 export async function listReports(): Promise<ReportSummary[]> {
   const session = await requireApiSession()
   const rows = await prisma.aIReport.findMany({
@@ -505,10 +517,7 @@ export async function listReports(): Promise<ReportSummary[]> {
     },
   })
   return rows
-    .filter((r) => {
-      if (r.type !== 'employee_daily_summary') return true
-      return canViewEmployeeSummary(session.user, r.dailyReport?.userId)
-    })
+    .filter((r) => canViewReport(session.user, r))
     .map((r) => ({
       id: r.id,
       type: r.type,
@@ -531,10 +540,7 @@ export async function listReportsByType(type: ReportType): Promise<ReportSummary
     },
   })
   return rows
-    .filter((r) => {
-      if (r.type !== 'employee_daily_summary') return true
-      return canViewEmployeeSummary(session.user, r.dailyReport?.userId)
-    })
+    .filter((r) => canViewReport(session.user, r))
     .map((r) => ({
       id: r.id,
       type: r.type,
@@ -554,9 +560,7 @@ export async function getReport(id: string) {
     },
   })
   if (!row) return null
-  if (row.type === 'employee_daily_summary' && !canViewEmployeeSummary(session.user, row.dailyReport?.userId)) {
-    return null
-  }
+  if (!canViewReport(session.user, row)) return null
   return {
     id: row.id,
     type: row.type,
@@ -565,6 +569,39 @@ export async function getReport(id: string) {
     createdAt: row.createdAt.toISOString(),
     generatedByName: row.generatedBy.name ?? 'Unknown',
   }
+}
+
+/**
+ * Returns the AI daily-summary reports linked to a specific employee's
+ * DailyReports. Only the employee themselves (any scope) or an admin-like
+ * user (record scope 'ALL') can query another employee's summaries.
+ */
+export async function listEmployeeReports(userId: string): Promise<ReportSummary[]> {
+  const session = await requireApiSession()
+  if (userId !== session.user.id && getRecordScope(session.user) !== 'ALL') return []
+
+  const rows = await prisma.aIReport.findMany({
+    where: {
+      organizationId: session.user.organizationId,
+      type: 'employee_daily_summary',
+      dailyReport: { userId },
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 10,
+    include: {
+      generatedBy: { select: { name: true } },
+      dailyReport: { select: { userId: true } },
+    },
+  })
+  return rows
+    .filter((r) => canViewReport(session.user, r))
+    .map((r) => ({
+      id: r.id,
+      type: r.type,
+      title: r.title,
+      createdAt: r.createdAt.toISOString(),
+      generatedByName: r.generatedBy.name ?? 'Unknown',
+    }))
 }
 
 export async function generateReport(type: ReportType): Promise<Result<{ id: string }>> {

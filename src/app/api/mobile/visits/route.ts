@@ -15,8 +15,9 @@ type VisitRow = {
   latitude: unknown
   longitude: unknown
   company: { name: string } | null
-  contact: { name: string } | null
+  contact: { name: string; mobile?: string | null; phone?: string | null } | null
   checkIns: { createdAt: Date }[]
+  _count?: { visitReports: number } | null
 }
 
 export function mapVisitRow(r: VisitRow) {
@@ -31,7 +32,9 @@ export function mapVisitRow(r: VisitRow) {
     longitude: r.longitude != null ? Number(r.longitude) : null,
     company: r.company?.name ?? null,
     contact: r.contact?.name ?? null,
+    contactPhone: (r.contact?.mobile || r.contact?.phone) ?? null,
     lastCheckInAt: r.checkIns[0]?.createdAt.toISOString() ?? null,
+    reportCount: r._count?.visitReports ?? 0,
   }
 }
 
@@ -68,14 +71,17 @@ export async function GET(request: Request) {
       ? { scheduledAt: { gte: rangeFrom ?? start, lt: rangeTo ?? end } }
       : scope === 'upcoming'
         ? { scheduledAt: { gte: rangeFrom ?? start } }
-        : {}
+        : scope === 'completed'
+          ? { status: 'COMPLETED' as const }
+          : {}
 
   const rows = await prisma.fieldVisit.findMany({
     where: { organizationId: session.user.organizationId, assigneeId: session.user.id, ...when },
     include: {
       company: { select: { name: true } },
-      contact: { select: { name: true } },
+      contact: { select: { name: true, mobile: true, phone: true } },
       checkIns: { orderBy: { createdAt: 'desc' }, take: 1, select: { createdAt: true, photoUrl: true } },
+      _count: { select: { visitReports: { where: { createdById: session.user.id } } } },
     },
     orderBy: { scheduledAt: scope === 'upcoming' ? 'asc' : 'desc' },
     take: 100,

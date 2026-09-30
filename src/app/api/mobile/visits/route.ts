@@ -5,6 +5,36 @@ import { mobileGuard, badRequest } from '@/lib/mobile-api'
 import { findOrCreateCompanyByName } from '@/services/company.service'
 import { findOrCreateContactByName } from '@/services/contact.service'
 
+type VisitRow = {
+  id: string
+  title: string
+  purpose: string
+  status: string
+  scheduledAt: Date
+  address: string | null
+  latitude: unknown
+  longitude: unknown
+  company: { name: string } | null
+  contact: { name: string } | null
+  checkIns: { createdAt: Date }[]
+}
+
+export function mapVisitRow(r: VisitRow) {
+  return {
+    id: r.id,
+    title: r.title,
+    purpose: r.purpose,
+    status: r.status,
+    scheduledAt: r.scheduledAt.toISOString(),
+    address: r.address,
+    latitude: r.latitude != null ? Number(r.latitude) : null,
+    longitude: r.longitude != null ? Number(r.longitude) : null,
+    company: r.company?.name ?? null,
+    contact: r.contact?.name ?? null,
+    lastCheckInAt: r.checkIns[0]?.createdAt.toISOString() ?? null,
+  }
+}
+
 /** My visits (assigned to me), newest schedule first. ?scope=today|upcoming|all */
 export async function GET(request: Request) {
   const g = await mobileGuard('field_visits.view')
@@ -52,19 +82,7 @@ export async function GET(request: Request) {
   })
 
   return NextResponse.json({
-    visits: rows.map((r) => ({
-      id: r.id,
-      title: r.title,
-      purpose: r.purpose,
-      status: r.status,
-      scheduledAt: r.scheduledAt.toISOString(),
-      address: r.address,
-      latitude: r.latitude != null ? Number(r.latitude) : null,
-      longitude: r.longitude != null ? Number(r.longitude) : null,
-      company: r.company?.name ?? null,
-      contact: r.contact?.name ?? null,
-      lastCheckInAt: r.checkIns[0]?.createdAt.toISOString() ?? null,
-    })),
+    visits: rows.map(mapVisitRow),
   })
 }
 
